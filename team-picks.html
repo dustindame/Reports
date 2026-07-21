@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>Team Picks</title>
+  <link rel="stylesheet" href="shared/theme.css" />
+  <link rel="stylesheet" href="team-picks.css" />
+</head>
+<body>
+  <div class="phone-frame">
+    <div class="phone-screen turf-bg">
+
+      <header class="picks-header">
+        <button class="back-btn" id="backBtn" hidden>
+          <span id="backIcon"></span>
+        </button>
+        <span class="header-football" id="headerFootball"></span>
+        <h1 class="picks-title">TEAM <span class="gold-text">PICKS</span></h1>
+      </header>
+
+      <main class="picks-main">
+
+        <section class="team-picker" id="teamPicker">
+          <div class="section-label">Select a Team</div>
+          <div class="team-grid" id="teamGrid"></div>
+        </section>
+
+        <section class="roster-view" id="rosterView" hidden>
+          <div class="team-banner" id="teamBanner"></div>
+
+          <div class="budget-row" id="budgetRow"></div>
+
+          <div class="roster-list" id="rosterList"></div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="shared/data.js"></script>
+  <script src="shared/icons.js"></script>
+  <script src="team-picks.js"></script>
+</body>
+</html>

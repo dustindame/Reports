@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fantasy Auction Draft — Prototype</title>
+  <link rel="stylesheet" href="shared/theme.css" />
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+    .landing {
+      max-width: 760px;
+      width: 100%;
+    }
+    h1 { font-size: 30px; margin-bottom: 6px; }
+    p.lede { color: var(--text-dim); margin-top: 0; line-height: 1.5; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+    .card {
+      display: block;
+      text-decoration: none;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      box-shadow: var(--shadow-panel);
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+    .card:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
+    .card h2 { margin: 0 0 6px; font-size: 17px; color: var(--text); }
+    .card p { margin: 0; font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--gold-bright);
+      border: 1px solid var(--gold-dim);
+      border-radius: 999px;
+      padding: 2px 8px;
+      margin-bottom: 10px;
+    }
+    .note {
+      margin-top: 30px;
+      font-size: 12.5px;
+      color: var(--text-faint);
+      border-top: 1px solid var(--border-soft);
+      padding-top: 16px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body class="turf-bg">
+  <div class="landing">
+    <h1>Fantasy Auction <span class="gold-text">Draft</span></h1>
+    <p class="lede">A two-screen prototype for running a live fantasy football auction draft: a phone screen for logging picks and a TV-facing board for the whole room to follow along.</p>
+
+    <div class="cards">
+      <a class="card" href="player-entry.html">
+        <span class="tag">Phone</span>
+        <h2>Player Entry</h2>
+        <p>Search a player, tap the winning team, slide to the bid amount, confirm the pick.</p>
+      </a>
+      <a class="card" href="draft-board.html">
+        <span class="tag">TV</span>
+        <h2>Draft Board</h2>
+        <p>All 12 rosters, budgets, recent picks, and a live news/odds ticker in one wide scrolling display.</p>
+      </a>
+      <a class="card" href="team-picks.html">
+        <span class="tag">Phone</span>
+        <h2>Team Picks</h2>
+        <p>The page the Draft Board's QR code links to — pick a team, check their roster from your own phone.</p>
+      </a>
+    </div>
+
+    <p class="note">Static prototype: picks entered on Player Entry are saved to this browser's localStorage and the Draft Board / Team Picks pages pick them up live in the same browser — a stand-in for a real shared backend (e.g. Firebase) that a production build would need. See README.md for details.</p>
+  </div>
+</body>
+</html>

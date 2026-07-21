@@ -1,0 +1,128 @@
+/* ===========================================================
+   Shared theme — Fantasy Auction Draft system
+   Used by draft-board.html, player-entry.html, team-picks.html
+   =========================================================== */
+
+:root {
+  --bg: #08080b;
+  --bg-alt: #0e0f14;
+  --panel: #15161d;
+  --panel-alt: #1c1e28;
+  --border: #2b2d38;
+  --border-soft: #202230;
+
+  --gold: #d4af37;
+  --gold-bright: #f2c14e;
+  --gold-dim: #8a7229;
+
+  --text: #f3f2ee;
+  --text-dim: #a7a7b3;
+  --text-faint: #6b6c7a;
+
+  --qb: #8b1e1e;
+  --qb-glow: #c53d3d;
+  --rb: #1d4e89;
+  --rb-glow: #3e79c4;
+  --wr: #2e7d32;
+  --wr-glow: #4caf50;
+  --te: #d9822b;
+  --te-glow: #f2a541;
+
+  --field-green: #1e5c2e;
+  --field-green-dark: #143f1f;
+  --leather: #6b4226;
+
+  --team-1: #e63946;  /* Blitz Brigade */
+  --team-2: #f4a300;  /* Endzone Elites */
+  --team-3: #2a9d8f;  /* Gridiron Gladiators */
+  --team-4: #3a6ea5;  /* Hail Mary Heroes */
+  --team-5: #6a4c93;  /* Pigskin Pirates */
+  --team-6: #c1440e;  /* Red Zone Raiders */
+  --team-7: #588157;  /* Sack Attack Squad */
+  --team-8: #b5179e;  /* Touchdown Titans */
+  --team-9: #4cc9f0;  /* Turf Tyrants */
+  --team-10: #6c757d; /* Fumble Force */
+  --team-11: #7d1128; /* End Around Eagles */
+  --team-12: #c9a227; /* Onside Outlaws */
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --shadow-panel: 0 4px 18px rgba(0, 0, 0, 0.45);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { height: 10px; width: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-alt); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+
+a { color: var(--gold); }
+
+/* Reusable "turf" backdrop texture — subtle yard lines + grain */
+.turf-bg {
+  background-color: var(--bg);
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.015) 0px,
+      rgba(255, 255, 255, 0.015) 1px,
+      transparent 1px,
+      transparent 120px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(212, 175, 55, 0.02) 0px,
+      rgba(212, 175, 55, 0.02) 1px,
+      transparent 1px,
+      transparent 40px
+    ),
+    radial-gradient(ellipse at 50% -10%, rgba(212, 175, 55, 0.08), transparent 60%);
+  background-attachment: fixed;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px currentColor;
+  flex: none;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.gold-text { color: var(--gold); }
+
+.laces {
+  height: 10px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--gold-dim) 0px,
+    var(--gold-dim) 2px,
+    transparent 2px,
+    transparent 10px
+  );
+  opacity: 0.55;
+}

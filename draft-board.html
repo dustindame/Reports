@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auction Draft Board</title>
+  <link rel="stylesheet" href="shared/theme.css" />
+  <link rel="stylesheet" href="draft-board.css" />
+</head>
+<body class="turf-bg">
+  <div class="board-scroll-wrapper" id="boardScroll">
+    <div class="board-content" id="boardContent">
+
+      <header class="board-header" id="boardHeader">
+        <div class="header-block title-block">
+          <h1 class="board-title">AUCTION DRAFT <span class="gold-text">BOARD</span></h1>
+        </div>
+
+        <div class="header-block tracker-block">
+          <div class="tracker-numbers">
+            <span class="tracker-label">Drafted</span>
+            <span class="tracker-value" id="draftedValue">0 / 156</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="tracker-remaining"><span id="remainingValue">156</span> remaining</div>
+        </div>
+
+        <div class="header-block recent-block">
+          <div class="recent-label">Recent Picks</div>
+          <div class="recent-strip" id="recentStrip"></div>
+        </div>
+
+        <div class="header-block clock-block">
+          <div class="clock-icon" id="clockIcon"></div>
+          <div class="clock-value" id="clockValue">--:--</div>
+        </div>
+
+        <div class="header-block qr-block">
+          <a class="qr-code" id="qrCode" href="team-picks.html" title="Open Team Picks lookup"></a>
+          <div class="qr-label">Scan for<br />Team Picks</div>
+        </div>
+      </header>
+
+      <main class="board-grid" id="boardGrid"></main>
+
+      <footer class="board-ticker" id="boardTicker">
+        <div class="ticker-track" id="tickerTrack"></div>
+      </footer>
+
+    </div>
+  </div>
+
+  <script src="shared/data.js"></script>
+  <script src="shared/icons.js"></script>
+  <script src="draft-board.js"></script>
+</body>
+</html>
