@@ -37,8 +37,7 @@
         <span class="team-box-check" id="check-${team.id}"></span>
         <div class="team-box-name">${team.name}</div>
         <div class="team-box-divider"></div>
-        <div class="team-box-stat"><span class="tbs-icon">🔨</span>Max Bid<span class="tbs-val">$${budget.maxBid}</span></div>
-        <div class="team-box-stat"><span class="tbs-icon">💰</span>Remaining<span class="tbs-val">$${budget.remaining}</span></div>
+        <div class="team-box-stat"><span class="tbs-icon">🔨</span><span class="tbs-val">$${budget.maxBid}</span><span class="tbs-icon">💰</span><span class="tbs-val">$${budget.remaining}</span></div>
       </div>`;
     }).join("");
 
@@ -123,7 +122,7 @@
     const percent = max > min ? (Number(bidSlider.value) - min) / (max - min) : 0;
     const trackRect = bidAmountTrack.getBoundingClientRect();
     const sliderRect = bidSlider.getBoundingClientRect();
-    const thumbSize = 34;
+    const thumbSize = 28;
     const left = sliderRect.left - trackRect.left + thumbSize / 2 + percent * (sliderRect.width - thumbSize);
     amountBubble.style.left = `${left}px`;
   }
