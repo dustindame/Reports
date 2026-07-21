@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>Enter Pick</title>
+  <link rel="stylesheet" href="shared/theme.css" />
+  <link rel="stylesheet" href="player-entry.css" />
+</head>
+<body>
+  <div class="phone-frame">
+    <div class="phone-screen turf-bg">
+
+      <header class="entry-header">
+        <div class="header-row">
+          <span class="pylon-icon" id="pylonLeft"></span>
+          <span class="football-icon" id="footballIcon"></span>
+          <h1 class="entry-title">ENTER PICK</h1>
+          <span class="football-icon" id="footballIcon2"></span>
+          <span class="pylon-icon" id="pylonRight"></span>
+        </div>
+        <div class="first-down-line">
+          <span class="first-down-text">LIVE AUCTION</span>
+        </div>
+      </header>
+
+      <main class="entry-main">
+
+        <section class="search-section">
+          <div class="search-box">
+            <span class="search-icon" id="searchIcon"></span>
+            <input type="text" id="playerSearch" placeholder="Search player name..." autocomplete="off" />
+          </div>
+          <div class="laces-accent"></div>
+          <div class="search-results" id="searchResults"></div>
+        </section>
+
+        <section class="preview-section" id="previewSection" hidden>
+          <div class="preview-card">
+            <span class="flag-icon" id="flagIcon"></span>
+            <div class="preview-info">
+              <div class="preview-name" id="previewName">—</div>
+              <div class="preview-position" id="previewPosition">—</div>
+            </div>
+            <button class="clear-btn" id="clearBtn">CLEAR</button>
+          </div>
+        </section>
+
+        <section class="team-section">
+          <div class="section-label">Winning Team</div>
+          <div class="team-grid" id="teamGrid"></div>
+        </section>
+
+        <section class="bid-section">
+          <div class="amount-display">AMOUNT: <span class="gold-text" id="amountValue">$1</span></div>
+          <div class="field-frame">
+            <input type="range" id="bidSlider" min="1" max="200" value="1" step="1" />
+          </div>
+          <div class="range-labels"><span>$1</span><span id="maxLabel">Max bid $200</span></div>
+          <div class="budget-hint" id="budgetHint" hidden></div>
+        </section>
+
+        <button class="confirm-btn" id="confirmBtn" disabled>
+          <span class="confirm-football" id="confirmFootball"></span>
+          CONFIRM PICK
+        </button>
+        <div class="confirm-laces"></div>
+
+        <div class="toast" id="toast">Pick logged!</div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="shared/data.js"></script>
+  <script src="shared/icons.js"></script>
+  <script src="player-entry.js"></script>
+</body>
+</html>

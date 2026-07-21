@@ -1,0 +1,208 @@
+:root {
+  --board-width: 2200px;
+  --team-col: 300px;
+  --slot-col: 146px;
+}
+
+body { overflow: hidden; height: 100vh; }
+
+.board-scroll-wrapper {
+  width: 100vw;
+  height: 100vh;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.board-content {
+  width: var(--board-width);
+  min-width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ---------------- Header ---------------- */
+
+.board-header {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 14px 24px;
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg-alt) 100%);
+  border-bottom: 2px solid var(--gold-dim);
+  white-space: nowrap;
+  flex: none;
+}
+
+.header-block { flex: none; }
+
+.title-block { min-width: 300px; }
+.board-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  text-shadow: 0 0 18px rgba(212, 175, 55, 0.25);
+}
+
+.tracker-block { min-width: 220px; }
+.tracker-numbers {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.tracker-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); }
+.tracker-value { font-size: 18px; font-weight: 700; color: var(--gold-bright); }
+.progress-bar {
+  margin-top: 5px;
+  width: 200px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright));
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+.tracker-remaining { margin-top: 4px; font-size: 11px; color: var(--text-dim); }
+
+.recent-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  padding: 0 22px;
+  min-width: 640px;
+}
+.recent-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); }
+.recent-strip { display: flex; gap: 10px; }
+.recent-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  font-size: 12px;
+}
+.recent-chip .rc-pos-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.recent-chip .rc-name { color: var(--text); font-weight: 600; }
+.recent-chip .rc-team { color: var(--text-dim); }
+.recent-chip .rc-price { color: var(--gold-bright); font-weight: 700; }
+
+.clock-block { display: flex; align-items: center; gap: 8px; min-width: 110px; }
+.clock-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
+
+.qr-block { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.qr-code { line-height: 0; border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 2px var(--gold-dim); }
+.qr-label { font-size: 11px; color: var(--gold-bright); line-height: 1.3; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ---------------- Grid ---------------- */
+
+.board-grid {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: var(--team-col) repeat(13, var(--slot-col));
+  align-content: start;
+  background: var(--bg);
+}
+
+.grid-header-cell {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-alt);
+  border-bottom: 2px solid var(--border);
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-align: center;
+  color: var(--text-dim);
+}
+.grid-header-cell.corner { text-align: left; color: var(--gold); }
+.grid-header-cell.pos-QB { color: var(--qb-glow); }
+.grid-header-cell.pos-RB { color: var(--rb-glow); }
+.grid-header-cell.pos-WR { color: var(--wr-glow); }
+.grid-header-cell.pos-TE { color: var(--te-glow); }
+
+.team-cell {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  background: var(--panel);
+}
+.team-name-row { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: var(--text); }
+.team-budget-row { font-size: 12px; color: var(--text-dim); padding-left: 18px; }
+.team-budget-row .b-max { color: var(--gold-bright); font-weight: 700; }
+.team-budget-row .b-rem { color: var(--text-dim); }
+
+.slot-cell {
+  margin: 5px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-soft);
+  background: var(--panel-alt);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6px 4px;
+  min-height: 58px;
+}
+
+.slot-cell.filled { background: var(--panel); }
+.slot-cell.empty { border-style: dashed; }
+.slot-cell .slot-player { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.slot-cell .slot-price { font-size: 12px; font-weight: 800; margin-top: 2px; }
+.slot-cell .slot-open { font-size: 11px; color: var(--text-faint); letter-spacing: 0.5px; text-transform: uppercase; }
+
+.slot-cell.pos-QB { border-color: var(--qb); box-shadow: 0 0 10px -2px var(--qb-glow); }
+.slot-cell.pos-RB { border-color: var(--rb); box-shadow: 0 0 10px -2px var(--rb-glow); }
+.slot-cell.pos-WR { border-color: var(--wr); box-shadow: 0 0 10px -2px var(--wr-glow); }
+.slot-cell.pos-TE { border-color: var(--te); box-shadow: 0 0 10px -2px var(--te-glow); }
+.slot-cell.pos-QB .slot-price { color: var(--qb-glow); }
+.slot-cell.pos-RB .slot-price { color: var(--rb-glow); }
+.slot-cell.pos-WR .slot-price { color: var(--wr-glow); }
+.slot-cell.pos-TE .slot-price { color: var(--te-glow); }
+
+/* ---------------- Ticker ---------------- */
+
+.board-ticker {
+  flex: none;
+  height: 38px;
+  background: var(--panel);
+  border-top: 2px solid var(--gold-dim);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.ticker-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: ticker-scroll 60s linear infinite;
+  font-size: 13px;
+  color: var(--text-dim);
+  will-change: transform;
+}
+.ticker-track span.ticker-item {
+  padding: 0 28px;
+  border-right: 1px solid var(--border);
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
