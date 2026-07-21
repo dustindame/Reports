@@ -1,4 +1,5 @@
 (async function () {
+  const boardContent = document.getElementById("boardContent");
   const grid = document.getElementById("boardGrid");
   const draftedValue = document.getElementById("draftedValue");
   const remainingValue = document.getElementById("remainingValue");
@@ -10,6 +11,7 @@
   const tickerTrack = document.getElementById("tickerTrack");
 
   qrCode.innerHTML = Icons.qrCode(96, 42);
+  document.getElementById("setupGear").innerHTML = Icons.gear(18);
   clockIcon.innerHTML = Icons.clock(18, "#d4af37");
 
   function renderClock() {
@@ -82,6 +84,16 @@
     grid.innerHTML = cells.join("");
   }
 
+  function fitGridToRosterSize() {
+    const rootStyle = getComputedStyle(document.documentElement);
+    const teamColPx = parseFloat(rootStyle.getPropertyValue("--team-col")) || 300;
+    const slotColPx = parseFloat(rootStyle.getPropertyValue("--slot-col")) || 146;
+    grid.style.gridTemplateColumns = `var(--team-col) repeat(${ROSTER_SLOTS.length}, var(--slot-col))`;
+    boardContent.style.setProperty("--board-width", `${teamColPx + ROSTER_SLOTS.length * slotColPx}px`);
+  }
+
+  await configReady;
+  fitGridToRosterSize();
   await applyLivePicks();
   renderTracker();
   renderRecent();

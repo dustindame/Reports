@@ -65,6 +65,13 @@ const Icons = {
     </svg>`;
   },
 
+  gear(size = 20, color = "#d4af37") {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 8.4a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" stroke="${color}" stroke-width="1.8"/>
+      <path d="M12 2.8v2.1M12 19.1v2.1M21.2 12h-2.1M4.9 12H2.8M18.1 5.9l-1.5 1.5M7.4 16.6l-1.5 1.5M18.1 18.1l-1.5-1.5M7.4 7.4 5.9 5.9" stroke="${color}" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>`;
+  },
+
   /* Decorative QR-style code (not a real scannable payload — static
      mockup stand-in for the link to the Team Picks page). Deterministic
      module pattern with QR-style finder squares in the corners. */

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>Draft Setup</title>
+  <link rel="stylesheet" href="shared/theme.css" />
+  <link rel="stylesheet" href="setup.css" />
+</head>
+<body>
+  <div class="phone-frame">
+    <div class="phone-screen turf-bg">
+
+      <header class="setup-header">
+        <a class="back-btn" href="player-entry.html" aria-label="Back to Enter Pick"><span id="backIcon"></span></a>
+        <span class="header-gear" id="headerGear"></span>
+        <h1 class="setup-title">DRAFT <span class="gold-text">SETUP</span></h1>
+      </header>
+
+      <main class="setup-main">
+
+        <section class="setup-section">
+          <div class="section-label">Number of Teams</div>
+          <div class="stepper">
+            <button class="stepper-btn" id="teamCountMinus" aria-label="Fewer teams">−</button>
+            <div class="stepper-value" id="teamCountValue">12</div>
+            <button class="stepper-btn" id="teamCountPlus" aria-label="More teams">+</button>
+          </div>
+          <div class="stepper-hint">6–14 teams</div>
+        </section>
+
+        <section class="setup-section">
+          <div class="section-label">Budget per Team</div>
+          <div class="budget-input-wrap">
+            <span class="budget-dollar">$</span>
+            <input type="number" id="budgetInput" class="budget-input" min="1" step="1" value="200" />
+          </div>
+        </section>
+
+        <section class="setup-section">
+          <div class="section-label">Roster / Lineup</div>
+          <div class="slot-rows" id="slotRows"></div>
+          <div class="total-slots-row">Total slots per team: <span class="gold-text" id="totalSlotsValue">13</span></div>
+        </section>
+
+        <section class="setup-section">
+          <div class="section-label">Team Names</div>
+          <div class="team-names-list" id="teamNamesList"></div>
+        </section>
+
+        <div class="warning-box">
+          ⚠️ Saving starts a brand-new draft and clears any picks already made.
+        </div>
+
+        <div class="status-msg" id="statusMsg" hidden></div>
+
+        <button class="save-btn" id="saveBtn">SAVE &amp; START NEW DRAFT</button>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="shared/supabase-config.js"></script>
+  <script src="shared/data.js"></script>
+  <script src="shared/icons.js"></script>
+  <script src="setup.js"></script>
+</body>
+</html>
