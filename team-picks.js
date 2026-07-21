@@ -1,4 +1,4 @@
-(function () {
+(async function () {
   const teamGrid = document.getElementById("teamGrid");
   const teamPicker = document.getElementById("teamPicker");
   const rosterView = document.getElementById("rosterView");
@@ -70,9 +70,9 @@
 
   backBtn.addEventListener("click", showPicker);
 
-  applyLivePicks();
-  DraftStore.onChange(() => {
-    applyLivePicks();
+  await applyLivePicks();
+  DraftStore.onChange(async () => {
+    await applyLivePicks();
     if (!rosterView.hidden && currentTeamId) showRoster(currentTeamId);
   });
 

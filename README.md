@@ -21,10 +21,14 @@ python3 -m http.server 8000
 
 `shared/data.js` deterministically generates a plausible mid-draft snapshot (12 teams, a real-ish player pool, partially filled rosters, realistic auction budgets) so the board and lookup page look populated on first load.
 
-## Current state: static prototype, not a real product
+## Live sync: Supabase
 
-As prototyped, this is a **static, disconnected mockup** — there's no real backend. To make it actually work as a live draft tool, a pick entered on the phone needs to show up on the TV in real time, across devices. That requires a shared data layer: a small backend (e.g. a lightweight API + database) or a realtime service like Firebase.
+A pick entered on `player-entry.html` needs to show up on `draft-board.html` (and `team-picks.html`) in real time, across devices — a phone and a TV are never the same browser, so `localStorage` (the original stand-in) couldn't do this. That's now backed by a real Supabase project:
 
-As a placeholder for that, `shared/data.js` includes a `DraftStore` object backed by `localStorage` plus an `applyLivePicks()` merge step. When `player-entry.html` confirms a pick, it's written to `localStorage`; `draft-board.html` and `team-picks.html` listen for storage changes and fold new picks into their view. This makes the three screens feel connected **when opened in tabs of the same browser** — it is not a substitute for a real shared backend, since `localStorage` doesn't sync across devices (a phone and a TV are never the same browser). Swapping `DraftStore` for real API/Firebase calls is the seam where that work would plug in.
+- **`supabase/migrations/`** — creates the `picks` table (team, player, position, price, timestamp), opens it up to the `anon` key via Row Level Security policies (read + insert — there's no auth system, so this matches a shared-room trust model), and adds it to the `supabase_realtime` publication. If the GitHub repo is connected to the Supabase project, merging to `main` auto-applies these.
+- **`shared/supabase-config.js`** — the project URL and anon public key. The anon key is meant to be public (it's what ships to every browser); access is enforced by the RLS policies above, not by keeping this secret. Never put a `service_role` key here.
+- **`shared/data.js`** — `DraftStore.addPick()` inserts a row; `DraftStore.getPicks()` reads all rows; `DraftStore.onChange()` subscribes to `postgres_changes` INSERT events over Supabase Realtime. `applyLivePicks()` (now async) folds new rows into the deterministic mock draft, deduped by row id.
+
+All three pages load the Supabase JS client from a CDN (`@supabase/supabase-js@2`) before `shared/data.js`. If `shared/supabase-config.js` still has its placeholder values, `DraftStore` no-ops with a console warning rather than throwing, so the pages still render the mock draft on their own.
 
 The QR code on the Draft Board is a decorative, deterministically-generated pattern (see `shared/icons.js`) styled to read as a QR code — it links to `team-picks.html` for the demo, but doesn't encode a real payload since there's no hosted URL yet.

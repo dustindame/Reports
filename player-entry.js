@@ -1,4 +1,4 @@
-(function () {
+(async function () {
   const searchInput = document.getElementById("playerSearch");
   const searchResults = document.getElementById("searchResults");
   const previewSection = document.getElementById("previewSection");
@@ -29,8 +29,8 @@
   let selectedPlayer = null;
   let selectedTeamId = null;
 
-  function renderTeamGrid() {
-    applyLivePicks();
+  async function renderTeamGrid() {
+    await applyLivePicks();
     teamGrid.innerHTML = TEAMS.map((team) => {
       const budget = computeTeamBudget(team.id);
       return `<div class="team-box" data-team-id="${team.id}" style="background:${team.color}">
@@ -46,6 +46,7 @@
     });
 
     teamGrid.querySelectorAll(".team-box").forEach((box) => {
+      box.classList.toggle("selected", box.dataset.teamId === selectedTeamId);
       box.addEventListener("click", () => {
         selectedTeamId = box.dataset.teamId;
         teamGrid.querySelectorAll(".team-box").forEach((b) => b.classList.toggle("selected", b === box));
@@ -146,10 +147,10 @@
     setTimeout(() => toast.classList.remove("show"), 1800);
   }
 
-  function confirmPick() {
+  async function confirmPick() {
     if (!isReady()) return;
     const team = teamById(selectedTeamId);
-    DraftStore.addPick({
+    await DraftStore.addPick({
       name: selectedPlayer.name,
       position: selectedPlayer.position,
       teamId: selectedTeamId,
@@ -163,7 +164,7 @@
     clearPlayer();
     selectedTeamId = null;
     bidSlider.value = 1;
-    renderTeamGrid();
+    await renderTeamGrid();
     updateBidCap();
     updateAmount();
     updateConfirmState();
@@ -213,8 +214,8 @@
     dragging = false;
     const max = trackWidth();
     if (max > 0 && handleX >= max * 0.82) {
-      snapTo(max, () => {
-        confirmPick();
+      snapTo(max, async () => {
+        await confirmPick();
         snapTo(0);
       });
     } else {
@@ -228,8 +229,8 @@
   slideHandle.addEventListener("keydown", (e) => {
     if ((e.key === "Enter" || e.key === " ") && isReady()) {
       e.preventDefault();
-      snapTo(trackWidth(), () => {
-        confirmPick();
+      snapTo(trackWidth(), async () => {
+        await confirmPick();
         snapTo(0);
       });
     }
@@ -244,7 +245,14 @@
   clearBtn.addEventListener("click", clearPlayer);
   bidSlider.addEventListener("input", updateAmount);
 
-  renderTeamGrid();
+  // Someone else's pick (another Player Entry session) also affects this
+  // team's live budget, so keep the cards in sync via Supabase Realtime.
+  DraftStore.onChange(async () => {
+    await renderTeamGrid();
+    updateBidCap();
+  });
+
+  await renderTeamGrid();
   updateBidCap();
   updateAmount();
   updateConfirmState();
