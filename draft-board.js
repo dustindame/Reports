@@ -10,9 +10,21 @@
   const clockValue = document.getElementById("clockValue");
   const tickerTrack = document.getElementById("tickerTrack");
 
-  qrCode.innerHTML = Icons.qrCode(96, 42);
   document.getElementById("setupGear").innerHTML = Icons.gear(18);
   clockIcon.innerHTML = Icons.clock(18, "#d4af37");
+
+  // Real scannable QR (not the earlier decorative placeholder) now that the
+  // app has a stable hosted URL — points at Team Picks, with the current
+  // league code baked in (once configReady has resolved) so scanning it
+  // lands straight in the right league with zero typing.
+  function renderQr() {
+    const suffix = CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : "";
+    const teamPicksUrl = new URL(`team-picks.html${suffix}`, window.location.href).href;
+    const qr = qrcode(0, "M");
+    qr.addData(teamPicksUrl);
+    qr.make();
+    qrCode.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2 });
+  }
 
   function renderClock() {
     const now = new Date();
@@ -46,11 +58,22 @@
       .join("");
   }
 
+  let tickerHeadlines = FALLBACK_NEWS_TICKER;
+
   function renderTicker() {
-    const items = NEWS_TICKER.concat(NEWS_TICKER)
+    const items = tickerHeadlines
+      .concat(tickerHeadlines)
       .map((t) => `<span class="ticker-item">${t}</span>`)
       .join("");
     tickerTrack.innerHTML = items;
+  }
+
+  async function refreshTicker() {
+    const live = await fetchNewsHeadlines();
+    if (live.length) {
+      tickerHeadlines = live;
+      renderTicker();
+    }
   }
 
   function renderGrid() {
@@ -93,12 +116,18 @@
   }
 
   await configReady;
+  renderQr();
   fitGridToRosterSize();
   await applyLivePicks();
   renderTracker();
   renderRecent();
   renderTicker();
   renderGrid();
+
+  // Fetch real NFL headlines in the background (don't block first paint —
+  // the fallback list above renders immediately) and keep them fresh.
+  refreshTicker();
+  setInterval(refreshTicker, 10 * 60 * 1000);
 
   // A pick confirmed on the Player Entry screen streams in here via
   // Supabase Realtime — fold it in and refresh the affected panels.

@@ -148,19 +148,103 @@
     setTimeout(() => toast.classList.remove("show"), 1800);
   }
 
+  /* ---------------- Commissioner PIN gate ----------------
+     Only shown for a real league (demo mode has no PIN, nothing to
+     protect). Verified server-side via the verify_pin RPC — see
+     shared/data.js and supabase/migrations. */
+  function showPinPrompt() {
+    return new Promise((resolve) => {
+      const overlay = document.createElement("div");
+      overlay.className = "league-gate-overlay";
+      overlay.innerHTML = `
+        <div class="league-gate-card">
+          <div class="league-gate-icon">🔒</div>
+          <h2 class="league-gate-title">Enter Commissioner PIN</h2>
+          <p class="league-gate-hint">Only the commissioner's PIN can log picks for this league.</p>
+          <input type="password" inputmode="numeric" class="league-gate-input" id="pinGateInput" maxlength="10" placeholder="PIN" autocomplete="off" />
+          <div class="league-gate-error" id="pinGateError" hidden></div>
+          <button class="league-gate-continue" id="pinGateContinue">UNLOCK</button>
+          <button class="league-gate-secondary" id="pinGateNotMine">This Isn't My League</button>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      const input = overlay.querySelector("#pinGateInput");
+      const errorEl = overlay.querySelector("#pinGateError");
+      const continueBtn = overlay.querySelector("#pinGateContinue");
+      const notMineBtn = overlay.querySelector("#pinGateNotMine");
+      input.focus();
+
+      async function submit() {
+        const pin = input.value.trim();
+        if (!pin) return;
+        continueBtn.disabled = true;
+        continueBtn.textContent = "CHECKING...";
+        const hash = await sha256Hex(pin);
+        const ok = await DraftStore.verifyPin(CURRENT_LEAGUE_CODE, hash);
+        if (!ok) {
+          errorEl.textContent = "Incorrect PIN.";
+          errorEl.hidden = false;
+          continueBtn.disabled = false;
+          continueBtn.textContent = "UNLOCK";
+          input.value = "";
+          input.focus();
+          return;
+        }
+        LeagueSession.setPinHash(CURRENT_LEAGUE_CODE, hash);
+        overlay.remove();
+        resolve();
+      }
+
+      continueBtn.addEventListener("click", submit);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") submit();
+      });
+      notMineBtn.addEventListener("click", () => {
+        LeagueSession.clearLeagueCode();
+        window.location.reload();
+      });
+    });
+  }
+
+  async function ensurePinUnlocked() {
+    if (!CURRENT_LEAGUE_CODE) return; // demo mode — nothing to protect
+    if (LeagueSession.getPinHash(CURRENT_LEAGUE_CODE)) return; // already unlocked this tab session
+    await showPinPrompt();
+  }
+
   async function confirmPick() {
     if (!isReady()) return;
     const team = teamById(selectedTeamId);
-    await DraftStore.addPick({
-      name: selectedPlayer.name,
-      position: selectedPlayer.position,
-      teamId: selectedTeamId,
-      teamName: team.name,
-      price: Number(bidSlider.value),
-      loggedAt: Date.now(),
-    });
+    const price = Number(bidSlider.value);
 
-    showToast(`${selectedPlayer.name} → ${team.name} for $${bidSlider.value}`);
+    if (!CURRENT_LEAGUE_CODE) {
+      // Demo mode: no real league to write to (picks always belong to a
+      // league in the database) — simulate locally so the UI still feels
+      // functional for trying things out.
+      const roster = getTeamRoster(selectedTeamId);
+      const slotIndex = findOpenSlotIndex(roster, selectedPlayer.position);
+      if (slotIndex !== -1) {
+        const pick = { pickNumber: MOCK_DRAFT.picks.length + 1, teamId: selectedTeamId, slotIndex, name: selectedPlayer.name, position: selectedPlayer.position, price };
+        roster.slots[slotIndex] = pick;
+        MOCK_DRAFT.picks.push(pick);
+      }
+      showToast(`${selectedPlayer.name} → ${team.name} for $${price} (demo — not saved)`);
+    } else {
+      const pinHash = LeagueSession.getPinHash(CURRENT_LEAGUE_CODE);
+      const { error } = await DraftStore.addPick({ name: selectedPlayer.name, position: selectedPlayer.position, teamId: selectedTeamId, price }, pinHash);
+      if (error) {
+        if (error === "Incorrect commissioner PIN.") {
+          LeagueSession.clearPinHash(CURRENT_LEAGUE_CODE);
+          showToast("Wrong PIN — try again");
+          await ensurePinUnlocked();
+        } else {
+          showToast(`Couldn't save pick: ${error}`);
+        }
+        return;
+      }
+      showToast(`${selectedPlayer.name} → ${team.name} for $${price}`);
+    }
 
     clearPlayer();
     selectedTeamId = null;
@@ -254,6 +338,7 @@
   });
 
   await configReady;
+  await ensurePinUnlocked();
   await renderTeamGrid();
   updateBidCap();
   updateAmount();

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
   <title>Draft Setup</title>
   <link rel="stylesheet" href="shared/theme.css" />
+  <link rel="stylesheet" href="shared/league-gate.css" />
   <link rel="stylesheet" href="setup.css" />
 </head>
 <body>
@@ -18,6 +19,20 @@
       </header>
 
       <main class="setup-main">
+
+        <section class="setup-section">
+          <div class="section-label" id="leagueCodeLabel">Your League Code</div>
+          <div class="league-code-display" id="leagueCodeDisplay">------</div>
+          <div class="stepper-hint" id="leagueCodeHint">Share this so others can view your league on the Draft Board and Team Picks.</div>
+          <button class="league-gate-secondary" id="haveCodeBtn">I Already Have a League Code</button>
+        </section>
+
+        <section class="setup-section" id="pinSection">
+          <div class="section-label">Set Commissioner PIN</div>
+          <input type="password" inputmode="numeric" class="pin-input" id="pinInput" placeholder="PIN (4+ characters)" autocomplete="off" />
+          <input type="password" inputmode="numeric" class="pin-input" id="pinConfirmInput" placeholder="Confirm PIN" autocomplete="off" />
+          <div class="stepper-hint">Only you need this to log picks or edit settings — it can't be recovered if lost, so write it down.</div>
+        </section>
 
         <section class="setup-section">
           <div class="section-label">Number of Teams</div>
@@ -48,13 +63,14 @@
           <div class="team-names-list" id="teamNamesList"></div>
         </section>
 
-        <div class="warning-box">
-          ⚠️ Saving starts a brand-new draft and clears any picks already made.
+        <div class="warning-box" id="warningBox">
+          ⚠️ Write down your league code and PIN — the PIN can't be recovered if lost.
         </div>
 
         <div class="status-msg" id="statusMsg" hidden></div>
 
-        <button class="save-btn" id="saveBtn">SAVE &amp; START NEW DRAFT</button>
+        <button class="save-btn" id="saveBtn">CREATE LEAGUE</button>
+        <button class="league-gate-secondary" id="switchToCreateBtn" hidden>Start a Different League Instead</button>
 
       </main>
     </div>

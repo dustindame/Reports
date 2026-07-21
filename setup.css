@@ -112,6 +112,39 @@ body {
   margin-top: 6px;
 }
 
+/* ---------------- League code + PIN ---------------- */
+
+.league-code-display {
+  text-align: center;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--gold-bright);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+#haveCodeBtn { margin-top: 10px; }
+
+.pin-input {
+  width: 100%;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  outline: none;
+  margin-bottom: 8px;
+  font-family: inherit;
+}
+.pin-input:focus { border-color: var(--gold-dim); }
+
 /* ---------------- Budget ---------------- */
 
 .budget-input-wrap {
@@ -133,6 +166,13 @@ body {
   font-size: 20px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.budget-input::-webkit-outer-spin-button,
+.budget-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 /* ---------------- Roster slot rows ---------------- */

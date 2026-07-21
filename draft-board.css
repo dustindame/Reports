@@ -1,6 +1,6 @@
 :root {
   --board-width: 2200px;
-  --team-col: 300px;
+  --team-col: 330px;
   --slot-col: 146px;
 }
 
@@ -102,6 +102,7 @@ body { overflow: hidden; height: 100vh; }
 
 .qr-block { display: flex; align-items: center; gap: 10px; margin-left: auto; }
 .qr-code { line-height: 0; border-radius: 6px; overflow: hidden; box-shadow: 0 0 0 2px var(--gold-dim); }
+.qr-code svg { display: block; width: 96px; height: 96px; }
 
 .setup-block { display: flex; align-items: center; }
 .setup-link {
@@ -158,9 +159,9 @@ body { overflow: hidden; height: 100vh; }
   background: var(--panel);
 }
 .team-name-row { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: var(--text); }
-.team-budget-row { font-size: 12px; color: var(--text-dim); padding-left: 18px; }
-.team-budget-row .b-max { color: var(--gold-bright); font-weight: 700; }
-.team-budget-row .b-rem { color: var(--text-dim); }
+.team-budget-row { font-size: 16px; color: var(--text-dim); padding-left: 18px; }
+.team-budget-row .b-max { color: var(--gold-bright); font-weight: 800; font-size: 17px; }
+.team-budget-row .b-rem { color: var(--text); font-weight: 700; font-size: 17px; }
 
 .slot-cell {
   margin: 5px;

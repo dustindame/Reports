@@ -1,0 +1,83 @@
+/* ===========================================================
+   Shared "enter league code" / PIN prompt overlay
+   Used by draft-board.html, player-entry.html, team-picks.html
+   =========================================================== */
+
+.league-gate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 3, 4, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.league-gate-card {
+  background: var(--panel);
+  border: 1px solid var(--gold-dim);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-panel);
+}
+
+.league-gate-icon { font-size: 36px; margin-bottom: 8px; line-height: 1; }
+.league-gate-title { margin: 0 0 8px; font-size: 20px; font-weight: 800; color: var(--text); }
+.league-gate-hint { margin: 0 0 18px; font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+.league-gate-input {
+  width: 100%;
+  text-align: center;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  font-size: 20px;
+  font-weight: 800;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  color: var(--text);
+  outline: none;
+  margin-bottom: 10px;
+  font-family: inherit;
+}
+.league-gate-input:focus { border-color: var(--gold-dim); }
+
+.league-gate-error {
+  font-size: 12.5px;
+  color: #f28b82;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.league-gate-continue {
+  width: 100%;
+  padding: 14px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  color: #201703;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.league-gate-continue:disabled { background: var(--panel-alt); color: var(--text-faint); cursor: not-allowed; }
+.league-gate-continue:not(:disabled):active { transform: translateY(1px); }
+
+.league-gate-secondary {
+  width: 100%;
+  padding: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.league-gate-secondary:hover { border-color: var(--gold-dim); color: var(--gold); }
