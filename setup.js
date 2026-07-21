@@ -33,10 +33,6 @@
     slotCounts = counts;
   }
 
-  function escapeHtml(str) {
-    return str.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  }
-
   function totalSlots() {
     return SLOT_TYPES.reduce((sum, t) => sum + slotCounts[t], 0);
   }

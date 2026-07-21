@@ -10,7 +10,14 @@
   const clockValue = document.getElementById("clockValue");
   const tickerTrack = document.getElementById("tickerTrack");
 
-  qrCode.innerHTML = Icons.qrCode(96, 42);
+  // Real scannable QR (not the earlier decorative placeholder) now that the
+  // app has a stable hosted URL — points at Team Picks so anyone in the
+  // room can scan it and pull up any team's roster/budget on their phone.
+  const teamPicksUrl = new URL("team-picks.html", window.location.href).href;
+  const qr = qrcode(0, "M");
+  qr.addData(teamPicksUrl);
+  qr.make();
+  qrCode.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2 });
   document.getElementById("setupGear").innerHTML = Icons.gear(18);
   clockIcon.innerHTML = Icons.clock(18, "#d4af37");
 
@@ -46,11 +53,22 @@
       .join("");
   }
 
+  let tickerHeadlines = FALLBACK_NEWS_TICKER;
+
   function renderTicker() {
-    const items = NEWS_TICKER.concat(NEWS_TICKER)
+    const items = tickerHeadlines
+      .concat(tickerHeadlines)
       .map((t) => `<span class="ticker-item">${t}</span>`)
       .join("");
     tickerTrack.innerHTML = items;
+  }
+
+  async function refreshTicker() {
+    const live = await fetchNewsHeadlines();
+    if (live.length) {
+      tickerHeadlines = live;
+      renderTicker();
+    }
   }
 
   function renderGrid() {
@@ -99,6 +117,11 @@
   renderRecent();
   renderTicker();
   renderGrid();
+
+  // Fetch real NFL headlines in the background (don't block first paint —
+  // the fallback list above renders immediately) and keep them fresh.
+  refreshTicker();
+  setInterval(refreshTicker, 10 * 60 * 1000);
 
   // A pick confirmed on the Player Entry screen streams in here via
   // Supabase Realtime — fold it in and refresh the affected panels.

@@ -326,13 +326,42 @@ async function applyLivePicks() {
   return changed;
 }
 
-const NEWS_TICKER = [
+/* Used only if the live RSS fetch below fails (offline, feed down, etc.) —
+   never shown otherwise. */
+const FALLBACK_NEWS_TICKER = [
   "🏈 Auction rooms across the league are heating up as final rosters take shape",
-  "📈 Line movement: Chiefs -2.5 vs. Bills, total 47.5",
   "📰 Star WR cleared to practice in full ahead of Week 1",
   "💰 Reminder: nominate your sleepers before the bench slots dry up",
   "📊 Early ADP risers: rookie RBs climbing fast in redraft leagues",
-  "🏈 Odds update: MVP favorite shortens to +450 after strong camp reports",
   "📰 Injury report: starting TE listed as questionable, monitor before kickoff",
-  "📈 Over/under for total league points this week ticks up to 214.5",
 ];
+
+/* ---------- live NFL news for the Draft Board ticker ----------
+   Both feeds send Access-Control-Allow-Origin: * so they're fetchable
+   directly from the browser — no proxy/backend needed. */
+const NEWS_FEEDS = ["https://www.espn.com/espn/rss/nfl/news", "https://www.cbssports.com/rss/headlines/nfl/"];
+
+function escapeHtml(str) {
+  return str.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+async function fetchNewsHeadlines() {
+  const headlines = [];
+  for (const url of NEWS_FEEDS) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const text = await res.text();
+      const doc = new DOMParser().parseFromString(text, "text/xml");
+      Array.from(doc.querySelectorAll("item"))
+        .slice(0, 8)
+        .forEach((item) => {
+          const title = item.querySelector("title")?.textContent?.trim();
+          if (title) headlines.push(`🏈 ${escapeHtml(title)}`);
+        });
+    } catch (e) {
+      console.warn(`Failed to fetch news from ${url}:`, e);
+    }
+  }
+  return headlines;
+}
