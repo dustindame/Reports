@@ -165,29 +165,52 @@ function teamById(id) {
   return TEAMS.find((t) => t.id === id);
 }
 
-/* ---------- localStorage stand-in for a real shared backend ----------
-   A production build would replace this with a small server or Firebase
-   so a pick submitted on the phone appears on the TV in real time across
-   devices. Here, writing/reading the same key lets the two screens sync
-   automatically when opened in tabs on the same browser. */
+/* ---------- Supabase-backed shared draft store ----------
+   Picks confirmed on Player Entry are written to the `picks` table
+   (see supabase/migrations) and streamed to every open screen via
+   Supabase Realtime, so a pick entered on a phone shows up live on
+   the TV and on other phones — across devices, not just browser tabs. */
+const supabaseClient =
+  typeof supabase !== "undefined" && SUPABASE_URL && !SUPABASE_URL.startsWith("REPLACE_")
+    ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
 const DraftStore = {
-  KEY: "auctionDraft.livePicks",
-  addPick(pick) {
-    const live = this.getPicks();
-    live.push(pick);
-    localStorage.setItem(this.KEY, JSON.stringify(live));
+  async addPick(pick) {
+    if (!supabaseClient) {
+      console.warn("Supabase isn't configured yet — see shared/supabase-config.js. Pick was not saved.");
+      return;
+    }
+    const { error } = await supabaseClient.from("picks").insert({
+      team_id: pick.teamId,
+      player_name: pick.name,
+      position: pick.position,
+      price: pick.price,
+    });
+    if (error) console.error("Failed to save pick to Supabase:", error);
   },
-  getPicks() {
-    try {
-      return JSON.parse(localStorage.getItem(this.KEY) || "[]");
-    } catch {
+  async getPicks() {
+    if (!supabaseClient) return [];
+    const { data, error } = await supabaseClient.from("picks").select("*").order("created_at", { ascending: true });
+    if (error) {
+      console.error("Failed to load picks from Supabase:", error);
       return [];
     }
+    return data.map((row) => ({
+      id: row.id,
+      teamId: row.team_id,
+      name: row.player_name,
+      position: row.position,
+      price: row.price,
+      loggedAt: new Date(row.created_at).getTime(),
+    }));
   },
   onChange(cb) {
-    window.addEventListener("storage", (e) => {
-      if (e.key === this.KEY) cb();
-    });
+    if (!supabaseClient) return;
+    supabaseClient
+      .channel("picks-inserts")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "picks" }, () => cb())
+      .subscribe();
   },
 };
 
@@ -210,12 +233,12 @@ function findOpenSlotIndex(roster, position) {
   const open = candidates.find((c) => !roster.slots[c.i]);
   return open ? open.i : -1;
 }
-function applyLivePicks() {
+async function applyLivePicks() {
   let changed = false;
-  DraftStore.getPicks().forEach((lp) => {
-    const key = `${lp.loggedAt}:${lp.teamId}:${lp.name}`;
-    if (_appliedLiveKeys.has(key)) return;
-    _appliedLiveKeys.add(key);
+  const picks = await DraftStore.getPicks();
+  picks.forEach((lp) => {
+    if (_appliedLiveKeys.has(lp.id)) return;
+    _appliedLiveKeys.add(lp.id);
     const roster = getTeamRoster(lp.teamId);
     if (!roster) return;
     const slotIndex = findOpenSlotIndex(roster, lp.position);

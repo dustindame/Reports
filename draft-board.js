@@ -1,4 +1,4 @@
-(function () {
+(async function () {
   const grid = document.getElementById("boardGrid");
   const draftedValue = document.getElementById("draftedValue");
   const remainingValue = document.getElementById("remainingValue");
@@ -82,16 +82,16 @@
     grid.innerHTML = cells.join("");
   }
 
-  applyLivePicks();
+  await applyLivePicks();
   renderTracker();
   renderRecent();
   renderTicker();
   renderGrid();
 
-  // If a pick comes in from the Player Entry screen (same-browser stand-in
-  // for a real shared backend), fold it in and refresh the affected panels.
-  DraftStore.onChange(() => {
-    applyLivePicks();
+  // A pick confirmed on the Player Entry screen streams in here via
+  // Supabase Realtime — fold it in and refresh the affected panels.
+  DraftStore.onChange(async () => {
+    await applyLivePicks();
     renderTracker();
     renderRecent();
     renderGrid();
