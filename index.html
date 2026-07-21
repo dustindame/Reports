@@ -62,18 +62,23 @@
 <body class="turf-bg">
   <div class="landing">
     <h1>Fantasy Auction <span class="gold-text">Draft</span></h1>
-    <p class="lede">A two-screen prototype for running a live fantasy football auction draft: a phone screen for logging picks and a TV-facing board for the whole room to follow along.</p>
+    <p class="lede">A multi-screen system for running a live fantasy football auction draft: configure your league ahead of time, log picks from a phone, and follow along on a TV-facing board — with real-time sync across devices.</p>
 
     <div class="cards">
+      <a class="card" href="setup.html">
+        <span class="tag">Setup</span>
+        <h2>Draft Setup</h2>
+        <p>Configure teams, budget, and roster/lineup ahead of time. Generates a shareable league code and commissioner PIN.</p>
+      </a>
       <a class="card" href="player-entry.html">
         <span class="tag">Phone</span>
         <h2>Player Entry</h2>
-        <p>Search a player, tap the winning team, slide to the bid amount, confirm the pick.</p>
+        <p>Search a player, tap the winning team, slide to the bid amount, confirm the pick. Needs the commissioner PIN.</p>
       </a>
       <a class="card" href="draft-board.html">
         <span class="tag">TV</span>
         <h2>Draft Board</h2>
-        <p>All 12 rosters, budgets, recent picks, and a live news/odds ticker in one wide scrolling display.</p>
+        <p>Every roster, budgets, recent picks, a real scannable QR code, and a live NFL news ticker in one wide scrolling display.</p>
       </a>
       <a class="card" href="team-picks.html">
         <span class="tag">Phone</span>
@@ -82,7 +87,7 @@
       </a>
     </div>
 
-    <p class="note">Live sync: picks entered on Player Entry are saved to a Supabase database and stream in real time to the Draft Board and Team Picks pages — including across separate devices, like a phone and a TV. See README.md for details.</p>
+    <p class="note">Multiple leagues can run side by side, each identified by a short shareable code — viewing a league only needs the code, but logging picks or editing setup needs the commissioner's PIN, checked server-side. If no league is selected, the app falls back to a local demo. See README.md for details.</p>
   </div>
 </body>
 </html>

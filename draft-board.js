@@ -10,16 +10,21 @@
   const clockValue = document.getElementById("clockValue");
   const tickerTrack = document.getElementById("tickerTrack");
 
-  // Real scannable QR (not the earlier decorative placeholder) now that the
-  // app has a stable hosted URL — points at Team Picks so anyone in the
-  // room can scan it and pull up any team's roster/budget on their phone.
-  const teamPicksUrl = new URL("team-picks.html", window.location.href).href;
-  const qr = qrcode(0, "M");
-  qr.addData(teamPicksUrl);
-  qr.make();
-  qrCode.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2 });
   document.getElementById("setupGear").innerHTML = Icons.gear(18);
   clockIcon.innerHTML = Icons.clock(18, "#d4af37");
+
+  // Real scannable QR (not the earlier decorative placeholder) now that the
+  // app has a stable hosted URL — points at Team Picks, with the current
+  // league code baked in (once configReady has resolved) so scanning it
+  // lands straight in the right league with zero typing.
+  function renderQr() {
+    const suffix = CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : "";
+    const teamPicksUrl = new URL(`team-picks.html${suffix}`, window.location.href).href;
+    const qr = qrcode(0, "M");
+    qr.addData(teamPicksUrl);
+    qr.make();
+    qrCode.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2 });
+  }
 
   function renderClock() {
     const now = new Date();
@@ -111,6 +116,7 @@
   }
 
   await configReady;
+  renderQr();
   fitGridToRosterSize();
   await applyLivePicks();
   renderTracker();
