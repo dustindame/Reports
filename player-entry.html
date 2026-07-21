@@ -52,19 +52,42 @@
         </section>
 
         <section class="bid-section">
-          <div class="amount-display">AMOUNT: <span class="gold-text" id="amountValue">$1</span></div>
-          <div class="field-frame">
-            <input type="range" id="bidSlider" min="1" max="200" value="1" step="1" />
+          <div class="section-label">Amount Selected for Pick</div>
+          <div class="bid-amount-track" id="bidAmountTrack">
+            <div class="amount-bubble" id="amountBubble">$1</div>
+            <div class="field-frame">
+              <input type="range" id="bidSlider" min="1" max="200" value="1" step="1" />
+            </div>
           </div>
-          <div class="range-labels"><span>$1</span><span id="maxLabel">Max bid $200</span></div>
-          <div class="budget-hint" id="budgetHint" hidden></div>
+          <div class="budget-stat-row">
+            <div class="bsr-item">
+              <span class="bsr-label">Min</span>
+              <span class="bsr-value">$1</span>
+            </div>
+            <div class="bsr-item center">
+              <span class="bsr-label" id="bsrCenterLabel">Select a team</span>
+              <span class="bsr-value bsr-highlight" id="bsrCenterValue">—</span>
+            </div>
+            <div class="bsr-item right">
+              <span class="bsr-label">Max</span>
+              <span class="bsr-value" id="bsrMaxValue">$200</span>
+            </div>
+          </div>
         </section>
 
-        <button class="confirm-btn" id="confirmBtn" disabled>
-          <span class="confirm-football" id="confirmFootball"></span>
-          CONFIRM PICK
-        </button>
-        <div class="confirm-laces"></div>
+        <section class="confirm-section">
+          <div class="section-label">Confirm Pick</div>
+          <div class="slide-confirm" id="slideConfirm">
+            <div class="slide-progress" id="slideProgress"></div>
+            <div class="slide-confirm-label">
+              <div class="scl-main" id="sclMain">SLIDE TO CONFIRM</div>
+              <div class="scl-sub">Record Completed Pick</div>
+            </div>
+            <div class="slide-handle" id="slideHandle" tabindex="0" role="button" aria-label="Slide to confirm pick">
+              <span id="slideChevron"></span>
+            </div>
+          </div>
+        </section>
 
         <div class="toast" id="toast">Pick logged!</div>
 

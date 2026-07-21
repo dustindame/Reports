@@ -7,11 +7,16 @@
   const clearBtn = document.getElementById("clearBtn");
   const teamGrid = document.getElementById("teamGrid");
   const bidSlider = document.getElementById("bidSlider");
-  const amountValue = document.getElementById("amountValue");
-  const confirmBtn = document.getElementById("confirmBtn");
+  const bidAmountTrack = document.getElementById("bidAmountTrack");
+  const amountBubble = document.getElementById("amountBubble");
   const toast = document.getElementById("toast");
-  const maxLabel = document.getElementById("maxLabel");
-  const budgetHint = document.getElementById("budgetHint");
+  const bsrCenterLabel = document.getElementById("bsrCenterLabel");
+  const bsrCenterValue = document.getElementById("bsrCenterValue");
+  const bsrMaxValue = document.getElementById("bsrMaxValue");
+  const slideConfirm = document.getElementById("slideConfirm");
+  const slideHandle = document.getElementById("slideHandle");
+  const slideProgress = document.getElementById("slideProgress");
+  const sclMain = document.getElementById("sclMain");
 
   document.getElementById("footballIcon").innerHTML = Icons.football(26, "var(--qb)");
   document.getElementById("footballIcon2").innerHTML = Icons.football(26, "var(--qb)");
@@ -19,18 +24,23 @@
   document.getElementById("pylonRight").innerHTML = Icons.pylon(20);
   document.getElementById("searchIcon").innerHTML = Icons.search(18);
   document.getElementById("flagIcon").innerHTML = Icons.flag(20);
-  document.getElementById("confirmFootball").innerHTML = Icons.football(18, "#201703");
+  document.getElementById("slideChevron").innerHTML = Icons.chevronRight(22, "#eaf1ff");
 
   let selectedPlayer = null;
   let selectedTeamId = null;
 
   function renderTeamGrid() {
-    teamGrid.innerHTML = TEAMS.map(
-      (team) => `<div class="team-box" data-team-id="${team.id}" style="background:${team.color}">
+    applyLivePicks();
+    teamGrid.innerHTML = TEAMS.map((team) => {
+      const budget = computeTeamBudget(team.id);
+      return `<div class="team-box" data-team-id="${team.id}" style="background:${team.color}">
         <span class="team-box-check" id="check-${team.id}"></span>
         <div class="team-box-name">${team.name}</div>
-      </div>`
-    ).join("");
+        <div class="team-box-divider"></div>
+        <div class="team-box-stat"><span class="tbs-icon">🔨</span>Max Bid<span class="tbs-val">$${budget.maxBid}</span></div>
+        <div class="team-box-stat"><span class="tbs-icon">💰</span>Remaining<span class="tbs-val">$${budget.remaining}</span></div>
+      </div>`;
+    }).join("");
 
     TEAMS.forEach((team) => {
       document.getElementById(`check-${team.id}`).innerHTML = Icons.check(18);
@@ -49,18 +59,19 @@
   function updateBidCap() {
     if (!selectedTeamId) {
       bidSlider.max = 200;
-      maxLabel.textContent = "Max bid $200";
-      budgetHint.hidden = true;
+      bsrCenterLabel.textContent = "Select a team";
+      bsrCenterValue.textContent = "—";
+      bsrMaxValue.textContent = "$200";
+      positionBubble();
       return;
     }
-    applyLivePicks();
     const team = teamById(selectedTeamId);
     const budget = computeTeamBudget(selectedTeamId);
     bidSlider.max = Math.max(1, budget.maxBid);
     if (Number(bidSlider.value) > budget.maxBid) bidSlider.value = Math.max(1, budget.maxBid);
-    maxLabel.textContent = `Max bid $${Math.max(1, budget.maxBid)}`;
-    budgetHint.hidden = false;
-    budgetHint.textContent = `${team.name}: $${budget.remaining} remaining, ${budget.open} open slot${budget.open === 1 ? "" : "s"}`;
+    bsrCenterLabel.textContent = `Budget Remaining (${team.name})`;
+    bsrCenterValue.textContent = `$${budget.remaining}`;
+    bsrMaxValue.textContent = `$${Math.max(1, budget.maxBid)}`;
     updateAmount();
   }
 
@@ -106,12 +117,28 @@
     searchInput.focus();
   }
 
+  function positionBubble() {
+    const min = Number(bidSlider.min);
+    const max = Number(bidSlider.max);
+    const percent = max > min ? (Number(bidSlider.value) - min) / (max - min) : 0;
+    const trackRect = bidAmountTrack.getBoundingClientRect();
+    const sliderRect = bidSlider.getBoundingClientRect();
+    const thumbSize = 34;
+    const left = sliderRect.left - trackRect.left + thumbSize / 2 + percent * (sliderRect.width - thumbSize);
+    amountBubble.style.left = `${left}px`;
+  }
+
   function updateAmount() {
-    amountValue.textContent = `$${bidSlider.value}`;
+    amountBubble.textContent = `$${bidSlider.value}`;
+    positionBubble();
+  }
+
+  function isReady() {
+    return Boolean(selectedPlayer && selectedTeamId);
   }
 
   function updateConfirmState() {
-    confirmBtn.disabled = !(selectedPlayer && selectedTeamId);
+    slideConfirm.classList.toggle("disabled", !isReady());
   }
 
   function showToast(message) {
@@ -121,7 +148,7 @@
   }
 
   function confirmPick() {
-    if (!selectedPlayer || !selectedTeamId) return;
+    if (!isReady()) return;
     const team = teamById(selectedTeamId);
     DraftStore.addPick({
       name: selectedPlayer.name,
@@ -136,21 +163,91 @@
 
     clearPlayer();
     selectedTeamId = null;
-    teamGrid.querySelectorAll(".team-box").forEach((b) => b.classList.remove("selected"));
     bidSlider.value = 1;
+    renderTeamGrid();
     updateBidCap();
     updateAmount();
     updateConfirmState();
   }
 
+  /* ---------------- Slide to confirm ---------------- */
+
+  let dragging = false;
+  let handleX = 0;
+
+  function trackWidth() {
+    return slideConfirm.clientWidth - slideHandle.offsetWidth - 6;
+  }
+
+  function setHandle(x) {
+    handleX = Math.max(0, Math.min(x, trackWidth()));
+    slideHandle.style.left = `${3 + handleX}px`;
+    slideProgress.style.width = `${3 + handleX + slideHandle.offsetWidth / 2}px`;
+    sclMain.style.opacity = String(1 - handleX / (trackWidth() || 1));
+  }
+
+  function snapTo(x, done) {
+    slideHandle.style.transition = "left 0.2s ease";
+    slideProgress.style.transition = "width 0.2s ease";
+    setHandle(x);
+    setTimeout(() => {
+      slideHandle.style.transition = "";
+      slideProgress.style.transition = "";
+      if (done) done();
+    }, 200);
+  }
+
+  function onPointerDown(e) {
+    if (!isReady()) return;
+    dragging = true;
+    slideHandle.setPointerCapture(e.pointerId);
+  }
+
+  function onPointerMove(e) {
+    if (!dragging) return;
+    const rect = slideConfirm.getBoundingClientRect();
+    setHandle(e.clientX - rect.left - slideHandle.offsetWidth / 2 - 3);
+  }
+
+  function onPointerUp() {
+    if (!dragging) return;
+    dragging = false;
+    const max = trackWidth();
+    if (max > 0 && handleX >= max * 0.82) {
+      snapTo(max, () => {
+        confirmPick();
+        snapTo(0);
+      });
+    } else {
+      snapTo(0);
+    }
+  }
+
+  slideHandle.addEventListener("pointerdown", onPointerDown);
+  window.addEventListener("pointermove", onPointerMove);
+  window.addEventListener("pointerup", onPointerUp);
+  slideHandle.addEventListener("keydown", (e) => {
+    if ((e.key === "Enter" || e.key === " ") && isReady()) {
+      e.preventDefault();
+      snapTo(trackWidth(), () => {
+        confirmPick();
+        snapTo(0);
+      });
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    positionBubble();
+    setHandle(0);
+  });
+
   searchInput.addEventListener("input", (e) => renderResults(e.target.value));
   clearBtn.addEventListener("click", clearPlayer);
   bidSlider.addEventListener("input", updateAmount);
-  confirmBtn.addEventListener("click", confirmPick);
 
-  applyLivePicks();
   renderTeamGrid();
   updateBidCap();
   updateAmount();
   updateConfirmState();
+  setHandle(0);
 })();

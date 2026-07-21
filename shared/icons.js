@@ -59,6 +59,12 @@ const Icons = {
     </svg>`;
   },
 
+  chevronRight(size = 18, color = "#d4af37") {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9 5 L16 12 L9 19" stroke="${color}" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  },
+
   /* Decorative QR-style code (not a real scannable payload — static
      mockup stand-in for the link to the Team Picks page). Deterministic
      module pattern with QR-style finder squares in the corners. */
