@@ -22,6 +22,7 @@
   document.getElementById("footballIcon2").innerHTML = Icons.football(26, "var(--qb)");
   document.getElementById("pylonLeft").innerHTML = Icons.pylon(20);
   document.getElementById("pylonRight").innerHTML = Icons.pylon(20);
+  document.getElementById("setupGear").innerHTML = Icons.gear(18);
   document.getElementById("searchIcon").innerHTML = Icons.search(18);
   document.getElementById("flagIcon").innerHTML = Icons.flag(20);
   document.getElementById("slideChevron").innerHTML = Icons.chevronRight(22, "#eaf1ff");
@@ -58,10 +59,10 @@
 
   function updateBidCap() {
     if (!selectedTeamId) {
-      bidSlider.max = 200;
+      bidSlider.max = BUDGET;
       bsrCenterLabel.textContent = "Select a team";
       bsrCenterValue.textContent = "—";
-      bsrMaxValue.textContent = "$200";
+      bsrMaxValue.textContent = `$${BUDGET}`;
       positionBubble();
       return;
     }
@@ -123,7 +124,7 @@
     const percent = max > min ? (Number(bidSlider.value) - min) / (max - min) : 0;
     const trackRect = bidAmountTrack.getBoundingClientRect();
     const sliderRect = bidSlider.getBoundingClientRect();
-    const thumbSize = 28;
+    const thumbSize = 34;
     const left = sliderRect.left - trackRect.left + thumbSize / 2 + percent * (sliderRect.width - thumbSize);
     amountBubble.style.left = `${left}px`;
   }
@@ -252,6 +253,7 @@
     updateBidCap();
   });
 
+  await configReady;
   await renderTeamGrid();
   updateBidCap();
   updateAmount();

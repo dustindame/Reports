@@ -70,6 +70,7 @@
 
   backBtn.addEventListener("click", showPicker);
 
+  await configReady;
   await applyLivePicks();
   DraftStore.onChange(async () => {
     await applyLivePicks();

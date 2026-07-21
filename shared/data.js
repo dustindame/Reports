@@ -1,37 +1,54 @@
 /* ===========================================================
    Shared data + mock state — Fantasy Auction Draft system
-   Used by draft-board.html, player-entry.html, team-picks.html
+   Used by draft-board.html, player-entry.html, team-picks.html,
+   setup.html
 
-   NOTE: This is a static prototype. Teams/players/picks below are
-   generated client-side to make the mockups feel populated. A real
-   build needs a shared data layer (small backend or Firebase) so a
-   pick entered on the Player Entry screen actually appears live on
-   the Draft Board — see DraftStore below for the seam where that
-   would plug in (currently backed by localStorage as a stand-in so
-   the two screens sync when opened in the same browser).
+   TEAMS / ROSTER_SLOTS / BUDGET are populated asynchronously by
+   initDraftConfig() from the `draft_config` table in Supabase (see
+   setup.html / supabase/migrations). Every page script must
+   `await configReady` before touching TEAMS, ROSTER_SLOTS, BUDGET,
+   TOTAL_SLOTS, or any function below that depends on them.
+
+   If nobody has configured a draft yet (draft_config is empty), the
+   app falls back to a built-in 12-team demo: fixed named teams, a
+   13-slot roster, a $200 budget, and a deterministic seeded mock
+   draft so the app looks populated on first visit.
    =========================================================== */
 
-const TEAMS = [
-  { id: "t1", name: "Blitz Brigade", color: "var(--team-1)" },
-  { id: "t2", name: "Endzone Elites", color: "var(--team-2)" },
-  { id: "t3", name: "Gridiron Gladiators", color: "var(--team-3)" },
-  { id: "t4", name: "Hail Mary Heroes", color: "var(--team-4)" },
-  { id: "t5", name: "Pigskin Pirates", color: "var(--team-5)" },
-  { id: "t6", name: "Red Zone Raiders", color: "var(--team-6)" },
-  { id: "t7", name: "Sack Attack Squad", color: "var(--team-7)" },
-  { id: "t8", name: "Touchdown Titans", color: "var(--team-8)" },
-  { id: "t9", name: "Turf Tyrants", color: "var(--team-9)" },
-  { id: "t10", name: "Fumble Force", color: "var(--team-10)" },
-  { id: "t11", name: "End Around Eagles", color: "var(--team-11)" },
-  { id: "t12", name: "Onside Outlaws", color: "var(--team-12)" },
-];
+let TEAMS;
+let ROSTER_SLOTS;
+let BUDGET;
+let TOTAL_SLOTS;
+let MOCK_DRAFT;
 
-const ROSTER_SLOTS = ["QB", "RB", "RB", "WR", "WR", "TE", "FLEX", "FLEX", "BENCH", "BENCH", "BENCH", "BENCH", "BENCH"];
-const TOTAL_SLOTS = TEAMS.length * ROSTER_SLOTS.length; // 156
-const BUDGET = 200;
 const FLEX_ELIGIBLE = ["RB", "WR", "TE"];
-
 const POSITION_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te" };
+
+const DEFAULT_TEAM_NAMES = [
+  "Blitz Brigade",
+  "Endzone Elites",
+  "Gridiron Gladiators",
+  "Hail Mary Heroes",
+  "Pigskin Pirates",
+  "Red Zone Raiders",
+  "Sack Attack Squad",
+  "Touchdown Titans",
+  "Turf Tyrants",
+  "Fumble Force",
+  "End Around Eagles",
+  "Onside Outlaws",
+  "Deep Ball Dynasty",
+  "Two-Point Takers",
+];
+const MAX_TEAMS = 14;
+const MIN_TEAMS = 6;
+const DEFAULT_NUM_TEAMS = 12;
+const DEFAULT_BUDGET = 200;
+const DEFAULT_ROSTER_SLOTS = ["QB", "RB", "RB", "WR", "WR", "TE", "FLEX", "FLEX", "BENCH", "BENCH", "BENCH", "BENCH", "BENCH"];
+
+function teamColorVar(index) {
+  return `var(--team-${(index % MAX_TEAMS) + 1})`;
+}
 
 const PLAYER_POOL = {
   QB: ["Patrick Mahomes", "Josh Allen", "Jalen Hurts", "Lamar Jackson", "Joe Burrow", "Justin Herbert", "C.J. Stroud", "Dak Prescott", "Trevor Lawrence", "Kyler Murray", "Brock Purdy", "Jordan Love", "Anthony Richardson", "Matthew Stafford", "Jared Goff", "Baker Mayfield", "Tua Tagovailoa", "Geno Smith", "Kirk Cousins", "Caleb Williams"],
@@ -44,7 +61,7 @@ const ALL_PLAYERS = Object.entries(PLAYER_POOL).flatMap(([position, names]) =>
   names.map((name) => ({ name, position }))
 );
 
-/* ---------- tiny seeded RNG so the mock draft looks the same every load ---------- */
+/* ---------- tiny seeded RNG so the demo draft looks the same every load ---------- */
 function mulberry32(seed) {
   return function () {
     seed |= 0;
@@ -64,7 +81,10 @@ function shuffle(arr, rand) {
   return a;
 }
 
-/* ---------- build a plausible mid-draft snapshot ---------- */
+/* ---------- demo mode only: a plausible mid-draft snapshot ----------
+   Only ever called against the built-in 12-team / 13-slot / $200 demo
+   setup (see initDraftConfig) — never against a real configured draft,
+   which starts empty instead (see buildEmptyDraft). */
 function buildMockDraft() {
   const pools = { QB: shuffle(PLAYER_POOL.QB, rng), RB: shuffle(PLAYER_POOL.RB, rng), WR: shuffle(PLAYER_POOL.WR, rng), TE: shuffle(PLAYER_POOL.TE, rng) };
   const cursor = { QB: 0, RB: 0, WR: 0, TE: 0 };
@@ -137,7 +157,12 @@ function buildMockDraft() {
   return { roster, picks };
 }
 
-const MOCK_DRAFT = buildMockDraft();
+/* A real configured draft always starts empty — every slot open, no picks.
+   Mixing in the seeded demo picks would corrupt an actual live draft. */
+function buildEmptyDraft() {
+  const roster = TEAMS.map((t) => ({ teamId: t.id, slots: ROSTER_SLOTS.map(() => null) }));
+  return { roster, picks: [] };
+}
 
 function getTeamRoster(teamId) {
   return MOCK_DRAFT.roster.find((r) => r.teamId === teamId);
@@ -205,6 +230,33 @@ const DraftStore = {
       loggedAt: new Date(row.created_at).getTime(),
     }));
   },
+  async getConfig() {
+    if (!supabaseClient) return null;
+    const { data, error } = await supabaseClient.from("draft_config").select("*").eq("id", 1).maybeSingle();
+    if (error) {
+      console.error("Failed to load draft config from Supabase:", error);
+      return null;
+    }
+    return data;
+  },
+  async saveConfig({ teamNames, budget, rosterSlots }) {
+    if (!supabaseClient) {
+      return { error: "Supabase isn't configured yet — see shared/supabase-config.js." };
+    }
+    const { error: clearError } = await supabaseClient.from("picks").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+    if (clearError) return { error: clearError.message };
+
+    const { error } = await supabaseClient.from("draft_config").upsert({
+      id: 1,
+      num_teams: teamNames.length,
+      budget,
+      team_names: teamNames,
+      roster_slots: rosterSlots,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) return { error: error.message };
+    return { error: null };
+  },
   onChange(cb) {
     if (!supabaseClient) return;
     supabaseClient
@@ -214,9 +266,32 @@ const DraftStore = {
   },
 };
 
+/* ---------- config bootstrap ----------
+   Every page script must `await configReady` before touching TEAMS,
+   ROSTER_SLOTS, BUDGET, TOTAL_SLOTS, or calling any function above that
+   reads them. */
+async function initDraftConfig() {
+  const config = await DraftStore.getConfig();
+
+  if (config) {
+    TEAMS = config.team_names.map((name, i) => ({ id: `t${i + 1}`, name, color: teamColorVar(i) }));
+    ROSTER_SLOTS = config.roster_slots;
+    BUDGET = config.budget;
+    TOTAL_SLOTS = TEAMS.length * ROSTER_SLOTS.length;
+    MOCK_DRAFT = buildEmptyDraft();
+  } else {
+    TEAMS = DEFAULT_TEAM_NAMES.slice(0, DEFAULT_NUM_TEAMS).map((name, i) => ({ id: `t${i + 1}`, name, color: teamColorVar(i) }));
+    ROSTER_SLOTS = DEFAULT_ROSTER_SLOTS;
+    BUDGET = DEFAULT_BUDGET;
+    TOTAL_SLOTS = TEAMS.length * ROSTER_SLOTS.length;
+    MOCK_DRAFT = buildMockDraft();
+  }
+}
+const configReady = initDraftConfig();
+
 /* Folds any picks logged on Player Entry (via DraftStore) into MOCK_DRAFT
    so the Draft Board / Team Picks views reflect them. Call once on load
-   and again whenever DraftStore.onChange fires. */
+   (after configReady) and again whenever DraftStore.onChange fires. */
 const _appliedLiveKeys = new Set();
 function findOpenSlotIndex(roster, position) {
   const candidates = [];
