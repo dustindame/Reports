@@ -305,17 +305,28 @@
       return;
     }
 
+    // Neither branch below actually checked whether the team has an open
+    // roster slot for this position before submitting -- a full team
+    // (e.g. QB slot and bench both already full) would still show a
+    // success toast, but the pick had nowhere to go: in demo mode it was
+    // silently never added to the roster, and for a real league it was
+    // still inserted into the picks table with no slot to land in,
+    // effectively vanishing (spent budget, no visible pick anywhere).
+    const roster = getTeamRoster(selectedTeamId);
+    const slotIndex = findOpenSlotIndex(roster, selectedPlayer.position);
+    if (slotIndex === -1) {
+      showToast(`${team.name} has no open slot for ${selectedPlayer.position}`);
+      clearPlayer();
+      return;
+    }
+
     if (!CURRENT_LEAGUE_CODE) {
       // Demo mode: no real league to write to (picks always belong to a
       // league in the database) — simulate locally so the UI still feels
       // functional for trying things out.
-      const roster = getTeamRoster(selectedTeamId);
-      const slotIndex = findOpenSlotIndex(roster, selectedPlayer.position);
-      if (slotIndex !== -1) {
-        const pick = { id: crypto.randomUUID(), pickNumber: MOCK_DRAFT.picks.length + 1, teamId: selectedTeamId, slotIndex, name: selectedPlayer.name, position: selectedPlayer.position, price };
-        roster.slots[slotIndex] = pick;
-        MOCK_DRAFT.picks.push(pick);
-      }
+      const pick = { id: crypto.randomUUID(), pickNumber: MOCK_DRAFT.picks.length + 1, teamId: selectedTeamId, slotIndex, name: selectedPlayer.name, position: selectedPlayer.position, price };
+      roster.slots[slotIndex] = pick;
+      MOCK_DRAFT.picks.push(pick);
       showToast(`${selectedPlayer.name} → ${team.name} for $${price} (demo — not saved)`);
     } else {
       const pinHash = LeagueSession.getPinHash(CURRENT_LEAGUE_CODE);

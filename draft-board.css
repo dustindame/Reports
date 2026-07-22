@@ -28,9 +28,32 @@ body { overflow: hidden; height: 100vh; }
      which then had to be zoomed way down to fit -- making the grid look
      tiny). The ticker instead just fills whatever width this ends up
      being and clips its own overflow. */
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+}
+
+.nice-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 80px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-align: center;
+  color: var(--gold-bright);
+  text-shadow: 0 0 30px rgba(242, 193, 78, 0.9), 0 0 60px rgba(242, 193, 78, 0.6);
+  animation: nice-pulse 0.5s ease-in-out infinite alternate;
+}
+.nice-flash[hidden] { display: none; }
+@keyframes nice-pulse {
+  from { transform: scale(0.94); opacity: 0.85; }
+  to { transform: scale(1.04); opacity: 1; }
 }
 
 /* ---------------- Header ---------------- */
@@ -259,8 +282,18 @@ body { overflow: hidden; height: 100vh; }
 
 .slot-cell.filled { background: var(--panel); }
 .slot-cell.empty { border-style: dashed; }
-.slot-cell .slot-player { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.2; }
-.slot-cell .slot-price { font-size: 15px; font-weight: 800; margin-top: 3px; }
+.slot-cell .slot-player-first,
+.slot-cell .slot-player-last {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.15;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.slot-cell .slot-price { font-size: 12px; font-weight: 800; margin-top: 3px; }
 .slot-cell .slot-open { font-size: 11px; color: var(--text-faint); letter-spacing: 0.5px; text-transform: uppercase; }
 
 .slot-cell.pos-QB { border-color: var(--qb); box-shadow: 0 0 10px -2px var(--qb-glow); }
@@ -295,6 +328,11 @@ body { overflow: hidden; height: 100vh; }
 }
 .ticker-row[hidden] { display: none; }
 .message-row { border-bottom: 1px solid var(--border); }
+/* Message row keeps its space reserved at all times (visibility, not
+   display/hidden) so a message appearing or disappearing never changes
+   the board's total height and re-triggers the zoom-to-fit, which felt
+   like the whole board shifting up/down every time a message came in. */
+.message-row.empty { visibility: hidden; }
 
 /* position:absolute (not just overflow:hidden on the row) so the track's
    content -- deliberately huge, since it needs a long scroll of headlines
