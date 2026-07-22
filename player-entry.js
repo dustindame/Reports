@@ -150,13 +150,17 @@
     updateAmount();
   }
 
+  function isAlreadyDrafted(name, position) {
+    return MOCK_DRAFT.picks.some((p) => p.name === name && p.position === position);
+  }
+
   function renderResults(query) {
     if (!query) {
       searchResults.innerHTML = "";
       return;
     }
     const q = query.toLowerCase();
-    const matches = ALL_PLAYERS.filter((p) => p.name.toLowerCase().includes(q)).slice(0, 8);
+    const matches = ALL_PLAYERS.filter((p) => p.name.toLowerCase().includes(q) && !isAlreadyDrafted(p.name, p.position)).slice(0, 8);
     searchResults.innerHTML = matches
       .map(
         (p) => `<div class="search-result-item" data-name="${p.name}" data-position="${p.position}">
@@ -291,6 +295,15 @@
     if (!isReady()) return;
     const team = teamById(selectedTeamId);
     const price = Number(bidSlider.value);
+
+    // Belt-and-suspenders re-check: the search list already hides drafted
+    // players, but this closes the race where a pick came in (e.g. from
+    // another device) between opening the search and sliding to confirm.
+    if (isAlreadyDrafted(selectedPlayer.name, selectedPlayer.position)) {
+      showToast(`${selectedPlayer.name} was already drafted`);
+      clearPlayer();
+      return;
+    }
 
     if (!CURRENT_LEAGUE_CODE) {
       // Demo mode: no real league to write to (picks always belong to a

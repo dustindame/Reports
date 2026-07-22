@@ -87,25 +87,32 @@ body { overflow: hidden; height: 100vh; }
   gap: 4px;
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
-  padding: 0 22px;
-  min-width: 640px;
+  padding: 0 18px;
+  min-width: 360px;
 }
 .recent-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); }
-.recent-strip { display: flex; gap: 10px; }
+/* Stacked 3x3 instead of one long horizontal row -- shows more picks
+   (up to 9) in far less horizontal space, which is what was crowding the
+   clock/QR/setup buttons out of view on smaller screens. */
+.recent-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px 8px;
+}
 .recent-chip {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
+  gap: 5px;
+  padding: 4px 7px;
   border-radius: var(--radius-sm);
   background: var(--panel-alt);
   border: 1px solid var(--border);
-  font-size: 12px;
+  font-size: 11px;
+  overflow: hidden;
 }
-.recent-chip .rc-pos-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-.recent-chip .rc-name { color: var(--text); font-weight: 600; }
-.recent-chip .rc-team { color: var(--text-dim); }
-.recent-chip .rc-price { color: var(--gold-bright); font-weight: 700; }
+.recent-chip .rc-pos-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.recent-chip .rc-name { color: var(--text); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent-chip .rc-price { color: var(--gold-bright); font-weight: 700; flex: none; margin-left: auto; }
 
 .clock-block { display: flex; align-items: center; min-width: 190px; }
 .scoreboard-clock {
@@ -185,7 +192,7 @@ body { overflow: hidden; height: 100vh; }
   align-items: center;
   background: var(--panel);
 }
-.team-name-row { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 800; color: var(--text); line-height: 1.25; }
+.team-name-row { display: flex; align-items: center; gap: 10px; font-size: 28px; font-weight: 800; color: var(--text); line-height: 1.2; }
 
 .budget-cell {
   padding: 10px 12px;
@@ -257,12 +264,10 @@ body { overflow: hidden; height: 100vh; }
   border-right: 1px solid var(--border);
 }
 .ticker-track span.ticker-item.fan-message {
-  margin: 6px 10px;
-  padding: 4px 20px;
-  border: 2px solid #59c2f0;
-  border-right: 2px solid #59c2f0;
-  border-radius: 999px;
+  padding: 0 32px;
+  border-right: 1px solid var(--border);
   background: #0076b6;
+  box-shadow: 0 0 16px 2px rgba(0, 118, 182, 0.65);
   color: #fff;
   font-weight: 800;
 }

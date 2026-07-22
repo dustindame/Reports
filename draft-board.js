@@ -1,6 +1,7 @@
 (async function () {
   const boardScroll = document.getElementById("boardScroll");
   const boardContent = document.getElementById("boardContent");
+  const boardHeader = document.getElementById("boardHeader");
   const grid = document.getElementById("boardGrid");
   const draftedValue = document.getElementById("draftedValue");
   const remainingValue = document.getElementById("remainingValue");
@@ -48,21 +49,20 @@
   }
 
   function renderRecent() {
-    recentStrip.innerHTML = recentPicks(5)
-      .map((p) => {
-        const team = teamById(p.teamId);
-        return `<div class="recent-chip">
+    recentStrip.innerHTML = recentPicks(9)
+      .map(
+        (p) => `<div class="recent-chip">
           <span class="rc-pos-dot" style="background: var(${POSITION_COLOR_VAR[p.position]})"></span>
           <span class="rc-name">${p.name}</span>
-          <span class="rc-team">${team.name}</span>
           <span class="rc-price">$${p.price}</span>
-        </div>`;
-      })
+        </div>`
+      )
       .join("");
   }
 
   let tickerHeadlines = FALLBACK_NEWS_TICKER;
-  let boardMessages = [];
+  let boardMessages = []; // { id, text, loopsRemaining }
+  const MESSAGE_LOOPS = 5;
 
   // Fixed-duration scroll made the crawl speed up as more real headlines
   // loaded in (same 60s to cover a longer track = faster). Pin the actual
@@ -73,15 +73,38 @@
   function renderTicker() {
     // Fan messages are untrusted user input (posted from Team Picks), so
     // they must be escaped -- headlines are already escaped where they're
-    // fetched, and the fallback list is static/trusted.
-    const headlineItems = tickerHeadlines.map((t) => `<span class="ticker-item">${t}</span>`);
+    // fetched, and the fallback list is static/trusted. Messages go first
+    // so they take priority over headlines instead of getting buried.
     const messageItems = boardMessages.map((m) => `<span class="ticker-item fan-message">📣 ${escapeHtml(m.text)}</span>`);
-    const single = headlineItems.concat(messageItems);
+    const headlineItems = tickerHeadlines.map((t) => `<span class="ticker-item">${t}</span>`);
+    const single = messageItems.concat(headlineItems);
     tickerTrack.innerHTML = single.concat(single).join("");
     const distance = tickerTrack.scrollWidth / 2;
     const duration = Math.max(20, distance / TICKER_PX_PER_SEC);
     tickerTrack.style.animationDuration = `${duration}s`;
   }
+
+  // Forces the scroll back to the very start so a newly-arrived message
+  // (now at the front of the track) is visible right away, instead of
+  // waiting up to a full loop for the current scroll position to catch up.
+  function restartTicker() {
+    renderTicker();
+    tickerTrack.style.animation = "none";
+    void tickerTrack.offsetWidth; // force reflow so the restart takes effect
+    tickerTrack.style.animation = "";
+  }
+
+  // A full pass of the (single, non-doubled) track is one "showing" of
+  // every message once -- decrement each message's remaining loop count
+  // here and drop any that have been shown enough times.
+  tickerTrack.addEventListener("animationiteration", () => {
+    if (boardMessages.length === 0) return;
+    const before = boardMessages.length;
+    boardMessages = boardMessages
+      .map((m) => ({ ...m, loopsRemaining: m.loopsRemaining - 1 }))
+      .filter((m) => m.loopsRemaining > 0);
+    if (boardMessages.length !== before) renderTicker();
+  });
 
   async function refreshTicker() {
     const live = await fetchNewsHeadlines();
@@ -92,7 +115,8 @@
   }
 
   async function loadMessages() {
-    boardMessages = await DraftStore.getMessages(10);
+    const loaded = await DraftStore.getMessages(10);
+    boardMessages = loaded.map((m) => ({ ...m, loopsRemaining: MESSAGE_LOOPS }));
     renderTicker();
   }
 
@@ -150,19 +174,27 @@
     const teamColPx = Math.round(teamColMin * scale);
     const budgetColPx = Math.round(budgetColMin * scale);
     const slotColPx = Math.round(slotColMin * scale);
+    const gridWidth = teamColPx + budgetColPx * 2 + numSlots * slotColPx;
+
+    // The header (title, tracker, recent picks, clock, QR, setup) has its
+    // own independent minimum width -- make sure the board is at least
+    // that wide too, or the header would need its own horizontal scroll
+    // to see fully even when the grid itself fits fine (this was
+    // happening with a small roster on a normal-size window).
+    const boardWidth = Math.max(gridWidth, boardHeader.scrollWidth, availableWidth);
 
     grid.style.gridTemplateColumns = `${teamColPx}px ${budgetColPx}px ${budgetColPx}px repeat(${numSlots}, ${slotColPx}px)`;
-    boardContent.style.setProperty("--board-width", `${teamColPx + budgetColPx * 2 + numSlots * slotColPx}px`);
+    boardContent.style.setProperty("--board-width", `${boardWidth}px`);
   }
 
   await configReady;
   renderQr();
-  fitGridToRosterSize();
   await applyLivePicks();
   renderTracker();
   renderRecent();
   renderTicker();
   renderGrid();
+  fitGridToRosterSize();
 
   window.addEventListener("resize", fitGridToRosterSize);
 
@@ -175,8 +207,8 @@
   // stream in here too, highlighted differently in the ticker.
   await loadMessages();
   DraftStore.onMessage((message) => {
-    boardMessages = [message, ...boardMessages].slice(0, 10);
-    renderTicker();
+    boardMessages = [{ ...message, loopsRemaining: MESSAGE_LOOPS }, ...boardMessages].slice(0, 10);
+    restartTicker();
   });
 
   // A pick confirmed on the Player Entry screen streams in here via

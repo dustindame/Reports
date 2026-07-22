@@ -111,10 +111,10 @@ const LeagueSession = {
 };
 
 const PLAYER_POOL = {
-  QB: ["Patrick Mahomes", "Josh Allen", "Jalen Hurts", "Lamar Jackson", "Joe Burrow", "Justin Herbert", "C.J. Stroud", "Dak Prescott", "Trevor Lawrence", "Kyler Murray", "Brock Purdy", "Jordan Love", "Anthony Richardson", "Matthew Stafford", "Jared Goff", "Baker Mayfield", "Tua Tagovailoa", "Geno Smith", "Kirk Cousins", "Caleb Williams"],
-  RB: ["Christian McCaffrey", "Bijan Robinson", "Breece Hall", "Jonathan Taylor", "Saquon Barkley", "Derrick Henry", "Josh Jacobs", "Isiah Pacheco", "Kenneth Walker III", "Travis Etienne", "De'Von Achane", "Jahmyr Gibbs", "James Cook", "Rachaad White", "Alvin Kamara", "Joe Mixon", "Aaron Jones", "Najee Harris", "Tony Pollard", "Austin Ekeler", "Rhamondre Stevenson", "D'Andre Swift", "Javonte Williams", "James Conner", "Zack Moss", "Brian Robinson Jr.", "Miles Sanders", "Kareem Hunt", "Cam Akers", "Devin Singletary", "Alexander Mattison", "Chuba Hubbard", "Jerome Ford", "Roschon Johnson", "Zamir White", "Tyjae Spears", "Ezekiel Elliott", "Antonio Gibson", "Clyde Edwards-Helaire", "D'Onta Foreman"],
-  WR: ["Justin Jefferson", "Ja'Marr Chase", "Tyreek Hill", "CeeDee Lamb", "Amon-Ra St. Brown", "A.J. Brown", "Stefon Diggs", "Puka Nacua", "Garrett Wilson", "Chris Olave", "DK Metcalf", "Davante Adams", "Mike Evans", "DeVonta Smith", "Deebo Samuel", "Jaylen Waddle", "Drake London", "Terry McLaurin", "Amari Cooper", "Calvin Ridley", "Tank Dell", "Nico Collins", "Brandon Aiyuk", "Christian Kirk", "Michael Pittman Jr.", "Keenan Allen", "Jordan Addison", "Zay Flowers", "Rashee Rice", "Marquise Brown", "Diontae Johnson", "Courtland Sutton", "Jerry Jeudy", "Tyler Lockett", "Adam Thielen", "George Pickens", "Chris Godwin", "Curtis Samuel", "Gabe Davis", "Jakobi Meyers"],
-  TE: ["Travis Kelce", "Sam LaPorta", "Mark Andrews", "T.J. Hockenson", "Trey McBride", "Kyle Pitts", "George Kittle", "Dallas Goedert", "Evan Engram", "David Njoku", "Dalton Kincaid", "Cole Kmet", "Pat Freiermuth", "Jake Ferguson", "Tyler Higbee", "Hunter Henry"],
+  QB: ["Patrick Mahomes", "Josh Allen", "Jalen Hurts", "Lamar Jackson", "Joe Burrow", "Justin Herbert", "C.J. Stroud", "Dak Prescott", "Trevor Lawrence", "Kyler Murray", "Brock Purdy", "Jordan Love", "Anthony Richardson", "Matthew Stafford", "Jared Goff", "Baker Mayfield", "Tua Tagovailoa", "Geno Smith", "Kirk Cousins", "Caleb Williams", "Bo Nix", "Drake Maye"],
+  RB: ["Christian McCaffrey", "Bijan Robinson", "Breece Hall", "Jonathan Taylor", "Saquon Barkley", "Derrick Henry", "Josh Jacobs", "Isiah Pacheco", "Kenneth Walker III", "Travis Etienne", "De'Von Achane", "Jahmyr Gibbs", "James Cook", "Rachaad White", "Alvin Kamara", "Joe Mixon", "Aaron Jones", "Najee Harris", "Tony Pollard", "Austin Ekeler", "Rhamondre Stevenson", "D'Andre Swift", "Javonte Williams", "James Conner", "Zack Moss", "Brian Robinson Jr.", "Miles Sanders", "Kareem Hunt", "Cam Akers", "Devin Singletary", "Alexander Mattison", "Chuba Hubbard", "Jerome Ford", "Roschon Johnson", "Zamir White", "Tyjae Spears", "Ezekiel Elliott", "Antonio Gibson", "Clyde Edwards-Helaire", "D'Onta Foreman", "David Montgomery", "Jaylen Warren", "Bucky Irving", "Ray Davis", "Tyler Allgeier", "Gus Edwards", "Rico Dowdle"],
+  WR: ["Justin Jefferson", "Ja'Marr Chase", "Tyreek Hill", "CeeDee Lamb", "Amon-Ra St. Brown", "A.J. Brown", "Stefon Diggs", "Puka Nacua", "Garrett Wilson", "Chris Olave", "DK Metcalf", "Davante Adams", "Mike Evans", "DeVonta Smith", "Deebo Samuel", "Jaylen Waddle", "Drake London", "Terry McLaurin", "Amari Cooper", "Calvin Ridley", "Tank Dell", "Nico Collins", "Brandon Aiyuk", "Christian Kirk", "Michael Pittman Jr.", "Keenan Allen", "Jordan Addison", "Zay Flowers", "Rashee Rice", "Marquise Brown", "Diontae Johnson", "Courtland Sutton", "Jerry Jeudy", "Tyler Lockett", "Adam Thielen", "George Pickens", "Chris Godwin", "Curtis Samuel", "Gabe Davis", "Jakobi Meyers", "DJ Moore", "Xavier Worthy", "Rome Odunze", "Malik Nabers", "Marvin Harrison Jr."],
+  TE: ["Travis Kelce", "Sam LaPorta", "Mark Andrews", "T.J. Hockenson", "Trey McBride", "Kyle Pitts", "George Kittle", "Dallas Goedert", "Evan Engram", "David Njoku", "Dalton Kincaid", "Cole Kmet", "Pat Freiermuth", "Jake Ferguson", "Tyler Higbee", "Hunter Henry", "Brock Bowers"],
 };
 
 const ALL_PLAYERS = Object.entries(PLAYER_POOL).flatMap(([position, names]) =>
@@ -389,10 +389,13 @@ const DraftStore = {
   onChange(cb) {
     if (!supabaseClient || !CURRENT_LEAGUE_CODE) return;
     supabaseClient
-      .channel(`picks-inserts-${CURRENT_LEAGUE_CODE}`)
+      .channel(`picks-changes-${CURRENT_LEAGUE_CODE}`)
       .on(
+        // "*" (not just INSERT) so a pick undone elsewhere (DELETE) is
+        // also noticed -- previously only new picks streamed in, and a
+        // deletion needed a manual page refresh to show up.
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "picks", filter: `league_code=eq.${CURRENT_LEAGUE_CODE}` },
+        { event: "*", schema: "public", table: "picks", filter: `league_code=eq.${CURRENT_LEAGUE_CODE}` },
         () => cb()
       )
       .subscribe();
@@ -442,7 +445,6 @@ const DraftStore = {
 /* Folds any picks logged on Player Entry (via DraftStore) into MOCK_DRAFT
    so the Draft Board / Team Picks views reflect them. Call once on load
    (after configReady) and again whenever DraftStore.onChange fires. */
-const _appliedLiveKeys = new Set();
 function findOpenSlotIndex(roster, position) {
   const candidates = [];
   ROSTER_SLOTS.forEach((slot, i) => {
@@ -459,11 +461,31 @@ function findOpenSlotIndex(roster, position) {
   return open ? open.i : -1;
 }
 async function applyLivePicks() {
+  if (!supabaseClient || !CURRENT_LEAGUE_CODE) return false; // demo mode has no server to sync against
+
   let changed = false;
-  const picks = await DraftStore.getPicks();
-  picks.forEach((lp) => {
-    if (_appliedLiveKeys.has(lp.id)) return;
-    _appliedLiveKeys.add(lp.id);
+  const serverPicks = await DraftStore.getPicks();
+  const serverIds = new Set(serverPicks.map((p) => p.id));
+
+  // Drop any locally-held pick the server no longer has -- e.g. undone
+  // from a different device/tab. Without this, Draft Board/Team Picks
+  // only ever reflected new picks and needed a manual page refresh to
+  // notice a deletion.
+  for (let i = MOCK_DRAFT.picks.length - 1; i >= 0; i--) {
+    const local = MOCK_DRAFT.picks[i];
+    if (!serverIds.has(local.id)) {
+      MOCK_DRAFT.picks.splice(i, 1);
+      const roster = getTeamRoster(local.teamId);
+      if (roster && roster.slots[local.slotIndex] && roster.slots[local.slotIndex].id === local.id) {
+        roster.slots[local.slotIndex] = null;
+      }
+      changed = true;
+    }
+  }
+
+  // Add any server pick not yet reflected locally.
+  serverPicks.forEach((lp) => {
+    if (MOCK_DRAFT.picks.some((p) => p.id === lp.id)) return;
     const roster = getTeamRoster(lp.teamId);
     if (!roster) return;
     const slotIndex = findOpenSlotIndex(roster, lp.position);
@@ -473,6 +495,7 @@ async function applyLivePicks() {
     MOCK_DRAFT.picks.push(pick);
     changed = true;
   });
+
   return changed;
 }
 
