@@ -265,6 +265,7 @@ body {
   cursor: pointer;
 }
 .toggle-row-label { font-size: 13px; font-weight: 700; color: var(--text); }
+.inline-stepper { display: flex; align-items: center; gap: 12px; flex: none; }
 .toggle-switch {
   appearance: none;
   -webkit-appearance: none;
