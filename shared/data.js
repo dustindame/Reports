@@ -41,25 +41,30 @@ let SHOW_RECENT = true;
 let SHOW_DRAFTED_TOTAL = true;
 let SHOW_POSITION_TOTALS = false;
 let SHOW_ELAPSED_TIME = false;
+let NICE_ENABLED = false;
+let SHOTS_COUNT = 0;
+let SHOT_PICK_NUMBERS = [];
 
 const FLEX_ELIGIBLE = ["RB", "WR", "TE"];
 const POSITION_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te", DEF: "--def" };
 
+/* Kept to <=12 characters each (no abbreviations) so they fit the Draft
+   Board's Team column without wrapping or needing to be shortened. */
 const DEFAULT_TEAM_NAMES = [
-  "Blitz Brigade",
-  "Endzone Elites",
-  "Gridiron Gladiators",
-  "Hail Mary Heroes",
-  "Pigskin Pirates",
-  "Red Zone Raiders",
-  "Sack Attack Squad",
-  "Touchdown Titans",
-  "Turf Tyrants",
+  "Blitz Squad",
+  "End Zone",
+  "Iron Curtain",
+  "Hail Mary",
+  "Pigskins",
+  "Red Zone",
+  "Sack Squad",
+  "Touchdowns",
+  "Turf Titans",
   "Fumble Force",
-  "End Around Eagles",
-  "Onside Outlaws",
-  "Deep Ball Dynasty",
-  "Two-Point Takers",
+  "End Around",
+  "Onside Kick",
+  "Deep Ball",
+  "Two Point",
 ];
 const MAX_TEAMS = 14;
 const MIN_TEAMS = 6;
@@ -251,6 +256,9 @@ function applyRealConfig(config, leagueCode) {
   SHOW_DRAFTED_TOTAL = config.show_drafted_total !== false;
   SHOW_POSITION_TOTALS = Boolean(config.show_position_totals);
   SHOW_ELAPSED_TIME = Boolean(config.show_elapsed_time);
+  NICE_ENABLED = Boolean(config.nice_enabled);
+  SHOTS_COUNT = Number(config.shots_count) || 0;
+  SHOT_PICK_NUMBERS = Array.isArray(config.shot_pick_numbers) ? config.shot_pick_numbers : [];
 }
 
 function applyDemoConfig() {
@@ -268,6 +276,9 @@ function applyDemoConfig() {
   SHOW_DRAFTED_TOTAL = true;
   SHOW_POSITION_TOTALS = false;
   SHOW_ELAPSED_TIME = false;
+  NICE_ENABLED = false;
+  SHOTS_COUNT = 0;
+  SHOT_PICK_NUMBERS = [];
 }
 
 function getTeamRoster(teamId) {
@@ -314,7 +325,7 @@ const DraftStore = {
     const { data, error } = await supabaseClient
       .from("draft_config")
       .select(
-        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time"
+        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time, nice_enabled, shots_count, shot_pick_numbers"
       )
       .eq("league_code", leagueCode)
       .maybeSingle();
@@ -341,6 +352,9 @@ const DraftStore = {
       p_show_drafted_total: boardOptions.showDraftedTotal !== false,
       p_show_position_totals: Boolean(boardOptions.showPositionTotals),
       p_show_elapsed_time: Boolean(boardOptions.showElapsedTime),
+      p_nice_enabled: Boolean(boardOptions.niceEnabled),
+      p_shots_count: Number(boardOptions.shotsCount) || 0,
+      p_shot_pick_numbers: boardOptions.shotPickNumbers || [],
     });
     if (error) return { error: error.message };
     return { error: null, id: data };
@@ -363,6 +377,9 @@ const DraftStore = {
       p_show_drafted_total: boardOptions.showDraftedTotal !== false,
       p_show_position_totals: Boolean(boardOptions.showPositionTotals),
       p_show_elapsed_time: Boolean(boardOptions.showElapsedTime),
+      p_nice_enabled: Boolean(boardOptions.niceEnabled),
+      p_shots_count: Number(boardOptions.shotsCount) || 0,
+      p_shot_pick_numbers: boardOptions.shotPickNumbers || [],
     });
     if (error) return { error: error.message };
     if (data === false) return { error: "Incorrect commissioner PIN." };

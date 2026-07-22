@@ -22,6 +22,10 @@
   const toggleDraftedTotal = document.getElementById("toggleDraftedTotal");
   const togglePositionTotals = document.getElementById("togglePositionTotals");
   const toggleElapsedTime = document.getElementById("toggleElapsedTime");
+  const toggleNice = document.getElementById("toggleNice");
+  const shotsValue = document.getElementById("shotsValue");
+  const shotsMinus = document.getElementById("shotsMinus");
+  const shotsPlus = document.getElementById("shotsPlus");
   const warningBox = document.getElementById("warningBox");
   const statusMsg = document.getElementById("statusMsg");
   const saveBtn = document.getElementById("saveBtn");
@@ -50,6 +54,8 @@
   let showDraftedTotal = true;
   let showPositionTotals = false;
   let showElapsedTime = false;
+  let niceEnabled = false;
+  let shotsCount = 0;
 
   /* ---------------- small overlay prompts (reuses shared/league-gate.css) ---------------- */
 
@@ -176,6 +182,8 @@
     showDraftedTotal = config.show_drafted_total !== false;
     showPositionTotals = Boolean(config.show_position_totals);
     showElapsedTime = Boolean(config.show_elapsed_time);
+    niceEnabled = Boolean(config.nice_enabled);
+    shotsCount = Number(config.shots_count) || 0;
   }
 
   function switchToCreate() {
@@ -192,6 +200,8 @@
     showDraftedTotal = true;
     showPositionTotals = false;
     showElapsedTime = false;
+    niceEnabled = false;
+    shotsCount = 0;
     renderAll();
   }
 
@@ -280,7 +290,7 @@
       .map(
         (name, i) => `<div class="team-name-row">
           <span class="tn-dot" style="background:${teamColorVar(i)}"></span>
-          <input type="text" class="tn-input" data-idx="${i}" value="${escapeHtml(name)}" maxlength="40" />
+          <input type="text" class="tn-input" data-idx="${i}" value="${escapeHtml(name)}" maxlength="12" />
         </div>`
       )
       .join("");
@@ -306,6 +316,8 @@
     toggleDraftedTotal.checked = showDraftedTotal;
     togglePositionTotals.checked = showPositionTotals;
     toggleElapsedTime.checked = showElapsedTime;
+    toggleNice.checked = niceEnabled;
+    shotsValue.textContent = shotsCount;
   }
 
   function showStatus(message, isError) {
@@ -320,6 +332,20 @@
       for (let i = 0; i < slotCounts[t]; i++) arr.push(t);
     });
     return arr;
+  }
+
+  // Picks `count` distinct overall pick numbers (1..totalPicks) to be
+  // "take a shot" picks -- re-rolled fresh on every save, so editing a
+  // league's Shots setting reshuffles which picks trigger one.
+  function pickRandomShotNumbers(count, totalPicks) {
+    const n = Math.min(count, totalPicks);
+    if (n <= 0) return [];
+    const pool = Array.from({ length: totalPicks }, (_, i) => i + 1);
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    return pool.slice(0, n).sort((a, b) => a - b);
   }
 
   /* ---------------- events ---------------- */
@@ -370,6 +396,17 @@
   toggleDraftedTotal.addEventListener("change", () => { showDraftedTotal = toggleDraftedTotal.checked; });
   togglePositionTotals.addEventListener("change", () => { showPositionTotals = togglePositionTotals.checked; });
   toggleElapsedTime.addEventListener("change", () => { showElapsedTime = toggleElapsedTime.checked; });
+  toggleNice.addEventListener("change", () => { niceEnabled = toggleNice.checked; });
+  shotsMinus.addEventListener("click", () => {
+    if (shotsCount <= 0) return;
+    shotsCount -= 1;
+    shotsValue.textContent = shotsCount;
+  });
+  shotsPlus.addEventListener("click", () => {
+    if (shotsCount >= 10) return;
+    shotsCount += 1;
+    shotsValue.textContent = shotsCount;
+  });
 
   function showCreatedConfirmation(code, pin) {
     return new Promise((resolve) => {
@@ -440,6 +477,7 @@
 
     const namesToSave = teamNames.slice(0, numTeams);
     const rosterSlots = buildRosterSlotsArray();
+    const totalPicks = numTeams * slots;
     const boardOptions = {
       boardName: boardName.trim() || "Auction Draft Board",
       showNews,
@@ -448,6 +486,9 @@
       showDraftedTotal,
       showPositionTotals,
       showElapsedTime,
+      niceEnabled,
+      shotsCount,
+      shotPickNumbers: pickRandomShotNumbers(shotsCount, totalPicks),
     };
 
     const { error } =
