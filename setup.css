@@ -177,9 +177,12 @@ body {
   transition: border-color 0.15s ease;
 }
 .budget-input-wrap:focus-within { border-color: var(--gold-dim); }
+.budget-input-wrap .stepper-btn { width: 32px; height: 32px; font-size: 18px; flex: none; }
 .budget-dollar { font-size: 20px; font-weight: 800; color: var(--gold-bright); }
 .budget-input {
   flex: 1;
+  min-width: 0;
+  text-align: center;
   background: transparent;
   border: none;
   outline: none;
