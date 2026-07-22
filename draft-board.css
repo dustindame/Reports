@@ -87,6 +87,20 @@ body { overflow: hidden; height: 100vh; }
   transition: width 0.5s ease;
 }
 .tracker-remaining { margin-top: 4px; font-size: 11px; color: var(--text-dim); }
+.shot-banner {
+  margin-top: 4px;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #ff3b30;
+  text-shadow: 0 0 10px rgba(255, 59, 48, 0.8);
+  animation: shot-pulse 0.6s ease-in-out infinite alternate;
+}
+.shot-banner[hidden] { display: none; }
+@keyframes shot-pulse {
+  from { opacity: 0.65; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1.05); }
+}
 
 .position-totals-block {
   display: flex;
@@ -273,18 +287,29 @@ body { overflow: hidden; height: 100vh; }
 }
 
 .ticker-row {
+  position: relative;
   width: 100%;
   min-width: 0;
   height: 44px;
   overflow: hidden;
-  display: flex;
-  align-items: center;
 }
 .ticker-row[hidden] { display: none; }
 .message-row { border-bottom: 1px solid var(--border); }
 
+/* position:absolute (not just overflow:hidden on the row) so the track's
+   content -- deliberately huge, since it needs a long scroll of headlines
+   or several messages to loop through -- can never influence the row's
+   (or any ancestor's, including board-content) own size calculations.
+   overflow:hidden alone clips the *paint* but a flex child's intrinsic
+   min-width can still be picked up by layout; an absolutely positioned
+   element is fully out of flow and can't affect ancestor sizing at all. */
 .ticker-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
   display: inline-flex;
+  align-items: center;
   white-space: nowrap;
   animation: ticker-scroll 60s linear infinite;
   font-size: 17px;
@@ -297,8 +322,7 @@ body { overflow: hidden; height: 100vh; }
   border-right: 1px solid var(--border);
 }
 /* Border + glow only (no filled background/pill) so it reads as a
-   highlight, not a solid block breaking up the ticker's look. Single
-   item in its own row, so no separator border needed. */
+   highlight, not a solid block breaking up the ticker's look. */
 .ticker-track span.ticker-item.fan-message {
   padding: 0 32px;
   border-top: 2px solid #0076b6;
@@ -311,13 +335,4 @@ body { overflow: hidden; height: 100vh; }
 @keyframes ticker-scroll {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
-}
-
-/* Messages play as a single pass -- fully off-screen right to fully
-   off-screen left -- rather than the news ticker's continuous doubled-
-   loop, since a message is finite (shown a fixed number of times, not an
-   endless rotation). */
-@keyframes message-scroll {
-  0% { transform: translateX(var(--message-start, 100%)); }
-  100% { transform: translateX(var(--message-end, -100%)); }
 }

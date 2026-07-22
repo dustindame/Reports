@@ -20,6 +20,7 @@
   const messageRow = document.getElementById("messageRow");
   const tickerTrack = document.getElementById("tickerTrack");
   const messageTrack = document.getElementById("messageTrack");
+  const shotBanner = document.getElementById("shotBanner");
 
   document.getElementById("fieldIcon").innerHTML = Icons.field(22, "var(--wr)");
   document.getElementById("titleFootballIcon").innerHTML = Icons.football(22, "var(--qb)");
@@ -105,12 +106,14 @@
 
   /* ---------------- Ticker (news) + separate message row ----------------
      Two independent tracks/animations so a fan message arriving doesn't
-     touch the news ticker's scroll at all (previously merging them into
-     one track made the news scroll visibly jump/speed up whenever a
-     message came in). Messages show above the news, at the same speed,
-     for a fixed number of loops, then disappear entirely. */
+     touch the news ticker's scroll at all. Both rows use the same
+     continuous doubled-loop technique -- messages can coexist (spaced
+     apart in one rotating line) rather than taking turns one at a time;
+     each message has its own loop count (Nice = 1, regular messages = 5
+     by default) and drops out of the rotation once it's been shown that
+     many times. */
   let tickerHeadlines = FALLBACK_NEWS_TICKER;
-  let boardMessages = []; // queue: { id, text, loopsRemaining }
+  let boardMessages = []; // { id, text, loopsRemaining }
   const MESSAGE_LOOPS = 5;
   const TICKER_PX_PER_SEC = 55;
 
@@ -121,62 +124,38 @@
     tickerTrack.style.animationDuration = `${Math.max(20, distance / TICKER_PX_PER_SEC)}s`;
   }
 
-  // Messages play one at a time as a single clean pass -- entering fully
-  // off-screen right, crossing at the same px/sec as the news ticker, and
-  // exiting fully off-screen left -- instead of the news ticker's doubled-
-  // track technique (which is only right for a continuous, never-ending
-  // rotation; for one finite, short message it visibly showed the same
-  // text twice back-to-back, and the fixed 20s floor made short text
-  // crawl far slower than its actual length warranted).
-  function playMessagePass() {
-    if (boardMessages.length === 0 || !SHOW_MESSAGES) {
-      messageRow.hidden = true;
-      return;
-    }
-    messageRow.hidden = false;
-    const current = boardMessages[0];
-    messageTrack.innerHTML = `<span class="ticker-item fan-message">📣 ${escapeHtml(current.text)}</span>`;
-    const containerWidth = messageRow.clientWidth;
-    const trackWidth = messageTrack.scrollWidth;
-    const distance = containerWidth + trackWidth; // fully off-right to fully off-left
-    messageTrack.style.setProperty("--message-start", `${containerWidth}px`);
-    messageTrack.style.setProperty("--message-end", `-${trackWidth}px`);
-    messageTrack.style.animation = "none";
-    void messageTrack.offsetWidth; // force reflow so the restart takes effect
-    messageTrack.style.animation = `message-scroll ${Math.max(3, distance / TICKER_PX_PER_SEC)}s linear 1`;
+  function renderMessageTicker() {
+    const hasActive = SHOW_MESSAGES && boardMessages.length > 0;
+    messageRow.hidden = !hasActive;
+    if (!hasActive) return;
+    const items = boardMessages.map((m) => `<span class="ticker-item fan-message">📣 ${escapeHtml(m.text)}</span>`);
+    messageTrack.innerHTML = items.concat(items).join("");
+    const distance = messageTrack.scrollWidth / 2;
+    messageTrack.style.animationDuration = `${Math.max(8, distance / TICKER_PX_PER_SEC)}s`;
   }
 
-  messageTrack.addEventListener("animationend", () => {
+  // A full pass of the (single, non-doubled) track is one "showing" of
+  // every active message once -- decrement each message's remaining loop
+  // count here and drop any that have been shown enough times.
+  messageTrack.addEventListener("animationiteration", () => {
     if (boardMessages.length === 0) return;
-    boardMessages[0].loopsRemaining -= 1;
-    if (boardMessages[0].loopsRemaining <= 0) boardMessages.shift();
-    if (boardMessages.length > 0) {
-      playMessagePass();
-    } else {
-      messageRow.hidden = true;
+    const before = boardMessages.length;
+    boardMessages = boardMessages
+      .map((m) => ({ ...m, loopsRemaining: m.loopsRemaining - 1 }))
+      .filter((m) => m.loopsRemaining > 0);
+    if (boardMessages.length !== before) {
+      renderMessageTicker();
       fitBoardToScreen();
     }
   });
 
   function enqueueMessage(message) {
-    if (boardMessages.some((m) => m.id === message.id)) return; // already queued/playing
-    const wasIdle = boardMessages.length === 0;
-    const entry = { ...message, loopsRemaining: MESSAGE_LOOPS };
-
-    if (message.priority && !wasIdle) {
-      // e.g. a Nice ($69) message -- jump the queue and interrupt
-      // whatever's currently mid-pass instead of waiting behind it.
-      boardMessages.unshift(entry);
-      playMessagePass();
-      return;
-    }
-
-    boardMessages.push(entry);
-    if (boardMessages.length > 10) boardMessages.length = 10;
-    if (wasIdle) {
-      playMessagePass(); // unhides the message row
-      fitBoardToScreen(); // ...so re-measure now that it's taking up space
-    }
+    if (boardMessages.some((m) => m.id === message.id)) return; // already active
+    const wasHidden = messageRow.hidden;
+    boardMessages.push({ ...message, loopsRemaining: message.loops || MESSAGE_LOOPS });
+    if (boardMessages.length > 10) boardMessages.shift();
+    renderMessageTicker();
+    if (wasHidden) fitBoardToScreen(); // message row just appeared, changing header height
   }
 
   async function refreshTicker() {
@@ -189,8 +168,34 @@
 
   async function loadMessages() {
     const loaded = await DraftStore.getMessages(10);
-    boardMessages = loaded.map((m) => ({ ...m, loopsRemaining: MESSAGE_LOOPS }));
-    if (boardMessages.length > 0) playMessagePass();
+    boardMessages = loaded.map((m) => ({ ...m, loopsRemaining: m.loops || MESSAGE_LOOPS }));
+    renderMessageTicker();
+  }
+
+  /* ---------------- Shots: "SHOT! SHOT! SHOT!" banner ----------------
+     Not part of the message ticker at all -- shows directly below the
+     Drafted/Remaining tracker for a fixed 20 seconds whenever a pick
+     lands on one of the league's randomly-designated shot pick numbers. */
+  const announcedShotPicks = new Set();
+  let shotBannerTimer = null;
+
+  function showShotBanner() {
+    shotBanner.hidden = false;
+    fitBoardToScreen();
+    clearTimeout(shotBannerTimer);
+    shotBannerTimer = setTimeout(() => {
+      shotBanner.hidden = true;
+      fitBoardToScreen();
+    }, 20000);
+  }
+
+  function checkForShotPicks() {
+    MOCK_DRAFT.picks.forEach((p) => {
+      if (SHOT_PICK_NUMBERS.includes(p.pickNumber) && !announcedShotPicks.has(p.pickNumber)) {
+        announcedShotPicks.add(p.pickNumber);
+        showShotBanner();
+      }
+    });
   }
 
   function renderGrid() {
@@ -295,6 +300,10 @@
   layoutGrid();
   fitBoardToScreen();
 
+  // Picks that already existed when the board loaded shouldn't retroactively
+  // trigger the shot banner -- only ones that arrive from here on.
+  MOCK_DRAFT.picks.forEach((p) => announcedShotPicks.add(p.pickNumber));
+
   window.addEventListener("resize", fitBoardToScreen);
   setInterval(renderElapsed, 30000);
 
@@ -322,5 +331,6 @@
     renderRecent();
     renderGrid();
     fitBoardToScreen();
+    checkForShotPicks();
   });
 })();

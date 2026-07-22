@@ -295,7 +295,6 @@
     if (!isReady()) return;
     const team = teamById(selectedTeamId);
     const price = Number(bidSlider.value);
-    const pickNumber = draftedCount() + 1; // this pick's overall sequence number, for the Shots feature
 
     // Belt-and-suspenders re-check: the search list already hides drafted
     // players, but this closes the race where a pick came in (e.g. from
@@ -333,14 +332,13 @@
       }
       showToast(`${selectedPlayer.name} → ${team.name} for $${price}`);
 
-      // Fun extras, both opt-in per league and posted via the same
-      // message-ticker pipeline as fan shout-outs. Fire-and-forget --
-      // nothing about the pick itself depends on these succeeding.
+      // Nice is opt-in per league, posted via the same message-ticker
+      // pipeline as fan shout-outs, shown just once (loops: 1). Fire-and-
+      // forget -- nothing about the pick itself depends on this succeeding.
+      // Shots is handled entirely on the Draft Board side (it watches
+      // pick numbers directly via realtime), not here.
       if (NICE_ENABLED && price === 69) {
-        DraftStore.sendMessage("Nice! Nice! Nice! Nice! Nice!", { priority: true });
-      }
-      if (SHOT_PICK_NUMBERS.includes(pickNumber)) {
-        DraftStore.sendMessage(`🍺 ${team.name} — take a shot!`);
+        DraftStore.sendMessage("Nice! Nice! Nice! Nice! Nice!", { loops: 1 });
       }
     }
 
