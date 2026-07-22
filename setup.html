@@ -14,8 +14,15 @@
 
       <header class="setup-header">
         <a class="back-btn" href="player-entry.html" aria-label="Back to Enter Pick"><span id="backIcon"></span></a>
-        <span class="header-gear" id="headerGear"></span>
-        <h1 class="setup-title">DRAFT <span class="gold-text">SETUP</span></h1>
+        <div class="header-row">
+          <span class="pylon-icon" id="pylonLeft"></span>
+          <span class="header-gear" id="headerGear"></span>
+          <h1 class="setup-title">DRAFT <span class="gold-text">SETUP</span></h1>
+          <span class="pylon-icon" id="pylonRight"></span>
+        </div>
+        <div class="first-down-line">
+          <span class="first-down-text">COMMISSIONER TOOLS</span>
+        </div>
       </header>
 
       <main class="setup-main">
@@ -29,8 +36,8 @@
 
         <section class="setup-section" id="pinSection">
           <div class="section-label">Set Commissioner PIN</div>
-          <input type="password" inputmode="numeric" class="pin-input" id="pinInput" placeholder="PIN (4+ characters)" autocomplete="off" />
-          <input type="password" inputmode="numeric" class="pin-input" id="pinConfirmInput" placeholder="Confirm PIN" autocomplete="off" />
+          <input type="text" inputmode="numeric" class="pin-input" id="pinInput" placeholder="PIN (4+ characters)" autocomplete="off" />
+          <input type="text" inputmode="numeric" class="pin-input" id="pinConfirmInput" placeholder="Confirm PIN" autocomplete="off" />
           <div class="stepper-hint">Only you need this to log picks or edit settings — it can't be recovered if lost, so write it down.</div>
         </section>
 

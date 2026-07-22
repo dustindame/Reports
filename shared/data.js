@@ -197,7 +197,7 @@ function buildMockDraft() {
       const maxPrice = Math.max(1, remainingBudget - slotsLeftAfterThis);
       const price = Math.min(basePriceFor(p.position), maxPrice);
       spent += price;
-      pickByTeamSlot.set(`${p.teamId}:${p.slotIndex}`, { ...p, price });
+      pickByTeamSlot.set(`${p.teamId}:${p.slotIndex}`, { ...p, price, id: crypto.randomUUID() });
     });
   });
 

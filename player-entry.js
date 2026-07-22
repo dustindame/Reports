@@ -23,7 +23,7 @@
   document.getElementById("footballIcon2").innerHTML = Icons.football(26, "var(--qb)");
   document.getElementById("pylonLeft").innerHTML = Icons.pylon(20);
   document.getElementById("pylonRight").innerHTML = Icons.pylon(20);
-  document.getElementById("setupGear").innerHTML = Icons.gear(18);
+  document.getElementById("setupGear").innerHTML = Icons.whistle(18);
   document.getElementById("searchIcon").innerHTML = Icons.search(18);
   document.getElementById("flagIcon").innerHTML = Icons.flag(20);
   document.getElementById("slideChevron").innerHTML = Icons.chevronRight(22, "#eaf1ff");
@@ -222,7 +222,7 @@
           <div class="league-gate-icon">🔒</div>
           <h2 class="league-gate-title">Enter Commissioner PIN</h2>
           <p class="league-gate-hint">Only the commissioner's PIN can log picks for this league.</p>
-          <input type="password" inputmode="numeric" class="league-gate-input" id="pinGateInput" maxlength="10" placeholder="PIN" autocomplete="off" />
+          <input type="text" inputmode="numeric" class="league-gate-input" id="pinGateInput" maxlength="10" placeholder="PIN" autocomplete="off" />
           <div class="league-gate-error" id="pinGateError" hidden></div>
           <button class="league-gate-continue" id="pinGateContinue">UNLOCK</button>
           <button class="league-gate-secondary" id="pinGateNotMine">This Isn't My League</button>

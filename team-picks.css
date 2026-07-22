@@ -31,13 +31,8 @@ body {
 
 .picks-header {
   flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 24px 16px 18px;
+  padding: 24px 16px 0;
   position: relative;
-  border-bottom: 1px solid var(--border-soft);
 }
 .back-btn[hidden] { display: none; }
 .back-btn {
@@ -54,8 +49,32 @@ body {
   justify-content: center;
   cursor: pointer;
 }
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
 .picks-title { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: 0.5px; }
 .header-football { line-height: 0; }
+.pylon-icon { display: flex; line-height: 0; }
+
+.first-down-line {
+  margin-top: 14px;
+  height: 26px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--gold-bright) 20%, var(--gold-bright) 80%, transparent);
+  box-shadow: 0 0 18px 2px rgba(242, 193, 78, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.first-down-text {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #241a03;
+}
 
 /* ---------------- Main ---------------- */
 

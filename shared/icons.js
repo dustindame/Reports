@@ -71,4 +71,15 @@ const Icons = {
       <path d="M12 2.8v2.1M12 19.1v2.1M21.2 12h-2.1M4.9 12H2.8M18.1 5.9l-1.5 1.5M7.4 16.6l-1.5 1.5M18.1 18.1l-1.5-1.5M7.4 7.4 5.9 5.9" stroke="${color}" stroke-width="1.8" stroke-linecap="round"/>
     </svg>`;
   },
+
+  /* Referee/commissioner whistle — used for links into Draft Setup instead
+     of a gear, which at icon size read as a sun (circle + radiating spokes,
+     no teeth) rather than a settings cog. */
+  whistle(size = 20, color = "#d4af37") {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="9" cy="15" r="5.2" stroke="${color}" stroke-width="1.8"/>
+      <circle cx="9" cy="15" r="1.4" fill="${color}"/>
+      <path d="M9 9.8V7.2a1 1 0 0 1 1-1h7.2a2.6 2.6 0 0 1 0 5.2H13.4" stroke="${color}" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  },
 };

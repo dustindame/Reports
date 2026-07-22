@@ -10,7 +10,7 @@
   const clockValue = document.getElementById("clockValue");
   const tickerTrack = document.getElementById("tickerTrack");
 
-  document.getElementById("setupGear").innerHTML = Icons.gear(18);
+  document.getElementById("setupGear").innerHTML = Icons.whistle(18);
   clockIcon.innerHTML = Icons.clock(18, "#d4af37");
 
   // Real scannable QR (not the earlier decorative placeholder) now that the

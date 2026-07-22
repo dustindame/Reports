@@ -191,8 +191,8 @@ body { overflow: hidden; height: 100vh; }
 
 .slot-cell.filled { background: var(--panel); }
 .slot-cell.empty { border-style: dashed; }
-.slot-cell .slot-player { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.2; }
-.slot-cell .slot-price { font-size: 12px; font-weight: 800; margin-top: 2px; }
+.slot-cell .slot-player { font-size: 16px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.slot-cell .slot-price { font-size: 15px; font-weight: 800; margin-top: 3px; }
 .slot-cell .slot-open { font-size: 11px; color: var(--text-faint); letter-spacing: 0.5px; text-transform: uppercase; }
 
 .slot-cell.pos-QB { border-color: var(--qb); box-shadow: 0 0 10px -2px var(--qb-glow); }
