@@ -47,6 +47,16 @@
   font-family: inherit;
   transition: border-color 0.15s ease;
 }
+/* Used for free-text entry (e.g. the board-message composer) where the
+   uppercase/letter-spacing/centering above -- meant for league codes and
+   PINs -- would misrepresent what's actually being typed. */
+.league-gate-input.free-text {
+  text-align: left;
+  letter-spacing: normal;
+  text-transform: none;
+  font-size: 15px;
+  font-weight: 600;
+}
 .league-gate-input:focus { border-color: var(--gold-dim); }
 
 .league-gate-error {

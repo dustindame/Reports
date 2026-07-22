@@ -84,7 +84,7 @@
           <div class="league-gate-icon">📣</div>
           <h2 class="league-gate-title">Send a Message</h2>
           <p class="league-gate-hint">Shows up highlighted in the Draft Board's news scroll for everyone to see.</p>
-          <input type="text" class="league-gate-input" id="boardMessageInput" maxlength="80" placeholder="Say something..." autocomplete="off" />
+          <input type="text" class="league-gate-input free-text" id="boardMessageInput" maxlength="80" placeholder="Say something..." autocomplete="off" />
           <div class="league-gate-error" id="boardMessageError" hidden></div>
           <button class="league-gate-continue" id="boardMessageSend">SEND</button>
           <button class="league-gate-secondary" id="boardMessageCancel">Cancel</button>
