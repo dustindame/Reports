@@ -129,14 +129,27 @@
   // in the CSS) -- toggling "empty" only changes visibility, never
   // display, so a message appearing/disappearing never changes the
   // board's total height and never has to re-trigger the zoom-to-fit.
+  //
+  // Uses a true marquee (message-scroll keyframe: enters fully off-screen
+  // right, exits fully off-screen left) rather than the news ticker's
+  // doubled-content loop, which only looks like it's "entering from the
+  // right" when content is much wider than the viewport -- short message
+  // content just sat visible at the left edge and repeated in place.
   function renderMessageTicker() {
     const hasActive = boardMessages.length > 0;
     messageRow.classList.toggle("empty", !hasActive);
     if (!hasActive) return;
     const items = boardMessages.map((m) => `<span class="ticker-item fan-message">📣 ${escapeHtml(m.text)}</span>`);
-    messageTrack.innerHTML = items.concat(items).join("");
-    const distance = messageTrack.scrollWidth / 2;
-    messageTrack.style.animationDuration = `${Math.max(8, distance / TICKER_PX_PER_SEC)}s`;
+    messageTrack.innerHTML = items.join("");
+    const containerWidth = messageRow.clientWidth;
+    const trackWidth = messageTrack.scrollWidth;
+    const distance = containerWidth + trackWidth;
+    messageTrack.style.setProperty("--message-start", `${containerWidth}px`);
+    messageTrack.style.setProperty("--message-end", `-${trackWidth}px`);
+    const duration = Math.max(4, distance / TICKER_PX_PER_SEC);
+    messageTrack.style.animation = "none";
+    void messageTrack.offsetWidth; // force reflow so it restarts from the right edge
+    messageTrack.style.animation = `message-scroll ${duration}s linear infinite`;
   }
 
   // A full pass of the (single, non-doubled) track is one "showing" of
