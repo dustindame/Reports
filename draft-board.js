@@ -161,7 +161,17 @@
   function enqueueMessage(message) {
     if (boardMessages.some((m) => m.id === message.id)) return; // already queued/playing
     const wasIdle = boardMessages.length === 0;
-    boardMessages.push({ ...message, loopsRemaining: MESSAGE_LOOPS });
+    const entry = { ...message, loopsRemaining: MESSAGE_LOOPS };
+
+    if (message.priority && !wasIdle) {
+      // e.g. a Nice ($69) message -- jump the queue and interrupt
+      // whatever's currently mid-pass instead of waiting behind it.
+      boardMessages.unshift(entry);
+      playMessagePass();
+      return;
+    }
+
+    boardMessages.push(entry);
     if (boardMessages.length > 10) boardMessages.length = 10;
     if (wasIdle) {
       playMessagePass(); // unhides the message row
@@ -245,6 +255,11 @@
     const budgetColPx = budgetColBase * scale;
     const slotColPx = slotColBase * scale;
     grid.style.gridTemplateColumns = `${teamColPx}px ${budgetColPx}px ${budgetColPx}px repeat(${numSlots}, ${slotColPx}px)`;
+
+    // Board width is header/grid only -- never the ticker, whose
+    // concatenated-headline content is deliberately huge so it has
+    // something to scroll through. The ticker just fills this width.
+    boardContent.style.width = `${Math.max(gridBaseWidth, headerWidth)}px`;
   }
 
   // Measures the board's natural (unzoomed) size and scales the whole
