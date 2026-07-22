@@ -10,6 +10,8 @@
   const teamCountMinus = document.getElementById("teamCountMinus");
   const teamCountPlus = document.getElementById("teamCountPlus");
   const budgetInput = document.getElementById("budgetInput");
+  const budgetMinus = document.getElementById("budgetMinus");
+  const budgetPlus = document.getElementById("budgetPlus");
   const slotRows = document.getElementById("slotRows");
   const totalSlotsValue = document.getElementById("totalSlotsValue");
   const teamNamesList = document.getElementById("teamNamesList");
@@ -296,10 +298,20 @@
     renderTeamCount();
     renderTeamNames();
   });
+  const BUDGET_STEP = 5;
+  const BUDGET_MAX = 999;
   budgetInput.addEventListener("input", () => {
     const digitsOnly = budgetInput.value.replace(/[^0-9]/g, "");
     if (digitsOnly !== budgetInput.value) budgetInput.value = digitsOnly;
     budget = Math.max(1, Number(digitsOnly) || 0);
+  });
+  budgetMinus.addEventListener("click", () => {
+    budget = Math.max(1, budget - BUDGET_STEP);
+    budgetInput.value = budget;
+  });
+  budgetPlus.addEventListener("click", () => {
+    budget = Math.min(BUDGET_MAX, budget + BUDGET_STEP);
+    budgetInput.value = budget;
   });
 
   haveCodeBtn.addEventListener("click", async () => {
