@@ -1,5 +1,4 @@
 :root {
-  --board-width: 2200px;
   /* Base column sizes at "natural" (unzoomed) size. draft-board.js
      measures the board's natural width/height against the actual screen
      and applies a single zoom factor so the whole board -- header, grid,
@@ -21,9 +20,14 @@ body { overflow: hidden; height: 100vh; }
 }
 
 .board-content {
-  width: var(--board-width);
+  /* No explicit width -- it needs to size to whichever of header/grid/
+     footer is naturally widest, so all three end up the same width. A
+     fixed width here (previously a stale, never-updated CSS var) let the
+     header/footer stretch to fill it while the grid's own column widths
+     came out narrower, so the grid visibly didn't span the full board. */
   display: flex;
   flex-direction: column;
+  align-items: stretch;
 }
 
 /* ---------------- Header ---------------- */
@@ -204,7 +208,7 @@ body { overflow: hidden; height: 100vh; }
   background: var(--panel);
   min-width: 0;
 }
-.team-name-row { display: flex; align-items: center; gap: 10px; font-size: 28px; font-weight: 800; color: var(--text); line-height: 1.2; min-width: 0; width: 100%; }
+.team-name-row { display: flex; align-items: center; gap: 10px; font-size: 23px; font-weight: 800; color: var(--text); line-height: 1.2; min-width: 0; width: 100%; }
 .team-name-text { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
 
 .budget-cell {
@@ -286,9 +290,10 @@ body { overflow: hidden; height: 100vh; }
   border-right: 1px solid var(--border);
 }
 /* Border + glow only (no filled background/pill) so it reads as a
-   highlight, not a solid block breaking up the ticker's look. */
+   highlight, not a solid block breaking up the ticker's look. Single
+   item in its own row, so no separator border needed. */
 .ticker-track span.ticker-item.fan-message {
-  border-right: 1px solid var(--border);
+  padding: 0 32px;
   border-top: 2px solid #0076b6;
   border-bottom: 2px solid #0076b6;
   box-shadow: 0 0 14px -2px rgba(0, 118, 182, 0.8);
@@ -299,4 +304,13 @@ body { overflow: hidden; height: 100vh; }
 @keyframes ticker-scroll {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
+}
+
+/* Messages play as a single pass -- fully off-screen right to fully
+   off-screen left -- rather than the news ticker's continuous doubled-
+   loop, since a message is finite (shown a fixed number of times, not an
+   endless rotation). */
+@keyframes message-scroll {
+  0% { transform: translateX(var(--message-start, 100%)); }
+  100% { transform: translateX(var(--message-end, -100%)); }
 }

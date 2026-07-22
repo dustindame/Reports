@@ -109,7 +109,7 @@
      message came in). Messages show above the news, at the same speed,
      for a fixed number of loops, then disappear entirely. */
   let tickerHeadlines = FALLBACK_NEWS_TICKER;
-  let boardMessages = []; // { id, text, loopsRemaining }
+  let boardMessages = []; // queue: { id, text, loopsRemaining }
   const MESSAGE_LOOPS = 5;
   const TICKER_PX_PER_SEC = 55;
 
@@ -120,37 +120,53 @@
     tickerTrack.style.animationDuration = `${Math.max(20, distance / TICKER_PX_PER_SEC)}s`;
   }
 
-  function renderMessageTicker() {
-    messageRow.hidden = !SHOW_MESSAGES || boardMessages.length === 0;
-    if (messageRow.hidden) return;
-    const items = boardMessages.map((m) => `<span class="ticker-item fan-message">📣 ${escapeHtml(m.text)}</span>`);
-    messageTrack.innerHTML = items.concat(items).join("");
-    const distance = messageTrack.scrollWidth / 2;
-    messageTrack.style.animationDuration = `${Math.max(20, distance / TICKER_PX_PER_SEC)}s`;
-  }
-
-  // Forces the message row's scroll back to the start so a newly-arrived
-  // message is visible right away instead of waiting up to a full loop.
-  // Only ever touches the message track -- the news ticker is untouched.
-  function restartMessageTicker() {
-    renderMessageTicker();
+  // Messages play one at a time as a single clean pass -- entering fully
+  // off-screen right, crossing at the same px/sec as the news ticker, and
+  // exiting fully off-screen left -- instead of the news ticker's doubled-
+  // track technique (which is only right for a continuous, never-ending
+  // rotation; for one finite, short message it visibly showed the same
+  // text twice back-to-back, and the fixed 20s floor made short text
+  // crawl far slower than its actual length warranted).
+  function playMessagePass() {
+    if (boardMessages.length === 0 || !SHOW_MESSAGES) {
+      messageRow.hidden = true;
+      return;
+    }
+    messageRow.hidden = false;
+    const current = boardMessages[0];
+    messageTrack.innerHTML = `<span class="ticker-item fan-message">📣 ${escapeHtml(current.text)}</span>`;
+    const containerWidth = messageRow.clientWidth;
+    const trackWidth = messageTrack.scrollWidth;
+    const distance = containerWidth + trackWidth; // fully off-right to fully off-left
+    messageTrack.style.setProperty("--message-start", `${containerWidth}px`);
+    messageTrack.style.setProperty("--message-end", `-${trackWidth}px`);
     messageTrack.style.animation = "none";
     void messageTrack.offsetWidth; // force reflow so the restart takes effect
-    messageTrack.style.animation = "";
-    fitBoardToScreen(); // message row appearing/disappearing changes header height
+    messageTrack.style.animation = `message-scroll ${Math.max(3, distance / TICKER_PX_PER_SEC)}s linear 1`;
   }
 
-  messageTrack.addEventListener("animationiteration", () => {
+  messageTrack.addEventListener("animationend", () => {
     if (boardMessages.length === 0) return;
-    const before = boardMessages.length;
-    boardMessages = boardMessages
-      .map((m) => ({ ...m, loopsRemaining: m.loopsRemaining - 1 }))
-      .filter((m) => m.loopsRemaining > 0);
-    if (boardMessages.length !== before) {
-      renderMessageTicker();
+    boardMessages[0].loopsRemaining -= 1;
+    if (boardMessages[0].loopsRemaining <= 0) boardMessages.shift();
+    if (boardMessages.length > 0) {
+      playMessagePass();
+    } else {
+      messageRow.hidden = true;
       fitBoardToScreen();
     }
   });
+
+  function enqueueMessage(message) {
+    if (boardMessages.some((m) => m.id === message.id)) return; // already queued/playing
+    const wasIdle = boardMessages.length === 0;
+    boardMessages.push({ ...message, loopsRemaining: MESSAGE_LOOPS });
+    if (boardMessages.length > 10) boardMessages.length = 10;
+    if (wasIdle) {
+      playMessagePass(); // unhides the message row
+      fitBoardToScreen(); // ...so re-measure now that it's taking up space
+    }
+  }
 
   async function refreshTicker() {
     const live = await fetchNewsHeadlines();
@@ -163,7 +179,7 @@
   async function loadMessages() {
     const loaded = await DraftStore.getMessages(10);
     boardMessages = loaded.map((m) => ({ ...m, loopsRemaining: MESSAGE_LOOPS }));
-    renderMessageTicker();
+    if (boardMessages.length > 0) playMessagePass();
   }
 
   function renderGrid() {
@@ -256,10 +272,7 @@
     // code) stream in here, shown above the news ticker.
     await loadMessages();
     fitBoardToScreen();
-    DraftStore.onMessage((message) => {
-      boardMessages = [{ ...message, loopsRemaining: MESSAGE_LOOPS }, ...boardMessages].slice(0, 10);
-      restartMessageTicker();
-    });
+    DraftStore.onMessage(enqueueMessage);
   }
 
   // A pick confirmed on the Player Entry screen streams in here via
