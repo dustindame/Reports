@@ -31,13 +31,8 @@ body {
 
 .setup-header {
   flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 22px 16px 18px;
+  padding: 22px 16px 0;
   position: relative;
-  border-bottom: 1px solid var(--border-soft);
 }
 .back-btn {
   position: absolute;
@@ -53,8 +48,32 @@ body {
   justify-content: center;
   text-decoration: none;
 }
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
 .setup-title { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
 .header-gear { line-height: 0; }
+.pylon-icon { display: flex; line-height: 0; }
+
+.first-down-line {
+  margin-top: 14px;
+  height: 26px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--gold-bright) 20%, var(--gold-bright) 80%, transparent);
+  box-shadow: 0 0 18px 2px rgba(242, 193, 78, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.first-down-text {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #241a03;
+}
 
 /* ---------------- Main ---------------- */
 

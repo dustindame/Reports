@@ -20,8 +20,10 @@
   const saveBtn = document.getElementById("saveBtn");
   const switchToCreateBtn = document.getElementById("switchToCreateBtn");
 
-  document.getElementById("headerGear").innerHTML = Icons.gear(22);
+  document.getElementById("headerGear").innerHTML = Icons.whistle(22);
   document.getElementById("backIcon").innerHTML = Icons.chevronLeft(16);
+  document.getElementById("pylonLeft").innerHTML = Icons.pylon(18);
+  document.getElementById("pylonRight").innerHTML = Icons.pylon(18);
 
   const SLOT_TYPES = ["QB", "RB", "WR", "TE", "FLEX", "BENCH"];
   const SLOT_LABELS = { QB: "Quarterback", RB: "Running Back", WR: "Wide Receiver", TE: "Tight End", FLEX: "Flex", BENCH: "Bench" };
@@ -96,7 +98,7 @@
           <div class="league-gate-icon">🔒</div>
           <h2 class="league-gate-title">Enter Commissioner PIN</h2>
           <p class="league-gate-hint">Verify the PIN for league ${code} to edit its settings.</p>
-          <input type="password" inputmode="numeric" class="league-gate-input" id="verifyPinInput" maxlength="10" placeholder="PIN" autocomplete="off" />
+          <input type="text" inputmode="numeric" class="league-gate-input" id="verifyPinInput" maxlength="10" placeholder="PIN" autocomplete="off" />
           <div class="league-gate-error" id="verifyPinError" hidden></div>
           <button class="league-gate-continue" id="verifyPinContinue">UNLOCK</button>
         </div>
