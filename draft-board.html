@@ -16,12 +16,12 @@
         <div class="header-block title-block">
           <h1 class="board-title">
             <span class="title-icon" id="fieldIcon"></span>
-            AUCTION DRAFT <span class="gold-text">BOARD</span>
+            <span id="boardNameText">AUCTION DRAFT BOARD</span>
             <span class="title-icon" id="titleFootballIcon"></span>
           </h1>
         </div>
 
-        <div class="header-block tracker-block">
+        <div class="header-block tracker-block" id="trackerBlock">
           <div class="tracker-numbers">
             <span class="tracker-label">Drafted</span>
             <span class="tracker-value" id="draftedValue">0 / 156</span>
@@ -30,7 +30,17 @@
           <div class="tracker-remaining"><span id="remainingValue">156</span> remaining</div>
         </div>
 
-        <div class="header-block recent-block">
+        <div class="header-block position-totals-block" id="positionTotalsBlock" hidden>
+          <div class="recent-label">Drafted by Position</div>
+          <div class="position-totals-row" id="positionTotalsRow"></div>
+        </div>
+
+        <div class="header-block elapsed-block" id="elapsedBlock" hidden>
+          <div class="tracker-label">Elapsed</div>
+          <div class="elapsed-value" id="elapsedValue">0m</div>
+        </div>
+
+        <div class="header-block recent-block" id="recentBlock">
           <div class="recent-label">Recent Picks</div>
           <div class="recent-strip" id="recentStrip"></div>
         </div>
@@ -47,16 +57,17 @@
           <a class="qr-code" id="qrCode" href="team-picks.html" title="Open Team Picks lookup"></a>
           <div class="qr-label">Scan for<br />Team Picks</div>
         </div>
-
-        <div class="header-block setup-block">
-          <a class="setup-link" href="setup.html" title="Draft setup"><span id="setupGear"></span></a>
-        </div>
       </header>
 
       <main class="board-grid" id="boardGrid"></main>
 
       <footer class="board-ticker" id="boardTicker">
-        <div class="ticker-track" id="tickerTrack"></div>
+        <div class="ticker-row message-row" id="messageRow" hidden>
+          <div class="ticker-track" id="messageTrack"></div>
+        </div>
+        <div class="ticker-row news-row" id="newsRow">
+          <div class="ticker-track" id="tickerTrack"></div>
+        </div>
       </footer>
 
     </div>

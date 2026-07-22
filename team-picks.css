@@ -223,6 +223,7 @@ body {
 .roster-row.filled.pos-RB { border-color: var(--rb); }
 .roster-row.filled.pos-WR { border-color: var(--wr); }
 .roster-row.filled.pos-TE { border-color: var(--te); }
+.roster-row.filled.pos-DEF { border-color: var(--def); }
 
 .roster-slot-tag {
   flex: none;
