@@ -79,6 +79,8 @@
   function renderGrid() {
     const cells = [];
     cells.push(`<div class="grid-header-cell corner">Team</div>`);
+    cells.push(`<div class="grid-header-cell">Max Bid</div>`);
+    cells.push(`<div class="grid-header-cell">Remaining</div>`);
     ROSTER_SLOTS.forEach((slot) => {
       const posClass = POSITION_COLOR_VAR[slot] ? `pos-${slot}` : "";
       cells.push(`<div class="grid-header-cell ${posClass}">${slot}</div>`);
@@ -87,10 +89,12 @@
     TEAMS.forEach((team) => {
       const budget = computeTeamBudget(team.id);
       const roster = getTeamRoster(team.id);
+      const tightClass = budget.open > 0 && budget.maxBid <= 1 ? " tight" : "";
       cells.push(`<div class="team-cell">
         <div class="team-name-row"><span class="dot" style="background:${team.color}; color:${team.color}"></span>${team.name}</div>
-        <div class="team-budget-row">Max Bid <span class="b-max">$${budget.maxBid}</span> &nbsp;·&nbsp; <span class="b-rem">Remaining $${budget.remaining}</span></div>
       </div>`);
+      cells.push(`<div class="budget-cell max-bid"><span class="bc-label">Max Bid</span><span class="bc-value">$${budget.maxBid}</span></div>`);
+      cells.push(`<div class="budget-cell remaining${tightClass}"><span class="bc-label">Remaining</span><span class="bc-value">$${budget.remaining}</span></div>`);
 
       roster.slots.forEach((pick) => {
         if (!pick) {
@@ -109,10 +113,11 @@
 
   function fitGridToRosterSize() {
     const rootStyle = getComputedStyle(document.documentElement);
-    const teamColPx = parseFloat(rootStyle.getPropertyValue("--team-col")) || 300;
+    const teamColPx = parseFloat(rootStyle.getPropertyValue("--team-col")) || 260;
+    const budgetColPx = parseFloat(rootStyle.getPropertyValue("--budget-col")) || 160;
     const slotColPx = parseFloat(rootStyle.getPropertyValue("--slot-col")) || 146;
-    grid.style.gridTemplateColumns = `var(--team-col) repeat(${ROSTER_SLOTS.length}, var(--slot-col))`;
-    boardContent.style.setProperty("--board-width", `${teamColPx + ROSTER_SLOTS.length * slotColPx}px`);
+    grid.style.gridTemplateColumns = `var(--team-col) var(--budget-col) var(--budget-col) repeat(${ROSTER_SLOTS.length}, var(--slot-col))`;
+    boardContent.style.setProperty("--board-width", `${teamColPx + budgetColPx * 2 + ROSTER_SLOTS.length * slotColPx}px`);
   }
 
   await configReady;

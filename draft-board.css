@@ -1,6 +1,7 @@
 :root {
   --board-width: 2200px;
-  --team-col: 330px;
+  --team-col: 260px;
+  --budget-col: 160px;
   --slot-col: 146px;
 }
 
@@ -125,7 +126,7 @@ body { overflow: hidden; height: 100vh; }
   flex: 1 1 auto;
   overflow-y: auto;
   display: grid;
-  grid-template-columns: var(--team-col) repeat(13, var(--slot-col));
+  grid-template-columns: var(--team-col) var(--budget-col) var(--budget-col) repeat(13, var(--slot-col));
   align-content: start;
   background: var(--bg);
 }
@@ -153,15 +154,26 @@ body { overflow: hidden; height: 100vh; }
   padding: 10px 14px;
   border-bottom: 1px solid var(--border-soft);
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 3px;
+  align-items: center;
   background: var(--panel);
 }
-.team-name-row { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: var(--text); }
-.team-budget-row { font-size: 16px; color: var(--text-dim); padding-left: 18px; }
-.team-budget-row .b-max { color: var(--gold-bright); font-weight: 800; font-size: 17px; }
-.team-budget-row .b-rem { color: var(--text); font-weight: 700; font-size: 17px; }
+.team-name-row { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 800; color: var(--text); line-height: 1.25; }
+
+.budget-cell {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  border-left: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+}
+.budget-cell .bc-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-faint); margin-bottom: 2px; }
+.budget-cell .bc-value { font-size: 30px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.budget-cell.max-bid .bc-value { color: var(--gold-bright); text-shadow: 0 0 14px rgba(242, 193, 78, 0.35); }
+.budget-cell.remaining .bc-value { color: var(--text); }
+.budget-cell.remaining.tight .bc-value { color: var(--qb-glow); }
 
 .slot-cell {
   margin: 5px;

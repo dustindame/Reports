@@ -17,6 +17,7 @@
   const slideHandle = document.getElementById("slideHandle");
   const slideProgress = document.getElementById("slideProgress");
   const sclMain = document.getElementById("sclMain");
+  const recentPicksList = document.getElementById("recentPicksList");
 
   document.getElementById("footballIcon").innerHTML = Icons.football(26, "var(--qb)");
   document.getElementById("footballIcon2").innerHTML = Icons.football(26, "var(--qb)");
@@ -55,6 +56,66 @@
         updateConfirmState();
       });
     });
+
+    renderRecentPicks();
+  }
+
+  /* ---------------- Recent picks / undo ---------------- */
+
+  function renderRecentPicks() {
+    const recent = MOCK_DRAFT.picks.slice(-8).reverse();
+    if (recent.length === 0) {
+      recentPicksList.innerHTML = `<div class="recent-picks-empty">No picks yet.</div>`;
+      return;
+    }
+    recentPicksList.innerHTML = recent
+      .map((pick) => {
+        const team = teamById(pick.teamId);
+        return `<div class="recent-pick-row">
+          <span class="rp-team-dot" style="background:${team.color}; color:${team.color}"></span>
+          <div class="rp-info">
+            <div class="rp-name">${pick.name}<span class="rp-pos">${pick.position}</span></div>
+            <div class="rp-team">${team.name} · $${pick.price}</div>
+          </div>
+          <button class="rp-undo" data-pick-id="${pick.id}" aria-label="Undo this pick">✕</button>
+        </div>`;
+      })
+      .join("");
+
+    recentPicksList.querySelectorAll(".rp-undo").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const pickId = btn.dataset.pickId;
+        const pick = MOCK_DRAFT.picks.find((p) => p.id === pickId);
+        if (!pick) return;
+        const team = teamById(pick.teamId);
+        if (!window.confirm(`Remove ${pick.name} ($${pick.price}) from ${team.name}?`)) return;
+        await undoPick(pickId);
+      });
+    });
+  }
+
+  async function undoPick(pickId) {
+    if (!CURRENT_LEAGUE_CODE) {
+      removePickLocally(pickId);
+      showToast("Pick undone (demo)");
+    } else {
+      const pinHash = LeagueSession.getPinHash(CURRENT_LEAGUE_CODE);
+      const { error } = await DraftStore.deletePick(pickId, pinHash);
+      if (error) {
+        if (error === "Incorrect commissioner PIN.") {
+          LeagueSession.clearPinHash(CURRENT_LEAGUE_CODE);
+          showToast("Wrong PIN — try again");
+          await ensurePinUnlocked();
+        } else {
+          showToast(`Couldn't undo: ${error}`);
+        }
+        return;
+      }
+      removePickLocally(pickId);
+      showToast("Pick undone");
+    }
+    await renderTeamGrid();
+    updateBidCap();
   }
 
   function updateBidCap() {
@@ -225,7 +286,7 @@
       const roster = getTeamRoster(selectedTeamId);
       const slotIndex = findOpenSlotIndex(roster, selectedPlayer.position);
       if (slotIndex !== -1) {
-        const pick = { pickNumber: MOCK_DRAFT.picks.length + 1, teamId: selectedTeamId, slotIndex, name: selectedPlayer.name, position: selectedPlayer.position, price };
+        const pick = { id: crypto.randomUUID(), pickNumber: MOCK_DRAFT.picks.length + 1, teamId: selectedTeamId, slotIndex, name: selectedPlayer.name, position: selectedPlayer.position, price };
         roster.slots[slotIndex] = pick;
         MOCK_DRAFT.picks.push(pick);
       }

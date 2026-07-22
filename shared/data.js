@@ -353,6 +353,18 @@ const DraftStore = {
     return { error: null };
   },
 
+  async deletePick(pickId, pinHash) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
+    const { data, error } = await supabaseClient.rpc("delete_pick", {
+      p_league_code: CURRENT_LEAGUE_CODE,
+      p_pin_hash: pinHash,
+      p_pick_id: pickId,
+    });
+    if (error) return { error: error.message };
+    if (data === false) return { error: "Incorrect commissioner PIN." };
+    return { error: null };
+  },
+
   async getPicks() {
     if (!supabaseClient || !CURRENT_LEAGUE_CODE) return [];
     const { data, error } = await supabaseClient
@@ -416,12 +428,25 @@ async function applyLivePicks() {
     if (!roster) return;
     const slotIndex = findOpenSlotIndex(roster, lp.position);
     if (slotIndex === -1) return;
-    const pick = { pickNumber: MOCK_DRAFT.picks.length + 1, teamId: lp.teamId, slotIndex, name: lp.name, position: lp.position, price: lp.price };
+    const pick = { id: lp.id, pickNumber: MOCK_DRAFT.picks.length + 1, teamId: lp.teamId, slotIndex, name: lp.name, position: lp.position, price: lp.price };
     roster.slots[slotIndex] = pick;
     MOCK_DRAFT.picks.push(pick);
     changed = true;
   });
   return changed;
+}
+
+/* Removes a pick from the in-memory draft state right after a successful
+   delete_pick RPC call, so the UI updates immediately without waiting for
+   a Realtime round-trip. Safe to call even if the pick isn't found. */
+function removePickLocally(pickId) {
+  const idx = MOCK_DRAFT.picks.findIndex((p) => p.id === pickId);
+  if (idx === -1) return;
+  const [removed] = MOCK_DRAFT.picks.splice(idx, 1);
+  const roster = getTeamRoster(removed.teamId);
+  if (roster && roster.slots[removed.slotIndex] && roster.slots[removed.slotIndex].id === pickId) {
+    roster.slots[removed.slotIndex] = null;
+  }
 }
 
 /* Used only if the live RSS fetch below fails (offline, feed down, etc.) —

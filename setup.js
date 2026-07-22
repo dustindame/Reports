@@ -297,7 +297,9 @@
     renderTeamNames();
   });
   budgetInput.addEventListener("input", () => {
-    budget = Math.max(1, Number(budgetInput.value) || 0);
+    const digitsOnly = budgetInput.value.replace(/[^0-9]/g, "");
+    if (digitsOnly !== budgetInput.value) budgetInput.value = digitsOnly;
+    budget = Math.max(1, Number(digitsOnly) || 0);
   });
 
   haveCodeBtn.addEventListener("click", async () => {
@@ -308,6 +310,34 @@
   });
 
   switchToCreateBtn.addEventListener("click", switchToCreate);
+
+  function showCreatedConfirmation(code, pin) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement("div");
+      overlay.className = "league-gate-overlay";
+      overlay.innerHTML = `
+        <div class="league-gate-card">
+          <div class="league-gate-icon">✅</div>
+          <h2 class="league-gate-title">League Created!</h2>
+          <p class="league-gate-hint">Write these down — the PIN can't be recovered if lost.</p>
+          <div class="created-field">
+            <span class="created-label">League Code</span>
+            <span class="created-value">${escapeHtml(code)}</span>
+          </div>
+          <div class="created-field">
+            <span class="created-label">Commissioner PIN</span>
+            <span class="created-value">${escapeHtml(pin)}</span>
+          </div>
+          <button class="league-gate-continue" id="createdContinue">CONTINUE TO ENTER PICK</button>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      overlay.querySelector("#createdContinue").addEventListener("click", () => {
+        overlay.remove();
+        resolve();
+      });
+    });
+  }
 
   saveBtn.addEventListener("click", async () => {
     statusMsg.hidden = true;
@@ -322,25 +352,26 @@
     }
 
     let pinHash;
+    let plainPin = null;
     if (mode === "create") {
-      const pin = pinInput.value.trim();
+      plainPin = pinInput.value.trim();
       const pinConfirm = pinConfirmInput.value.trim();
-      if (pin.length < 4) {
+      if (plainPin.length < 4) {
         showStatus("PIN must be at least 4 characters.", true);
         return;
       }
-      if (pin !== pinConfirm) {
+      if (plainPin !== pinConfirm) {
         showStatus("PINs don't match.", true);
         return;
       }
-      pinHash = await sha256Hex(pin);
+      pinHash = await sha256Hex(plainPin);
     } else {
       pinHash = LeagueSession.getPinHash(leagueCode);
     }
 
     const confirmMessage =
       mode === "create"
-        ? `Create a new league: ${numTeams} teams, $${budget} budget, ${slots} roster slots per team. Your league code is ${leagueCode} — make sure you've saved it and your PIN. Continue?`
+        ? `Create a new league: ${numTeams} teams, $${budget} budget, ${slots} roster slots per team. Continue?`
         : `Save changes to league ${leagueCode}: ${numTeams} teams, $${budget} budget, ${slots} roster slots per team — this clears any picks already made. Continue?`;
     if (!window.confirm(confirmMessage)) return;
 
@@ -364,6 +395,10 @@
 
     LeagueSession.setLeagueCode(leagueCode);
     LeagueSession.setPinHash(leagueCode, pinHash);
+
+    if (mode === "create") {
+      await showCreatedConfirmation(leagueCode, plainPin);
+    }
     window.location.href = "player-entry.html";
   });
 
