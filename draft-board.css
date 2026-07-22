@@ -1,8 +1,13 @@
 :root {
   --board-width: 2200px;
-  --team-col: 260px;
-  --budget-col: 160px;
-  --slot-col: 146px;
+  /* Minimums only -- draft-board.js scales these up together to fill
+     whatever screen width is available, so the whole board is visible at
+     once without needing to zoom out or scroll horizontally. Falls back
+     to these minimums (with horizontal scroll) only if the roster is too
+     wide to fit even at minimum readable size. */
+  --team-col-min: 210px;
+  --budget-col-min: 130px;
+  --slot-col-min: 100px;
 }
 
 body { overflow: hidden; height: 100vh; }
@@ -192,8 +197,7 @@ body { overflow: hidden; height: 100vh; }
   justify-content: center;
   background: var(--panel);
 }
-.budget-cell .bc-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-faint); margin-bottom: 2px; }
-.budget-cell .bc-value { font-size: 30px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.budget-cell .bc-value { font-size: 32px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
 .budget-cell.max-bid .bc-value { color: var(--gold-bright); text-shadow: 0 0 14px rgba(242, 193, 78, 0.35); }
 .budget-cell.remaining .bc-value { color: var(--text); }
 .budget-cell.remaining.tight .bc-value { color: var(--qb-glow); }
@@ -251,6 +255,16 @@ body { overflow: hidden; height: 100vh; }
 .ticker-track span.ticker-item {
   padding: 0 32px;
   border-right: 1px solid var(--border);
+}
+.ticker-track span.ticker-item.fan-message {
+  margin: 6px 10px;
+  padding: 4px 20px;
+  border: 2px solid #59c2f0;
+  border-right: 2px solid #59c2f0;
+  border-radius: 999px;
+  background: #0076b6;
+  color: #fff;
+  font-weight: 800;
 }
 
 @keyframes ticker-scroll {

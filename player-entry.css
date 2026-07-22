@@ -262,6 +262,7 @@ body {
 .team-box-stat {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.92);

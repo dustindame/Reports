@@ -1,4 +1,5 @@
 (async function () {
+  const boardScroll = document.getElementById("boardScroll");
   const boardContent = document.getElementById("boardContent");
   const grid = document.getElementById("boardGrid");
   const draftedValue = document.getElementById("draftedValue");
@@ -61,6 +62,7 @@
   }
 
   let tickerHeadlines = FALLBACK_NEWS_TICKER;
+  let boardMessages = [];
 
   // Fixed-duration scroll made the crawl speed up as more real headlines
   // loaded in (same 60s to cover a longer track = faster). Pin the actual
@@ -69,11 +71,13 @@
   const TICKER_PX_PER_SEC = 55;
 
   function renderTicker() {
-    const items = tickerHeadlines
-      .concat(tickerHeadlines)
-      .map((t) => `<span class="ticker-item">${t}</span>`)
-      .join("");
-    tickerTrack.innerHTML = items;
+    // Fan messages are untrusted user input (posted from Team Picks), so
+    // they must be escaped -- headlines are already escaped where they're
+    // fetched, and the fallback list is static/trusted.
+    const headlineItems = tickerHeadlines.map((t) => `<span class="ticker-item">${t}</span>`);
+    const messageItems = boardMessages.map((m) => `<span class="ticker-item fan-message">📣 ${escapeHtml(m.text)}</span>`);
+    const single = headlineItems.concat(messageItems);
+    tickerTrack.innerHTML = single.concat(single).join("");
     const distance = tickerTrack.scrollWidth / 2;
     const duration = Math.max(20, distance / TICKER_PX_PER_SEC);
     tickerTrack.style.animationDuration = `${duration}s`;
@@ -85,6 +89,11 @@
       tickerHeadlines = live;
       renderTicker();
     }
+  }
+
+  async function loadMessages() {
+    boardMessages = await DraftStore.getMessages(10);
+    renderTicker();
   }
 
   function renderGrid() {
@@ -104,8 +113,8 @@
       cells.push(`<div class="team-cell">
         <div class="team-name-row"><span class="dot" style="background:${team.color}; color:${team.color}"></span>${team.name}</div>
       </div>`);
-      cells.push(`<div class="budget-cell max-bid"><span class="bc-label">Max Bid</span><span class="bc-value">$${budget.maxBid}</span></div>`);
-      cells.push(`<div class="budget-cell remaining${tightClass}"><span class="bc-label">Remaining</span><span class="bc-value">$${budget.remaining}</span></div>`);
+      cells.push(`<div class="budget-cell max-bid"><span class="bc-value">$${budget.maxBid}</span></div>`);
+      cells.push(`<div class="budget-cell remaining${tightClass}"><span class="bc-value">$${budget.remaining}</span></div>`);
 
       roster.slots.forEach((pick) => {
         if (!pick) {
@@ -122,13 +131,28 @@
     grid.innerHTML = cells.join("");
   }
 
+  // Scales the team/budget/slot columns up together to exactly fill the
+  // available screen width, so the whole board (every position column)
+  // is visible at once without zooming out or scrolling sideways. Only
+  // falls back to the CSS minimums -- with horizontal scroll -- if the
+  // roster is too wide to fit even at minimum readable size.
   function fitGridToRosterSize() {
     const rootStyle = getComputedStyle(document.documentElement);
-    const teamColPx = parseFloat(rootStyle.getPropertyValue("--team-col")) || 260;
-    const budgetColPx = parseFloat(rootStyle.getPropertyValue("--budget-col")) || 160;
-    const slotColPx = parseFloat(rootStyle.getPropertyValue("--slot-col")) || 146;
-    grid.style.gridTemplateColumns = `var(--team-col) var(--budget-col) var(--budget-col) repeat(${ROSTER_SLOTS.length}, var(--slot-col))`;
-    boardContent.style.setProperty("--board-width", `${teamColPx + budgetColPx * 2 + ROSTER_SLOTS.length * slotColPx}px`);
+    const teamColMin = parseFloat(rootStyle.getPropertyValue("--team-col-min")) || 210;
+    const budgetColMin = parseFloat(rootStyle.getPropertyValue("--budget-col-min")) || 130;
+    const slotColMin = parseFloat(rootStyle.getPropertyValue("--slot-col-min")) || 100;
+    const numSlots = ROSTER_SLOTS.length;
+
+    const minTotal = teamColMin + budgetColMin * 2 + numSlots * slotColMin;
+    const availableWidth = boardScroll.clientWidth;
+    const scale = Math.max(1, availableWidth / minTotal);
+
+    const teamColPx = Math.round(teamColMin * scale);
+    const budgetColPx = Math.round(budgetColMin * scale);
+    const slotColPx = Math.round(slotColMin * scale);
+
+    grid.style.gridTemplateColumns = `${teamColPx}px ${budgetColPx}px ${budgetColPx}px repeat(${numSlots}, ${slotColPx}px)`;
+    boardContent.style.setProperty("--board-width", `${teamColPx + budgetColPx * 2 + numSlots * slotColPx}px`);
   }
 
   await configReady;
@@ -140,10 +164,20 @@
   renderTicker();
   renderGrid();
 
+  window.addEventListener("resize", fitGridToRosterSize);
+
   // Fetch real NFL headlines in the background (don't block first paint —
   // the fallback list above renders immediately) and keep them fresh.
   refreshTicker();
   setInterval(refreshTicker, 10 * 60 * 1000);
+
+  // Fan messages posted from Team Picks (e.g. after scanning the QR code)
+  // stream in here too, highlighted differently in the ticker.
+  await loadMessages();
+  DraftStore.onMessage((message) => {
+    boardMessages = [message, ...boardMessages].slice(0, 10);
+    renderTicker();
+  });
 
   // A pick confirmed on the Player Entry screen streams in here via
   // Supabase Realtime — fold it in and refresh the affected panels.

@@ -6,6 +6,7 @@
   const budgetRow = document.getElementById("budgetRow");
   const rosterList = document.getElementById("rosterList");
   const backBtn = document.getElementById("backBtn");
+  const messageFab = document.getElementById("messageFab");
 
   document.getElementById("headerFootball").innerHTML = Icons.helmet(24);
   document.getElementById("backIcon").innerHTML = Icons.chevronLeft(16);
@@ -72,7 +73,63 @@
 
   backBtn.addEventListener("click", showPicker);
 
+  /* ---------------- Fan message to the Draft Board ---------------- */
+
+  function showMessageComposer() {
+    return new Promise((resolve) => {
+      const overlay = document.createElement("div");
+      overlay.className = "league-gate-overlay";
+      overlay.innerHTML = `
+        <div class="league-gate-card">
+          <div class="league-gate-icon">📣</div>
+          <h2 class="league-gate-title">Send a Message</h2>
+          <p class="league-gate-hint">Shows up highlighted in the Draft Board's news scroll for everyone to see.</p>
+          <input type="text" class="league-gate-input" id="boardMessageInput" maxlength="80" placeholder="Say something..." autocomplete="off" />
+          <div class="league-gate-error" id="boardMessageError" hidden></div>
+          <button class="league-gate-continue" id="boardMessageSend">SEND</button>
+          <button class="league-gate-secondary" id="boardMessageCancel">Cancel</button>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      const input = overlay.querySelector("#boardMessageInput");
+      const errorEl = overlay.querySelector("#boardMessageError");
+      const sendBtn = overlay.querySelector("#boardMessageSend");
+      const cancelBtn = overlay.querySelector("#boardMessageCancel");
+      input.focus();
+
+      async function submit() {
+        const text = input.value.trim();
+        if (!text) return;
+        sendBtn.disabled = true;
+        sendBtn.textContent = "SENDING...";
+        const { error } = await DraftStore.sendMessage(text);
+        if (error) {
+          errorEl.textContent = error;
+          errorEl.hidden = false;
+          sendBtn.disabled = false;
+          sendBtn.textContent = "SEND";
+          return;
+        }
+        overlay.remove();
+        resolve();
+      }
+
+      sendBtn.addEventListener("click", submit);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") submit();
+      });
+      cancelBtn.addEventListener("click", () => {
+        overlay.remove();
+        resolve(null);
+      });
+    });
+  }
+
+  messageFab.addEventListener("click", () => showMessageComposer());
+
   await configReady;
+  messageFab.hidden = !CURRENT_LEAGUE_CODE; // demo mode has no league to post to
   await applyLivePicks();
   DraftStore.onChange(async () => {
     await applyLivePicks();
