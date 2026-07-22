@@ -337,7 +337,7 @@
       // message-ticker pipeline as fan shout-outs. Fire-and-forget --
       // nothing about the pick itself depends on these succeeding.
       if (NICE_ENABLED && price === 69) {
-        DraftStore.sendMessage("Nice! Nice! Nice! Nice! Nice!");
+        DraftStore.sendMessage("Nice! Nice! Nice! Nice! Nice!", { priority: true });
       }
       if (SHOT_PICK_NUMBERS.includes(pickNumber)) {
         DraftStore.sendMessage(`🍺 ${team.name} — take a shot!`);

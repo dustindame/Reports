@@ -265,7 +265,9 @@ body {
   cursor: pointer;
 }
 .toggle-row-label { font-size: 13px; font-weight: 700; color: var(--text); }
-.inline-stepper { display: flex; align-items: center; gap: 12px; flex: none; }
+.inline-stepper { display: flex; align-items: center; gap: 10px; flex: none; }
+.inline-stepper .stepper-btn { width: 30px; height: 30px; font-size: 16px; }
+.inline-stepper .stepper-value { min-width: 20px; font-size: 15px; }
 .toggle-switch {
   appearance: none;
   -webkit-appearance: none;

@@ -20,11 +20,14 @@ body { overflow: hidden; height: 100vh; }
 }
 
 .board-content {
-  /* No explicit width -- it needs to size to whichever of header/grid/
-     footer is naturally widest, so all three end up the same width. A
-     fixed width here (previously a stale, never-updated CSS var) let the
-     header/footer stretch to fill it while the grid's own column widths
-     came out narrower, so the grid visibly didn't span the full board. */
+  /* Width is set explicitly by draft-board.js, computed from the header
+     and grid only (never the ticker -- the news ticker's concatenated
+     headline track is enormous by design, since it needs content to
+     scroll through, and letting the board auto-size to "whichever child
+     is widest" let that huge ticker content balloon the whole board,
+     which then had to be zoomed way down to fit -- making the grid look
+     tiny). The ticker instead just fills whatever width this ends up
+     being and clips its own overflow. */
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -261,6 +264,8 @@ body { overflow: hidden; height: 100vh; }
 
 .board-ticker {
   flex: none;
+  width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background: var(--panel);
@@ -268,6 +273,8 @@ body { overflow: hidden; height: 100vh; }
 }
 
 .ticker-row {
+  width: 100%;
+  min-width: 0;
   height: 44px;
   overflow: hidden;
   display: flex;

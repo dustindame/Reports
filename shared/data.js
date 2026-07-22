@@ -466,11 +466,13 @@ const DraftStore = {
      Draft Board's QR code), shown highlighted in the Draft Board's news
      ticker. No PIN needed: unlike picks/setup this can't alter draft
      state, so it's open to anyone with the league code. */
-  async sendMessage(text) {
+  async sendMessage(text, options = {}) {
     if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
     const trimmed = text.trim().slice(0, 80);
     if (!trimmed) return { error: "Message can't be empty." };
-    const { error } = await supabaseClient.from("board_messages").insert({ league_code: CURRENT_LEAGUE_CODE, message: trimmed });
+    const { error } = await supabaseClient
+      .from("board_messages")
+      .insert({ league_code: CURRENT_LEAGUE_CODE, message: trimmed, priority: Boolean(options.priority) });
     if (error) return { error: error.message };
     return { error: null };
   },
@@ -487,7 +489,7 @@ const DraftStore = {
       console.error("Failed to load board messages from Supabase:", error);
       return [];
     }
-    return data.map((row) => ({ id: row.id, text: row.message, createdAt: new Date(row.created_at).getTime() }));
+    return data.map((row) => ({ id: row.id, text: row.message, priority: Boolean(row.priority), createdAt: new Date(row.created_at).getTime() }));
   },
 
   onMessage(cb) {
@@ -497,7 +499,7 @@ const DraftStore = {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "board_messages", filter: `league_code=eq.${CURRENT_LEAGUE_CODE}` },
-        (payload) => cb({ id: payload.new.id, text: payload.new.message, createdAt: new Date(payload.new.created_at).getTime() })
+        (payload) => cb({ id: payload.new.id, text: payload.new.message, priority: Boolean(payload.new.priority), createdAt: new Date(payload.new.created_at).getTime() })
       )
       .subscribe();
   },
