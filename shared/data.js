@@ -31,8 +31,19 @@ let TOTAL_SLOTS;
 let MOCK_DRAFT;
 let CURRENT_LEAGUE_CODE = null;
 
+// Draft Board display config -- which header widgets to show, and its
+// custom name. Set by applyRealConfig()/applyDemoConfig(), read by
+// draft-board.js after configReady resolves.
+let BOARD_NAME = "Auction Draft Board";
+let SHOW_NEWS = true;
+let SHOW_MESSAGES = true;
+let SHOW_RECENT = true;
+let SHOW_DRAFTED_TOTAL = true;
+let SHOW_POSITION_TOTALS = false;
+let SHOW_ELAPSED_TIME = false;
+
 const FLEX_ELIGIBLE = ["RB", "WR", "TE"];
-const POSITION_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te" };
+const POSITION_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te", DEF: "--def" };
 
 const DEFAULT_TEAM_NAMES = [
   "Blitz Brigade",
@@ -115,6 +126,7 @@ const PLAYER_POOL = {
   RB: ["Christian McCaffrey", "Bijan Robinson", "Breece Hall", "Jonathan Taylor", "Saquon Barkley", "Derrick Henry", "Josh Jacobs", "Isiah Pacheco", "Kenneth Walker III", "Travis Etienne", "De'Von Achane", "Jahmyr Gibbs", "James Cook", "Rachaad White", "Alvin Kamara", "Joe Mixon", "Aaron Jones", "Najee Harris", "Tony Pollard", "Austin Ekeler", "Rhamondre Stevenson", "D'Andre Swift", "Javonte Williams", "James Conner", "Zack Moss", "Brian Robinson Jr.", "Miles Sanders", "Kareem Hunt", "Cam Akers", "Devin Singletary", "Alexander Mattison", "Chuba Hubbard", "Jerome Ford", "Roschon Johnson", "Zamir White", "Tyjae Spears", "Ezekiel Elliott", "Antonio Gibson", "Clyde Edwards-Helaire", "D'Onta Foreman", "David Montgomery", "Jaylen Warren", "Bucky Irving", "Ray Davis", "Tyler Allgeier", "Gus Edwards", "Rico Dowdle"],
   WR: ["Justin Jefferson", "Ja'Marr Chase", "Tyreek Hill", "CeeDee Lamb", "Amon-Ra St. Brown", "A.J. Brown", "Stefon Diggs", "Puka Nacua", "Garrett Wilson", "Chris Olave", "DK Metcalf", "Davante Adams", "Mike Evans", "DeVonta Smith", "Deebo Samuel", "Jaylen Waddle", "Drake London", "Terry McLaurin", "Amari Cooper", "Calvin Ridley", "Tank Dell", "Nico Collins", "Brandon Aiyuk", "Christian Kirk", "Michael Pittman Jr.", "Keenan Allen", "Jordan Addison", "Zay Flowers", "Rashee Rice", "Marquise Brown", "Diontae Johnson", "Courtland Sutton", "Jerry Jeudy", "Tyler Lockett", "Adam Thielen", "George Pickens", "Chris Godwin", "Curtis Samuel", "Gabe Davis", "Jakobi Meyers", "DJ Moore", "Xavier Worthy", "Rome Odunze", "Malik Nabers", "Marvin Harrison Jr."],
   TE: ["Travis Kelce", "Sam LaPorta", "Mark Andrews", "T.J. Hockenson", "Trey McBride", "Kyle Pitts", "George Kittle", "Dallas Goedert", "Evan Engram", "David Njoku", "Dalton Kincaid", "Cole Kmet", "Pat Freiermuth", "Jake Ferguson", "Tyler Higbee", "Hunter Henry", "Brock Bowers"],
+  DEF: ["49ers D/ST", "Ravens D/ST", "Cowboys D/ST", "Eagles D/ST", "Bills D/ST", "Jets D/ST", "Steelers D/ST", "Dolphins D/ST", "Browns D/ST", "Broncos D/ST", "Patriots D/ST", "Saints D/ST", "Colts D/ST", "Bears D/ST", "Chiefs D/ST", "Texans D/ST", "Buccaneers D/ST", "Packers D/ST", "Chargers D/ST", "Lions D/ST"],
 };
 
 const ALL_PLAYERS = Object.entries(PLAYER_POOL).flatMap(([position, names]) =>
@@ -231,6 +243,14 @@ function applyRealConfig(config, leagueCode) {
   BUDGET = config.budget;
   TOTAL_SLOTS = TEAMS.length * ROSTER_SLOTS.length;
   MOCK_DRAFT = buildEmptyDraft();
+
+  BOARD_NAME = config.board_name || "Auction Draft Board";
+  SHOW_NEWS = config.show_news !== false;
+  SHOW_MESSAGES = config.show_messages !== false;
+  SHOW_RECENT = config.show_recent !== false;
+  SHOW_DRAFTED_TOTAL = config.show_drafted_total !== false;
+  SHOW_POSITION_TOTALS = Boolean(config.show_position_totals);
+  SHOW_ELAPSED_TIME = Boolean(config.show_elapsed_time);
 }
 
 function applyDemoConfig() {
@@ -240,6 +260,14 @@ function applyDemoConfig() {
   BUDGET = DEFAULT_BUDGET;
   TOTAL_SLOTS = TEAMS.length * ROSTER_SLOTS.length;
   MOCK_DRAFT = buildMockDraft();
+
+  BOARD_NAME = "Auction Draft Board";
+  SHOW_NEWS = true;
+  SHOW_MESSAGES = true;
+  SHOW_RECENT = true;
+  SHOW_DRAFTED_TOTAL = true;
+  SHOW_POSITION_TOTALS = false;
+  SHOW_ELAPSED_TIME = false;
 }
 
 function getTeamRoster(teamId) {
@@ -285,7 +313,9 @@ const DraftStore = {
     if (!supabaseClient || !leagueCode) return null;
     const { data, error } = await supabaseClient
       .from("draft_config")
-      .select("id, league_code, num_teams, budget, team_names, roster_slots, updated_at")
+      .select(
+        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time"
+      )
       .eq("league_code", leagueCode)
       .maybeSingle();
     if (error) {
@@ -295,7 +325,7 @@ const DraftStore = {
     return data;
   },
 
-  async createLeague({ leagueCode, pinHash, teamNames, budget, rosterSlots }) {
+  async createLeague({ leagueCode, pinHash, teamNames, budget, rosterSlots, boardOptions = {} }) {
     if (!supabaseClient) return { error: "Supabase isn't configured yet — see shared/supabase-config.js." };
     const { data, error } = await supabaseClient.rpc("create_league", {
       p_league_code: leagueCode,
@@ -304,12 +334,19 @@ const DraftStore = {
       p_budget: budget,
       p_team_names: teamNames,
       p_roster_slots: rosterSlots,
+      p_board_name: boardOptions.boardName || "Auction Draft Board",
+      p_show_news: boardOptions.showNews !== false,
+      p_show_messages: boardOptions.showMessages !== false,
+      p_show_recent: boardOptions.showRecent !== false,
+      p_show_drafted_total: boardOptions.showDraftedTotal !== false,
+      p_show_position_totals: Boolean(boardOptions.showPositionTotals),
+      p_show_elapsed_time: Boolean(boardOptions.showElapsedTime),
     });
     if (error) return { error: error.message };
     return { error: null, id: data };
   },
 
-  async updateLeague({ leagueCode, pinHash, teamNames, budget, rosterSlots, clearPicks = true }) {
+  async updateLeague({ leagueCode, pinHash, teamNames, budget, rosterSlots, clearPicks = true, boardOptions = {} }) {
     if (!supabaseClient) return { error: "Supabase isn't configured yet — see shared/supabase-config.js." };
     const { data, error } = await supabaseClient.rpc("update_league", {
       p_league_code: leagueCode,
@@ -319,6 +356,13 @@ const DraftStore = {
       p_team_names: teamNames,
       p_roster_slots: rosterSlots,
       p_clear_picks: clearPicks,
+      p_board_name: boardOptions.boardName || "Auction Draft Board",
+      p_show_news: boardOptions.showNews !== false,
+      p_show_messages: boardOptions.showMessages !== false,
+      p_show_recent: boardOptions.showRecent !== false,
+      p_show_drafted_total: boardOptions.showDraftedTotal !== false,
+      p_show_position_totals: Boolean(boardOptions.showPositionTotals),
+      p_show_elapsed_time: Boolean(boardOptions.showElapsedTime),
     });
     if (error) return { error: error.message };
     if (data === false) return { error: "Incorrect commissioner PIN." };
@@ -490,7 +534,7 @@ async function applyLivePicks() {
     if (!roster) return;
     const slotIndex = findOpenSlotIndex(roster, lp.position);
     if (slotIndex === -1) return;
-    const pick = { id: lp.id, pickNumber: MOCK_DRAFT.picks.length + 1, teamId: lp.teamId, slotIndex, name: lp.name, position: lp.position, price: lp.price };
+    const pick = { id: lp.id, pickNumber: MOCK_DRAFT.picks.length + 1, teamId: lp.teamId, slotIndex, name: lp.name, position: lp.position, price: lp.price, loggedAt: lp.loggedAt };
     roster.slots[slotIndex] = pick;
     MOCK_DRAFT.picks.push(pick);
     changed = true;

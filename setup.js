@@ -15,6 +15,13 @@
   const slotRows = document.getElementById("slotRows");
   const totalSlotsValue = document.getElementById("totalSlotsValue");
   const teamNamesList = document.getElementById("teamNamesList");
+  const boardNameInput = document.getElementById("boardNameInput");
+  const toggleNews = document.getElementById("toggleNews");
+  const toggleMessages = document.getElementById("toggleMessages");
+  const toggleRecent = document.getElementById("toggleRecent");
+  const toggleDraftedTotal = document.getElementById("toggleDraftedTotal");
+  const togglePositionTotals = document.getElementById("togglePositionTotals");
+  const toggleElapsedTime = document.getElementById("toggleElapsedTime");
   const warningBox = document.getElementById("warningBox");
   const statusMsg = document.getElementById("statusMsg");
   const saveBtn = document.getElementById("saveBtn");
@@ -25,16 +32,24 @@
   document.getElementById("pylonLeft").innerHTML = Icons.pylon(18);
   document.getElementById("pylonRight").innerHTML = Icons.pylon(18);
 
-  const SLOT_TYPES = ["QB", "RB", "WR", "TE", "FLEX", "BENCH"];
-  const SLOT_LABELS = { QB: "Quarterback", RB: "Running Back", WR: "Wide Receiver", TE: "Tight End", FLEX: "Flex", BENCH: "Bench" };
-  const SLOT_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te", FLEX: "--gold", BENCH: "--text-faint" };
+  const SLOT_TYPES = ["QB", "RB", "WR", "TE", "DEF", "FLEX", "BENCH"];
+  const SLOT_LABELS = { QB: "Quarterback", RB: "Running Back", WR: "Wide Receiver", TE: "Tight End", DEF: "Defense/Special Teams", FLEX: "Flex", BENCH: "Bench" };
+  const SLOT_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te", DEF: "--def", FLEX: "--gold", BENCH: "--text-faint" };
+  const DEFAULT_SLOT_COUNTS = { QB: 1, RB: 2, WR: 2, TE: 1, DEF: 0, FLEX: 2, BENCH: 5 };
 
   let mode = "create"; // or "edit"
   let leagueCode = generateLeagueCode();
   let numTeams = DEFAULT_NUM_TEAMS;
   let budget = DEFAULT_BUDGET;
-  let slotCounts = { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 2, BENCH: 5 };
+  let slotCounts = { ...DEFAULT_SLOT_COUNTS };
   let teamNames = DEFAULT_TEAM_NAMES.slice(0, numTeams);
+  let boardName = "";
+  let showNews = true;
+  let showMessages = true;
+  let showRecent = true;
+  let showDraftedTotal = true;
+  let showPositionTotals = false;
+  let showElapsedTime = false;
 
   /* ---------------- small overlay prompts (reuses shared/league-gate.css) ---------------- */
 
@@ -149,11 +164,18 @@
     numTeams = config.num_teams;
     budget = config.budget;
     teamNames = config.team_names.slice();
-    const counts = { QB: 0, RB: 0, WR: 0, TE: 0, FLEX: 0, BENCH: 0 };
+    const counts = { QB: 0, RB: 0, WR: 0, TE: 0, DEF: 0, FLEX: 0, BENCH: 0 };
     config.roster_slots.forEach((s) => {
       if (counts[s] !== undefined) counts[s] += 1;
     });
     slotCounts = counts;
+    boardName = config.board_name || "";
+    showNews = config.show_news !== false;
+    showMessages = config.show_messages !== false;
+    showRecent = config.show_recent !== false;
+    showDraftedTotal = config.show_drafted_total !== false;
+    showPositionTotals = Boolean(config.show_position_totals);
+    showElapsedTime = Boolean(config.show_elapsed_time);
   }
 
   function switchToCreate() {
@@ -161,8 +183,15 @@
     leagueCode = generateLeagueCode();
     numTeams = DEFAULT_NUM_TEAMS;
     budget = DEFAULT_BUDGET;
-    slotCounts = { QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 2, BENCH: 5 };
+    slotCounts = { ...DEFAULT_SLOT_COUNTS };
     teamNames = DEFAULT_TEAM_NAMES.slice(0, numTeams);
+    boardName = "";
+    showNews = true;
+    showMessages = true;
+    showRecent = true;
+    showDraftedTotal = true;
+    showPositionTotals = false;
+    showElapsedTime = false;
     renderAll();
   }
 
@@ -270,6 +299,13 @@
     renderSlotRows();
     renderTotalSlots();
     renderTeamNames();
+    boardNameInput.value = boardName;
+    toggleNews.checked = showNews;
+    toggleMessages.checked = showMessages;
+    toggleRecent.checked = showRecent;
+    toggleDraftedTotal.checked = showDraftedTotal;
+    togglePositionTotals.checked = showPositionTotals;
+    toggleElapsedTime.checked = showElapsedTime;
   }
 
   function showStatus(message, isError) {
@@ -324,6 +360,16 @@
   });
 
   switchToCreateBtn.addEventListener("click", switchToCreate);
+
+  boardNameInput.addEventListener("input", () => {
+    boardName = boardNameInput.value;
+  });
+  toggleNews.addEventListener("change", () => { showNews = toggleNews.checked; });
+  toggleMessages.addEventListener("change", () => { showMessages = toggleMessages.checked; });
+  toggleRecent.addEventListener("change", () => { showRecent = toggleRecent.checked; });
+  toggleDraftedTotal.addEventListener("change", () => { showDraftedTotal = toggleDraftedTotal.checked; });
+  togglePositionTotals.addEventListener("change", () => { showPositionTotals = togglePositionTotals.checked; });
+  toggleElapsedTime.addEventListener("change", () => { showElapsedTime = toggleElapsedTime.checked; });
 
   function showCreatedConfirmation(code, pin) {
     return new Promise((resolve) => {
@@ -394,11 +440,20 @@
 
     const namesToSave = teamNames.slice(0, numTeams);
     const rosterSlots = buildRosterSlotsArray();
+    const boardOptions = {
+      boardName: boardName.trim() || "Auction Draft Board",
+      showNews,
+      showMessages,
+      showRecent,
+      showDraftedTotal,
+      showPositionTotals,
+      showElapsedTime,
+    };
 
     const { error } =
       mode === "create"
-        ? await DraftStore.createLeague({ leagueCode, pinHash, teamNames: namesToSave, budget, rosterSlots })
-        : await DraftStore.updateLeague({ leagueCode, pinHash, teamNames: namesToSave, budget, rosterSlots, clearPicks: true });
+        ? await DraftStore.createLeague({ leagueCode, pinHash, teamNames: namesToSave, budget, rosterSlots, boardOptions })
+        : await DraftStore.updateLeague({ leagueCode, pinHash, teamNames: namesToSave, budget, rosterSlots, clearPicks: true, boardOptions });
 
     if (error) {
       showStatus(`Couldn't save: ${error}`, true);

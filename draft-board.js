@@ -1,17 +1,25 @@
 (async function () {
   const boardScroll = document.getElementById("boardScroll");
   const boardContent = document.getElementById("boardContent");
-  const boardHeader = document.getElementById("boardHeader");
   const grid = document.getElementById("boardGrid");
+  const boardNameText = document.getElementById("boardNameText");
+  const trackerBlock = document.getElementById("trackerBlock");
   const draftedValue = document.getElementById("draftedValue");
   const remainingValue = document.getElementById("remainingValue");
   const progressFill = document.getElementById("progressFill");
+  const positionTotalsBlock = document.getElementById("positionTotalsBlock");
+  const positionTotalsRow = document.getElementById("positionTotalsRow");
+  const elapsedBlock = document.getElementById("elapsedBlock");
+  const elapsedValue = document.getElementById("elapsedValue");
+  const recentBlock = document.getElementById("recentBlock");
   const recentStrip = document.getElementById("recentStrip");
   const qrCode = document.getElementById("qrCode");
   const clockValue = document.getElementById("clockValue");
+  const newsRow = document.getElementById("newsRow");
+  const messageRow = document.getElementById("messageRow");
   const tickerTrack = document.getElementById("tickerTrack");
+  const messageTrack = document.getElementById("messageTrack");
 
-  document.getElementById("setupGear").innerHTML = Icons.whistle(18);
   document.getElementById("fieldIcon").innerHTML = Icons.field(22, "var(--wr)");
   document.getElementById("titleFootballIcon").innerHTML = Icons.football(22, "var(--qb)");
   document.getElementById("goalPostLeft").innerHTML = Icons.goalPost(20, "#f2c14e");
@@ -48,76 +56,114 @@
     progressFill.style.width = `${(drafted / TOTAL_SLOTS) * 100}%`;
   }
 
+  function renderPositionTotals() {
+    const hasDef = ROSTER_SLOTS.includes("DEF");
+    const positions = hasDef ? ["QB", "RB", "WR", "TE", "DEF"] : ["QB", "RB", "WR", "TE"];
+    const counts = {};
+    positions.forEach((p) => { counts[p] = 0; });
+    MOCK_DRAFT.picks.forEach((p) => {
+      if (counts[p.position] !== undefined) counts[p.position] += 1;
+    });
+    positionTotalsRow.innerHTML = positions
+      .map(
+        (pos) => `<div class="pt-chip">
+          <span class="pt-pos" style="color:var(${POSITION_COLOR_VAR[pos]})">${pos}</span>
+          <span class="pt-count">${counts[pos]}</span>
+        </div>`
+      )
+      .join("");
+  }
+
+  // Elapsed time since the first pick -- in demo mode (no real timestamps)
+  // falls back to when this page was opened, just so the widget has
+  // something sensible to show.
+  const pageLoadTime = Date.now();
+  function draftStartTime() {
+    const timestamps = MOCK_DRAFT.picks.map((p) => p.loggedAt).filter(Boolean);
+    return timestamps.length ? Math.min(...timestamps) : pageLoadTime;
+  }
+  function renderElapsed() {
+    const elapsedMs = Date.now() - draftStartTime();
+    const totalMin = Math.max(0, Math.floor(elapsedMs / 60000));
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    elapsedValue.textContent = h > 0 ? `${h}h ${m}m` : `${m}m`;
+  }
+
   function renderRecent() {
     recentStrip.innerHTML = recentPicks(9)
       .map(
         (p) => `<div class="recent-chip">
           <span class="rc-pos-dot" style="background: var(${POSITION_COLOR_VAR[p.position]})"></span>
-          <span class="rc-name">${p.name}</span>
+          <span class="rc-name">${escapeHtml(p.name)}</span>
           <span class="rc-price">$${p.price}</span>
         </div>`
       )
       .join("");
   }
 
+  /* ---------------- Ticker (news) + separate message row ----------------
+     Two independent tracks/animations so a fan message arriving doesn't
+     touch the news ticker's scroll at all (previously merging them into
+     one track made the news scroll visibly jump/speed up whenever a
+     message came in). Messages show above the news, at the same speed,
+     for a fixed number of loops, then disappear entirely. */
   let tickerHeadlines = FALLBACK_NEWS_TICKER;
   let boardMessages = []; // { id, text, loopsRemaining }
   const MESSAGE_LOOPS = 5;
-
-  // Fixed-duration scroll made the crawl speed up as more real headlines
-  // loaded in (same 60s to cover a longer track = faster). Pin the actual
-  // px/sec instead so it reads at a steady, comfortable pace regardless of
-  // how many headlines are in rotation.
   const TICKER_PX_PER_SEC = 55;
 
-  function renderTicker() {
-    // Fan messages are untrusted user input (posted from Team Picks), so
-    // they must be escaped -- headlines are already escaped where they're
-    // fetched, and the fallback list is static/trusted. Messages go first
-    // so they take priority over headlines instead of getting buried.
-    const messageItems = boardMessages.map((m) => `<span class="ticker-item fan-message">📣 ${escapeHtml(m.text)}</span>`);
-    const headlineItems = tickerHeadlines.map((t) => `<span class="ticker-item">${t}</span>`);
-    const single = messageItems.concat(headlineItems);
-    tickerTrack.innerHTML = single.concat(single).join("");
+  function renderNewsTicker() {
+    const items = tickerHeadlines.map((t) => `<span class="ticker-item">${t}</span>`);
+    tickerTrack.innerHTML = items.concat(items).join("");
     const distance = tickerTrack.scrollWidth / 2;
-    const duration = Math.max(20, distance / TICKER_PX_PER_SEC);
-    tickerTrack.style.animationDuration = `${duration}s`;
+    tickerTrack.style.animationDuration = `${Math.max(20, distance / TICKER_PX_PER_SEC)}s`;
   }
 
-  // Forces the scroll back to the very start so a newly-arrived message
-  // (now at the front of the track) is visible right away, instead of
-  // waiting up to a full loop for the current scroll position to catch up.
-  function restartTicker() {
-    renderTicker();
-    tickerTrack.style.animation = "none";
-    void tickerTrack.offsetWidth; // force reflow so the restart takes effect
-    tickerTrack.style.animation = "";
+  function renderMessageTicker() {
+    messageRow.hidden = !SHOW_MESSAGES || boardMessages.length === 0;
+    if (messageRow.hidden) return;
+    const items = boardMessages.map((m) => `<span class="ticker-item fan-message">📣 ${escapeHtml(m.text)}</span>`);
+    messageTrack.innerHTML = items.concat(items).join("");
+    const distance = messageTrack.scrollWidth / 2;
+    messageTrack.style.animationDuration = `${Math.max(20, distance / TICKER_PX_PER_SEC)}s`;
   }
 
-  // A full pass of the (single, non-doubled) track is one "showing" of
-  // every message once -- decrement each message's remaining loop count
-  // here and drop any that have been shown enough times.
-  tickerTrack.addEventListener("animationiteration", () => {
+  // Forces the message row's scroll back to the start so a newly-arrived
+  // message is visible right away instead of waiting up to a full loop.
+  // Only ever touches the message track -- the news ticker is untouched.
+  function restartMessageTicker() {
+    renderMessageTicker();
+    messageTrack.style.animation = "none";
+    void messageTrack.offsetWidth; // force reflow so the restart takes effect
+    messageTrack.style.animation = "";
+    fitBoardToScreen(); // message row appearing/disappearing changes header height
+  }
+
+  messageTrack.addEventListener("animationiteration", () => {
     if (boardMessages.length === 0) return;
     const before = boardMessages.length;
     boardMessages = boardMessages
       .map((m) => ({ ...m, loopsRemaining: m.loopsRemaining - 1 }))
       .filter((m) => m.loopsRemaining > 0);
-    if (boardMessages.length !== before) renderTicker();
+    if (boardMessages.length !== before) {
+      renderMessageTicker();
+      fitBoardToScreen();
+    }
   });
 
   async function refreshTicker() {
     const live = await fetchNewsHeadlines();
     if (live.length) {
       tickerHeadlines = live;
-      renderTicker();
+      renderNewsTicker();
     }
   }
 
   async function loadMessages() {
     const loaded = await DraftStore.getMessages(10);
     boardMessages = loaded.map((m) => ({ ...m, loopsRemaining: MESSAGE_LOOPS }));
-    renderTicker();
+    renderMessageTicker();
   }
 
   function renderGrid() {
@@ -135,7 +181,10 @@
       const roster = getTeamRoster(team.id);
       const tightClass = budget.open > 0 && budget.maxBid <= 1 ? " tight" : "";
       cells.push(`<div class="team-cell">
-        <div class="team-name-row"><span class="dot" style="background:${team.color}; color:${team.color}"></span>${team.name}</div>
+        <div class="team-name-row">
+          <span class="dot" style="background:${team.color}; color:${team.color}"></span>
+          <span class="team-name-text">${escapeHtml(team.name)}</span>
+        </div>
       </div>`);
       cells.push(`<div class="budget-cell max-bid"><span class="bc-value">$${budget.maxBid}</span></div>`);
       cells.push(`<div class="budget-cell remaining${tightClass}"><span class="bc-value">$${budget.remaining}</span></div>`);
@@ -145,7 +194,7 @@
           cells.push(`<div class="slot-cell empty"><span class="slot-open">Open</span></div>`);
         } else {
           cells.push(`<div class="slot-cell filled pos-${pick.position}">
-            <div class="slot-player">${pick.name}</div>
+            <div class="slot-player">${escapeHtml(pick.name)}</div>
             <div class="slot-price">$${pick.price}</div>
           </div>`);
         }
@@ -155,68 +204,72 @@
     grid.innerHTML = cells.join("");
   }
 
-  // Scales the team/budget/slot columns up together to exactly fill the
-  // available screen width, so the whole board (every position column)
-  // is visible at once without zooming out or scrolling sideways. Only
-  // falls back to the CSS minimums -- with horizontal scroll -- if the
-  // roster is too wide to fit even at minimum readable size.
-  function fitGridToRosterSize() {
-    const rootStyle = getComputedStyle(document.documentElement);
-    const teamColMin = parseFloat(rootStyle.getPropertyValue("--team-col-min")) || 210;
-    const budgetColMin = parseFloat(rootStyle.getPropertyValue("--budget-col-min")) || 130;
-    const slotColMin = parseFloat(rootStyle.getPropertyValue("--slot-col-min")) || 100;
-    const numSlots = ROSTER_SLOTS.length;
+  function layoutGrid() {
+    grid.style.gridTemplateColumns = `var(--team-col) var(--budget-col) var(--budget-col) repeat(${ROSTER_SLOTS.length}, var(--slot-col))`;
+  }
 
-    const minTotal = teamColMin + budgetColMin * 2 + numSlots * slotColMin;
+  // Measures the board's natural (unzoomed) size and scales the whole
+  // thing down (or up) with a single zoom factor so it always fits the
+  // screen exactly -- no horizontal or vertical scrolling, ever.
+  function fitBoardToScreen() {
+    boardContent.style.zoom = 1;
+    const naturalWidth = boardContent.scrollWidth;
+    const naturalHeight = boardContent.scrollHeight;
     const availableWidth = boardScroll.clientWidth;
-    const scale = Math.max(1, availableWidth / minTotal);
-
-    const teamColPx = Math.round(teamColMin * scale);
-    const budgetColPx = Math.round(budgetColMin * scale);
-    const slotColPx = Math.round(slotColMin * scale);
-    const gridWidth = teamColPx + budgetColPx * 2 + numSlots * slotColPx;
-
-    // The header (title, tracker, recent picks, clock, QR, setup) has its
-    // own independent minimum width -- make sure the board is at least
-    // that wide too, or the header would need its own horizontal scroll
-    // to see fully even when the grid itself fits fine (this was
-    // happening with a small roster on a normal-size window).
-    const boardWidth = Math.max(gridWidth, boardHeader.scrollWidth, availableWidth);
-
-    grid.style.gridTemplateColumns = `${teamColPx}px ${budgetColPx}px ${budgetColPx}px repeat(${numSlots}, ${slotColPx}px)`;
-    boardContent.style.setProperty("--board-width", `${boardWidth}px`);
+    const availableHeight = boardScroll.clientHeight;
+    const scale = Math.min(availableWidth / naturalWidth, availableHeight / naturalHeight);
+    boardContent.style.zoom = scale > 0 ? scale : 1;
   }
 
   await configReady;
+
+  boardNameText.textContent = (BOARD_NAME || "Auction Draft Board").toUpperCase();
+  trackerBlock.hidden = !SHOW_DRAFTED_TOTAL;
+  recentBlock.hidden = !SHOW_RECENT;
+  positionTotalsBlock.hidden = !SHOW_POSITION_TOTALS;
+  elapsedBlock.hidden = !SHOW_ELAPSED_TIME;
+  newsRow.hidden = !SHOW_NEWS;
+
   renderQr();
   await applyLivePicks();
   renderTracker();
+  renderPositionTotals();
+  renderElapsed();
   renderRecent();
-  renderTicker();
+  renderNewsTicker();
   renderGrid();
-  fitGridToRosterSize();
+  layoutGrid();
+  fitBoardToScreen();
 
-  window.addEventListener("resize", fitGridToRosterSize);
+  window.addEventListener("resize", fitBoardToScreen);
+  setInterval(renderElapsed, 30000);
 
-  // Fetch real NFL headlines in the background (don't block first paint —
-  // the fallback list above renders immediately) and keep them fresh.
-  refreshTicker();
-  setInterval(refreshTicker, 10 * 60 * 1000);
+  if (SHOW_NEWS) {
+    // Fetch real NFL headlines in the background (don't block first paint
+    // -- the fallback list above renders immediately) and keep them fresh.
+    refreshTicker();
+    setInterval(refreshTicker, 10 * 60 * 1000);
+  }
 
-  // Fan messages posted from Team Picks (e.g. after scanning the QR code)
-  // stream in here too, highlighted differently in the ticker.
-  await loadMessages();
-  DraftStore.onMessage((message) => {
-    boardMessages = [{ ...message, loopsRemaining: MESSAGE_LOOPS }, ...boardMessages].slice(0, 10);
-    restartTicker();
-  });
+  if (SHOW_MESSAGES) {
+    // Fan messages posted from Team Picks (e.g. after scanning the QR
+    // code) stream in here, shown above the news ticker.
+    await loadMessages();
+    fitBoardToScreen();
+    DraftStore.onMessage((message) => {
+      boardMessages = [{ ...message, loopsRemaining: MESSAGE_LOOPS }, ...boardMessages].slice(0, 10);
+      restartMessageTicker();
+    });
+  }
 
   // A pick confirmed on the Player Entry screen streams in here via
   // Supabase Realtime — fold it in and refresh the affected panels.
   DraftStore.onChange(async () => {
     await applyLivePicks();
     renderTracker();
+    renderPositionTotals();
     renderRecent();
     renderGrid();
+    fitBoardToScreen();
   });
 })();
