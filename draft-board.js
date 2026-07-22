@@ -1,6 +1,7 @@
 (async function () {
   const boardScroll = document.getElementById("boardScroll");
   const boardContent = document.getElementById("boardContent");
+  const boardHeader = document.getElementById("boardHeader");
   const grid = document.getElementById("boardGrid");
   const boardNameText = document.getElementById("boardNameText");
   const trackerBlock = document.getElementById("trackerBlock");
@@ -220,8 +221,30 @@
     grid.innerHTML = cells.join("");
   }
 
+  // Sizes the grid's columns so the grid's total width always matches
+  // whichever of the grid or the header actually needs more room. Without
+  // this, when several optional header widgets are on, the header could
+  // come out wider than the grid's base column sizes -- board-content
+  // then sized itself to that wider header, but the grid (fixed px
+  // columns) didn't stretch to fill it, leaving a big empty gap and
+  // making the grid look tiny next to a much wider header/footer.
   function layoutGrid() {
-    grid.style.gridTemplateColumns = `var(--team-col) var(--budget-col) var(--budget-col) repeat(${ROSTER_SLOTS.length}, var(--slot-col))`;
+    const rootStyle = getComputedStyle(document.documentElement);
+    const teamColBase = parseFloat(rootStyle.getPropertyValue("--team-col")) || 230;
+    const budgetColBase = parseFloat(rootStyle.getPropertyValue("--budget-col")) || 140;
+    const slotColBase = parseFloat(rootStyle.getPropertyValue("--slot-col")) || 110;
+    const numSlots = ROSTER_SLOTS.length;
+
+    grid.style.gridTemplateColumns = `${teamColBase}px ${budgetColBase}px ${budgetColBase}px repeat(${numSlots}, ${slotColBase}px)`;
+    const gridBaseWidth = teamColBase + budgetColBase * 2 + numSlots * slotColBase;
+
+    const headerWidth = boardHeader.scrollWidth;
+    const scale = Math.max(1, headerWidth / gridBaseWidth);
+
+    const teamColPx = teamColBase * scale;
+    const budgetColPx = budgetColBase * scale;
+    const slotColPx = slotColBase * scale;
+    grid.style.gridTemplateColumns = `${teamColPx}px ${budgetColPx}px ${budgetColPx}px repeat(${numSlots}, ${slotColPx}px)`;
   }
 
   // Measures the board's natural (unzoomed) size and scales the whole
