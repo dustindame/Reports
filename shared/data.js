@@ -397,6 +397,46 @@ const DraftStore = {
       )
       .subscribe();
   },
+
+  /* Fan shout-outs — posted from Team Picks (e.g. after scanning the
+     Draft Board's QR code), shown highlighted in the Draft Board's news
+     ticker. No PIN needed: unlike picks/setup this can't alter draft
+     state, so it's open to anyone with the league code. */
+  async sendMessage(text) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
+    const trimmed = text.trim().slice(0, 80);
+    if (!trimmed) return { error: "Message can't be empty." };
+    const { error } = await supabaseClient.from("board_messages").insert({ league_code: CURRENT_LEAGUE_CODE, message: trimmed });
+    if (error) return { error: error.message };
+    return { error: null };
+  },
+
+  async getMessages(limit = 10) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return [];
+    const { data, error } = await supabaseClient
+      .from("board_messages")
+      .select("*")
+      .eq("league_code", CURRENT_LEAGUE_CODE)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) {
+      console.error("Failed to load board messages from Supabase:", error);
+      return [];
+    }
+    return data.map((row) => ({ id: row.id, text: row.message, createdAt: new Date(row.created_at).getTime() }));
+  },
+
+  onMessage(cb) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return;
+    supabaseClient
+      .channel(`board-messages-${CURRENT_LEAGUE_CODE}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "board_messages", filter: `league_code=eq.${CURRENT_LEAGUE_CODE}` },
+        (payload) => cb({ id: payload.new.id, text: payload.new.message, createdAt: new Date(payload.new.created_at).getTime() })
+      )
+      .subscribe();
+  },
 };
 
 /* Folds any picks logged on Player Entry (via DraftStore) into MOCK_DRAFT
