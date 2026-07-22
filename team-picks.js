@@ -7,7 +7,7 @@
   const rosterList = document.getElementById("rosterList");
   const backBtn = document.getElementById("backBtn");
 
-  document.getElementById("headerFootball").innerHTML = Icons.football(24, "var(--qb)");
+  document.getElementById("headerFootball").innerHTML = Icons.helmet(24);
   document.getElementById("backIcon").innerHTML = Icons.chevronLeft(16);
   document.getElementById("pylonLeft").innerHTML = Icons.pylon(18);
   document.getElementById("pylonRight").innerHTML = Icons.pylon(18);

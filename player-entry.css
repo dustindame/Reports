@@ -450,6 +450,23 @@ body {
 
 /* ---------------- Recent picks / undo ---------------- */
 
+.pick-search-input {
+  width: 100%;
+  background: var(--panel-alt-grad);
+  box-shadow: var(--panel-sheen);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  margin-bottom: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.pick-search-input::placeholder { color: var(--text-faint); }
+.pick-search-input:focus { border-color: var(--gold-dim); }
+
 .recent-picks-list {
   display: flex;
   flex-direction: column;

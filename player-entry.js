@@ -18,6 +18,7 @@
   const slideProgress = document.getElementById("slideProgress");
   const sclMain = document.getElementById("sclMain");
   const recentPicksList = document.getElementById("recentPicksList");
+  const pickSearchInput = document.getElementById("pickSearchInput");
 
   document.getElementById("footballIcon").innerHTML = Icons.football(26, "var(--qb)");
   document.getElementById("footballIcon2").innerHTML = Icons.football(26, "var(--qb)");
@@ -60,12 +61,24 @@
     renderRecentPicks();
   }
 
-  /* ---------------- Recent picks / undo ---------------- */
+  /* ---------------- All picks / undo ----------------
+     Shows every pick made so far, not just the last few, so a
+     mis-entered pick from earlier in the draft can still be found and
+     corrected — filterable by player/team since a full draft can run to
+     100+ picks. */
+  let pickSearchQuery = "";
 
   function renderRecentPicks() {
-    const recent = MOCK_DRAFT.picks.slice(-8).reverse();
+    const q = pickSearchQuery.trim().toLowerCase();
+    const all = MOCK_DRAFT.picks.slice().reverse();
+    const recent = q
+      ? all.filter((pick) => {
+          const team = teamById(pick.teamId);
+          return pick.name.toLowerCase().includes(q) || (team && team.name.toLowerCase().includes(q));
+        })
+      : all;
     if (recent.length === 0) {
-      recentPicksList.innerHTML = `<div class="recent-picks-empty">No picks yet.</div>`;
+      recentPicksList.innerHTML = `<div class="recent-picks-empty">${q ? "No picks match your search." : "No picks yet."}</div>`;
       return;
     }
     recentPicksList.innerHTML = recent
@@ -389,6 +402,10 @@
 
   searchInput.addEventListener("input", (e) => renderResults(e.target.value));
   clearBtn.addEventListener("click", clearPlayer);
+  pickSearchInput.addEventListener("input", (e) => {
+    pickSearchQuery = e.target.value;
+    renderRecentPicks();
+  });
   bidSlider.addEventListener("input", updateAmount);
 
   // Someone else's pick (another Player Entry session) also affects this
