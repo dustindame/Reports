@@ -134,9 +134,40 @@ const PLAYER_POOL = {
   DEF: ["49ers D/ST", "Ravens D/ST", "Cowboys D/ST", "Eagles D/ST", "Bills D/ST", "Jets D/ST", "Steelers D/ST", "Dolphins D/ST", "Browns D/ST", "Broncos D/ST", "Patriots D/ST", "Saints D/ST", "Colts D/ST", "Bears D/ST", "Chiefs D/ST", "Texans D/ST", "Buccaneers D/ST", "Packers D/ST", "Chargers D/ST", "Lions D/ST"],
 };
 
-const ALL_PLAYERS = Object.entries(PLAYER_POOL).flatMap(([position, names]) =>
-  names.map((name) => ({ name, position }))
-);
+/* Approximate overall fantasy-value order (not grouped by position) for
+   the top tier, mixing positions the way real draft projections would --
+   without this, ALL_PLAYERS retained PLAYER_POOL's position-grouped
+   order (QB list first), so a search matching many players always
+   surfaced QBs first regardless of actual value. Anyone not in this list
+   just keeps their original relative order, after everyone who is. */
+const TOP_VALUE_ORDER = [
+  "Christian McCaffrey", "CeeDee Lamb", "Ja'Marr Chase", "Tyreek Hill", "Justin Jefferson",
+  "Breece Hall", "Bijan Robinson", "Amon-Ra St. Brown", "Jahmyr Gibbs", "Jonathan Taylor",
+  "Josh Allen", "A.J. Brown", "Puka Nacua", "Saquon Barkley", "Garrett Wilson",
+  "Travis Kelce", "Patrick Mahomes", "De'Von Achane", "Lamar Jackson", "Jalen Hurts",
+  "Chris Olave", "Stefon Diggs", "Derrick Henry", "Josh Jacobs", "Davante Adams",
+  "Sam LaPorta", "Mike Evans", "Kenneth Walker III", "Nico Collins", "DK Metcalf",
+  "Deebo Samuel", "Jaylen Waddle", "Drake London", "Joe Burrow", "James Cook",
+  "Rachaad White", "Alvin Kamara", "Joe Mixon", "Terry McLaurin", "Mark Andrews",
+];
+
+const ALL_PLAYERS = (() => {
+  const flat = Object.entries(PLAYER_POOL).flatMap(([position, names]) =>
+    names.map((name) => ({ name, position }))
+  );
+  flat.forEach((p, i) => { p._originalOrder = i; });
+  const rankOf = (name) => {
+    const idx = TOP_VALUE_ORDER.indexOf(name);
+    return idx === -1 ? TOP_VALUE_ORDER.length + 1000 : idx;
+  };
+  return flat
+    .slice()
+    .sort((a, b) => {
+      const diff = rankOf(a.name) - rankOf(b.name);
+      return diff !== 0 ? diff : a._originalOrder - b._originalOrder;
+    })
+    .map(({ name, position }) => ({ name, position }));
+})();
 
 /* ---------- tiny seeded RNG so the demo draft looks the same every load ---------- */
 function mulberry32(seed) {

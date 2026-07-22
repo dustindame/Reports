@@ -21,6 +21,7 @@
   const tickerTrack = document.getElementById("tickerTrack");
   const messageTrack = document.getElementById("messageTrack");
   const shotBanner = document.getElementById("shotBanner");
+  const niceFlash = document.getElementById("niceFlash");
 
   document.getElementById("fieldIcon").innerHTML = Icons.field(22, "var(--wr)");
   document.getElementById("titleFootballIcon").innerHTML = Icons.football(22, "var(--qb)");
@@ -124,9 +125,13 @@
     tickerTrack.style.animationDuration = `${Math.max(20, distance / TICKER_PX_PER_SEC)}s`;
   }
 
+  // Space for this row stays reserved at all times (see .message-row.empty
+  // in the CSS) -- toggling "empty" only changes visibility, never
+  // display, so a message appearing/disappearing never changes the
+  // board's total height and never has to re-trigger the zoom-to-fit.
   function renderMessageTicker() {
-    const hasActive = SHOW_MESSAGES && boardMessages.length > 0;
-    messageRow.hidden = !hasActive;
+    const hasActive = boardMessages.length > 0;
+    messageRow.classList.toggle("empty", !hasActive);
     if (!hasActive) return;
     const items = boardMessages.map((m) => `<span class="ticker-item fan-message">📣 ${escapeHtml(m.text)}</span>`);
     messageTrack.innerHTML = items.concat(items).join("");
@@ -143,19 +148,18 @@
     boardMessages = boardMessages
       .map((m) => ({ ...m, loopsRemaining: m.loopsRemaining - 1 }))
       .filter((m) => m.loopsRemaining > 0);
-    if (boardMessages.length !== before) {
-      renderMessageTicker();
-      fitBoardToScreen();
-    }
+    if (boardMessages.length !== before) renderMessageTicker();
   });
 
   function enqueueMessage(message) {
+    if (isNiceMessage(message.text)) {
+      showNiceFlash();
+      return;
+    }
     if (boardMessages.some((m) => m.id === message.id)) return; // already active
-    const wasHidden = messageRow.hidden;
     boardMessages.push({ ...message, loopsRemaining: message.loops || MESSAGE_LOOPS });
     if (boardMessages.length > 10) boardMessages.shift();
     renderMessageTicker();
-    if (wasHidden) fitBoardToScreen(); // message row just appeared, changing header height
   }
 
   async function refreshTicker() {
@@ -168,8 +172,23 @@
 
   async function loadMessages() {
     const loaded = await DraftStore.getMessages(10);
-    boardMessages = loaded.map((m) => ({ ...m, loopsRemaining: m.loops || MESSAGE_LOOPS }));
+    boardMessages = loaded.filter((m) => !isNiceMessage(m.text)).map((m) => ({ ...m, loopsRemaining: m.loops || MESSAGE_LOOPS }));
     renderMessageTicker();
+  }
+
+  /* ---------------- Nice: full-board flash ----------------
+     A $69 pick posts this exact text via the ordinary message pipeline,
+     but instead of joining the ticker rotation (which, being a single
+     brand-new item, awkwardly appeared to start mid-screen instead of
+     entering like the continuous news ticker does) it triggers a big
+     flash over the whole board for a few seconds. */
+  const NICE_TEXT = "Nice! Nice! Nice! Nice! Nice!";
+  function isNiceMessage(text) {
+    return text === NICE_TEXT;
+  }
+  function showNiceFlash() {
+    niceFlash.hidden = false;
+    setTimeout(() => { niceFlash.hidden = true; }, 3000);
   }
 
   /* ---------------- Shots: "SHOT! SHOT! SHOT!" banner ----------------
@@ -225,8 +244,12 @@
         if (!pick) {
           cells.push(`<div class="slot-cell empty"><span class="slot-open">Open</span></div>`);
         } else {
+          const spaceIdx = pick.name.indexOf(" ");
+          const firstName = spaceIdx === -1 ? pick.name : pick.name.slice(0, spaceIdx);
+          const lastName = spaceIdx === -1 ? "" : pick.name.slice(spaceIdx + 1);
           cells.push(`<div class="slot-cell filled pos-${pick.position}">
-            <div class="slot-player">${escapeHtml(pick.name)}</div>
+            <div class="slot-player-first">${escapeHtml(firstName)}</div>
+            <div class="slot-player-last">${escapeHtml(lastName)}</div>
             <div class="slot-price">$${pick.price}</div>
           </div>`);
         }
@@ -288,6 +311,7 @@
   positionTotalsBlock.hidden = !SHOW_POSITION_TOTALS;
   elapsedBlock.hidden = !SHOW_ELAPSED_TIME;
   newsRow.hidden = !SHOW_NEWS;
+  messageRow.hidden = !SHOW_MESSAGES; // fully collapsed when the feature is off; when on, space stays reserved via .empty
 
   renderQr();
   await applyLivePicks();
