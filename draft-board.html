@@ -14,7 +14,11 @@
 
       <header class="board-header" id="boardHeader">
         <div class="header-block title-block">
-          <h1 class="board-title">AUCTION DRAFT <span class="gold-text">BOARD</span></h1>
+          <h1 class="board-title">
+            <span class="title-icon" id="fieldIcon"></span>
+            AUCTION DRAFT <span class="gold-text">BOARD</span>
+            <span class="title-icon" id="titleFootballIcon"></span>
+          </h1>
         </div>
 
         <div class="header-block tracker-block">
@@ -32,8 +36,11 @@
         </div>
 
         <div class="header-block clock-block">
-          <div class="clock-icon" id="clockIcon"></div>
-          <div class="clock-value" id="clockValue">--:--</div>
+          <div class="scoreboard-clock">
+            <span class="scoreboard-post" id="goalPostLeft"></span>
+            <span class="scoreboard-value" id="clockValue">--:--</span>
+            <span class="scoreboard-post" id="goalPostRight"></span>
+          </div>
         </div>
 
         <div class="header-block qr-block">

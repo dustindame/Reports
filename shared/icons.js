@@ -82,4 +82,28 @@ const Icons = {
       <path d="M9 9.8V7.2a1 1 0 0 1 1-1h7.2a2.6 2.6 0 0 1 0 5.2H13.4" stroke="${color}" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>`;
   },
+
+  helmet(size = 22, color = "#d4af37") {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3.5 13.5C3.5 8.3 7.6 4.5 12.5 4.5S21 8.6 21 13c0 2.8-1.6 4.3-4.3 4.3h-3.9" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M3.5 13.5c0 3.4 2 5.4 5 5.4h2.3" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M7.5 12.2c-1.9.5-3 1.9-3.2 3.8" stroke="${color}" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M7.8 13v5.4M10.6 12.5v6.4" stroke="${color}" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>`;
+  },
+
+  goalPost(size = 22, color = "#d4af37") {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 3v7M18 3v7M6 10h12M12 10v11" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  },
+
+  field(size = 22, color = "#4caf50") {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2.5" y="5" width="19" height="14" rx="1.5" stroke="${color}" stroke-width="1.6"/>
+      <line x1="7" y1="5" x2="7" y2="19" stroke="${color}" stroke-width="1.2"/>
+      <line x1="12" y1="5" x2="12" y2="19" stroke="${color}" stroke-width="1.4"/>
+      <line x1="17" y1="5" x2="17" y2="19" stroke="${color}" stroke-width="1.2"/>
+    </svg>`;
+  },
 };

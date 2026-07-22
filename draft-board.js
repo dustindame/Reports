@@ -6,12 +6,14 @@
   const progressFill = document.getElementById("progressFill");
   const recentStrip = document.getElementById("recentStrip");
   const qrCode = document.getElementById("qrCode");
-  const clockIcon = document.getElementById("clockIcon");
   const clockValue = document.getElementById("clockValue");
   const tickerTrack = document.getElementById("tickerTrack");
 
   document.getElementById("setupGear").innerHTML = Icons.whistle(18);
-  clockIcon.innerHTML = Icons.clock(18, "#d4af37");
+  document.getElementById("fieldIcon").innerHTML = Icons.field(22, "var(--wr)");
+  document.getElementById("titleFootballIcon").innerHTML = Icons.football(22, "var(--qb)");
+  document.getElementById("goalPostLeft").innerHTML = Icons.goalPost(20, "#f2c14e");
+  document.getElementById("goalPostRight").innerHTML = Icons.goalPost(20, "#f2c14e");
 
   // Real scannable QR (not the earlier decorative placeholder) now that the
   // app has a stable hosted URL — points at Team Picks, with the current
@@ -60,12 +62,21 @@
 
   let tickerHeadlines = FALLBACK_NEWS_TICKER;
 
+  // Fixed-duration scroll made the crawl speed up as more real headlines
+  // loaded in (same 60s to cover a longer track = faster). Pin the actual
+  // px/sec instead so it reads at a steady, comfortable pace regardless of
+  // how many headlines are in rotation.
+  const TICKER_PX_PER_SEC = 55;
+
   function renderTicker() {
     const items = tickerHeadlines
       .concat(tickerHeadlines)
       .map((t) => `<span class="ticker-item">${t}</span>`)
       .join("");
     tickerTrack.innerHTML = items;
+    const distance = tickerTrack.scrollWidth / 2;
+    const duration = Math.max(20, distance / TICKER_PX_PER_SEC);
+    tickerTrack.style.animationDuration = `${duration}s`;
   }
 
   async function refreshTicker() {
