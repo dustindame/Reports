@@ -20,13 +20,13 @@
   const messageRow = document.getElementById("messageRow");
   const tickerTrack = document.getElementById("tickerTrack");
   const messageTrack = document.getElementById("messageTrack");
-  const shotBanner = document.getElementById("shotBanner");
+  const shotFlash = document.getElementById("shotFlash");
   const niceFlash = document.getElementById("niceFlash");
 
   document.getElementById("fieldIcon").innerHTML = Icons.field(22, "var(--wr)");
   document.getElementById("titleFootballIcon").innerHTML = Icons.football(22, "var(--qb)");
-  document.getElementById("goalPostLeft").innerHTML = Icons.goalPost(20, "#f2c14e");
-  document.getElementById("goalPostRight").innerHTML = Icons.goalPost(20, "#f2c14e");
+  document.getElementById("goalPostLeft").innerHTML = Icons.goalPost(13, "#f2c14e");
+  document.getElementById("goalPostRight").innerHTML = Icons.goalPost(13, "#f2c14e");
 
   // Real scannable QR (not the earlier decorative placeholder) now that the
   // app has a stable hosted URL — points at Team Picks, with the current
@@ -206,20 +206,19 @@
     setTimeout(() => { niceFlash.hidden = true; }, 3000);
   }
 
-  /* ---------------- Shots: "SHOT! SHOT! SHOT!" banner ----------------
-     Not part of the message ticker at all -- shows directly below the
-     Drafted/Remaining tracker for a fixed 20 seconds whenever a pick
-     lands on one of the league's randomly-designated shot pick numbers. */
+  /* ---------------- Shots: "SHOT! SHOT! SHOT!" flash ----------------
+     Same full-board flash treatment as Nice, just red and shown for a
+     fixed 20 seconds instead of 3, whenever a pick lands on one of the
+     league's randomly-designated shot pick numbers. Not part of the
+     message ticker at all -- doesn't touch header layout. */
   const announcedShotPicks = new Set();
-  let shotBannerTimer = null;
+  let shotFlashTimer = null;
 
   function showShotBanner() {
-    shotBanner.hidden = false;
-    fitBoardToScreen();
-    clearTimeout(shotBannerTimer);
-    shotBannerTimer = setTimeout(() => {
-      shotBanner.hidden = true;
-      fitBoardToScreen();
+    shotFlash.hidden = false;
+    clearTimeout(shotFlashTimer);
+    shotFlashTimer = setTimeout(() => {
+      shotFlash.hidden = true;
     }, 20000);
   }
 

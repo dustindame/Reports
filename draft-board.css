@@ -58,6 +58,26 @@ body { overflow: hidden; height: 100vh; }
   to { transform: scale(1.04); opacity: 1; }
 }
 
+.shot-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.shot-flash[hidden] { display: none; }
+.shot-flash-text {
+  font-size: 80px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-align: center;
+  color: #ff3b30;
+  text-shadow: 0 0 30px rgba(255, 59, 48, 0.9), 0 0 60px rgba(255, 59, 48, 0.6);
+  animation: shot-pulse 0.5s ease-in-out infinite alternate;
+}
+
 /* ---------------- Header ---------------- */
 
 .board-header {
@@ -88,10 +108,10 @@ body { overflow: hidden; height: 100vh; }
 }
 .title-icon { display: flex; line-height: 0; }
 
-/* Condensed and moved under the board name instead of its own header
-   column -- one line of numbers + a slim bar, in the brand blue used
-   for fan messages instead of gold. */
-.tracker-block { margin-top: 4px; }
+/* Condensed, moved under the clock (in the clock-block column) instead
+   of under the board name -- one line of numbers + a slim bar, in the
+   brand blue used for fan messages instead of gold. */
+.tracker-block { margin-top: 6px; display: flex; flex-direction: column; align-items: center; }
 .tracker-numbers {
   display: flex;
   align-items: baseline;
@@ -101,7 +121,7 @@ body { overflow: hidden; height: 100vh; }
 .tracker-value { font-size: 14px; font-weight: 700; color: #59c2f0; }
 .progress-bar {
   margin-top: 3px;
-  width: 180px;
+  width: 140px;
   height: 6px;
   border-radius: 999px;
   background: var(--panel-alt);
@@ -114,16 +134,6 @@ body { overflow: hidden; height: 100vh; }
   border-radius: 999px;
   transition: width 0.5s ease;
 }
-.shot-banner {
-  margin-top: 4px;
-  font-size: 15px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  color: #ff3b30;
-  text-shadow: 0 0 10px rgba(255, 59, 48, 0.8);
-  animation: shot-pulse 0.6s ease-in-out infinite alternate;
-}
-.shot-banner[hidden] { display: none; }
 @keyframes shot-pulse {
   from { opacity: 0.65; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1.05); }
@@ -171,7 +181,7 @@ body { overflow: hidden; height: 100vh; }
      board's right edge since the board's own width was already fixed by
      then. A hard width means chip text just ellipsis-truncates instead
      of ever growing the box. */
-  width: 300px;
+  width: 340px;
 }
 .recent-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); }
 /* Stacked 3x2 instead of one long horizontal row -- shows several picks
@@ -179,46 +189,54 @@ body { overflow: hidden; height: 100vh; }
 .recent-strip {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px 8px;
+  gap: 6px 10px;
 }
 .recent-chip {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 7px;
+  gap: 6px;
+  padding: 5px 8px;
   border-radius: var(--radius-sm);
   background: var(--panel-alt);
   border: 1px solid var(--border);
-  font-size: 11px;
+  font-size: 13px;
   overflow: hidden;
 }
-.recent-chip .rc-pos-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.recent-chip .rc-pos-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .recent-chip .rc-name { color: var(--text); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .recent-chip .rc-price { color: var(--gold-bright); font-weight: 700; flex: none; margin-left: auto; }
 
-.clock-block { display: flex; align-items: center; min-width: 190px; }
+/* Now on the right side of the header, next to the QR code, with the
+   Drafted Total stacked underneath it -- smaller than before since it no
+   longer needs to stand alone. */
+.clock-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: auto;
+}
 .scoreboard-clock {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   background: #0a0b0d;
   border: 2px solid var(--gold-dim);
   border-radius: var(--radius-md);
-  padding: 6px 16px;
+  padding: 4px 10px;
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.65), 0 0 18px -4px rgba(255, 90, 54, 0.35);
 }
 .scoreboard-post { display: flex; line-height: 0; opacity: 0.9; }
 .scoreboard-value {
   font-family: "Courier New", Consolas, monospace;
-  font-size: 34px;
+  font-size: 19px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   color: #ff5a36;
-  text-shadow: 0 0 10px rgba(255, 90, 54, 0.75), 0 0 24px rgba(255, 90, 54, 0.4);
+  text-shadow: 0 0 8px rgba(255, 90, 54, 0.75), 0 0 18px rgba(255, 90, 54, 0.4);
 }
 
-.qr-block { display: flex; align-items: center; margin-left: auto; margin-right: 6px; }
+.qr-block { display: flex; align-items: center; margin-left: 14px; }
 .qr-code { line-height: 0; border-radius: 5px; overflow: hidden; box-shadow: 0 0 0 2px var(--gold-dim); }
 .qr-code svg { display: block; width: 52px; height: 52px; }
 
