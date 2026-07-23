@@ -508,6 +508,16 @@ const DraftStore = {
     return { error: null };
   },
 
+  // Called once a message has been shown its full loop count -- removing
+  // it server-side (not just from local state) means a page refresh
+  // won't refetch and replay it, since loop progress is only ever
+  // tracked in memory and getMessages() would otherwise treat it as
+  // brand new again every time.
+  async deleteMessage(id) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return;
+    await supabaseClient.from("board_messages").delete().eq("id", id).eq("league_code", CURRENT_LEAGUE_CODE);
+  },
+
   async getMessages(limit = 10) {
     if (!supabaseClient || !CURRENT_LEAGUE_CODE) return [];
     const { data, error } = await supabaseClient

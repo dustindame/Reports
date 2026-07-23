@@ -94,7 +94,7 @@
   }
 
   function renderRecent() {
-    recentStrip.innerHTML = recentPicks(9)
+    recentStrip.innerHTML = recentPicks(6)
       .map(
         (p) => `<div class="recent-chip">
           <span class="rc-pos-dot" style="background: var(${POSITION_COLOR_VAR[p.position]})"></span>
@@ -154,13 +154,15 @@
 
   // A full pass of the (single, non-doubled) track is one "showing" of
   // every active message once -- decrement each message's remaining loop
-  // count here and drop any that have been shown enough times.
+  // count here and drop any that have been shown enough times, deleting
+  // them server-side too so a later page refresh doesn't refetch and
+  // replay something that already finished its loops.
   messageTrack.addEventListener("animationiteration", () => {
     if (boardMessages.length === 0) return;
     const before = boardMessages.length;
-    boardMessages = boardMessages
-      .map((m) => ({ ...m, loopsRemaining: m.loopsRemaining - 1 }))
-      .filter((m) => m.loopsRemaining > 0);
+    const decremented = boardMessages.map((m) => ({ ...m, loopsRemaining: m.loopsRemaining - 1 }));
+    decremented.filter((m) => m.loopsRemaining <= 0).forEach((m) => DraftStore.deleteMessage(m.id));
+    boardMessages = decremented.filter((m) => m.loopsRemaining > 0);
     if (boardMessages.length !== before) renderMessageTicker();
   });
 
@@ -367,6 +369,7 @@
     renderPositionTotals();
     renderRecent();
     renderGrid();
+    layoutGrid(); // re-measure in case header content width changed (defense in depth)
     fitBoardToScreen();
     checkForShotPicks();
   });
