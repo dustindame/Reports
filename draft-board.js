@@ -102,7 +102,7 @@
   }
 
   function renderRecent() {
-    recentStrip.innerHTML = recentPicks(6)
+    recentStrip.innerHTML = recentPicks(4)
       .map(
         (p) => `<div class="recent-chip">
           <span class="rc-pos-dot" style="background: var(${POSITION_COLOR_VAR[p.position]})"></span>
@@ -325,9 +325,18 @@
     const naturalHeight = boardContent.scrollHeight;
     const availableWidth = boardScroll.clientWidth;
     const availableHeight = boardScroll.clientHeight;
-    const scaleX = naturalWidth > 0 ? availableWidth / naturalWidth : 1;
-    const scaleY = naturalHeight > 0 ? availableHeight / naturalHeight : 1;
-    boardContent.style.transform = `scale(${scaleX}, ${scaleY})`;
+    // Independent X/Y scale eliminated blank bars entirely, but visibly
+    // stretched/squished the font since it distorts the aspect ratio of
+    // everything on the board. A single uniform factor keeps text and
+    // shapes proportioned correctly -- may leave a thin bar on whichever
+    // axis isn't the limiting one, but that's the right tradeoff over
+    // distorted text.
+    const scale = naturalWidth > 0 && naturalHeight > 0 ? Math.min(availableWidth / naturalWidth, availableHeight / naturalHeight) : 1;
+    // Center whatever's left over on the non-limiting axis instead of
+    // leaving it pinned to the top-left corner.
+    const offsetX = (availableWidth - naturalWidth * scale) / 2;
+    const offsetY = (availableHeight - naturalHeight * scale) / 2;
+    boardContent.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
   }
 
   await configReady;
