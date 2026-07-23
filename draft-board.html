@@ -13,6 +13,7 @@
     <div class="board-content" id="boardContent">
 
       <div class="nice-flash" id="niceFlash" hidden><span class="nice-flash-text">NICE! NICE! NICE!</span></div>
+      <div class="shot-flash" id="shotFlash" hidden><span class="shot-flash-text">SHOT! SHOT! SHOT!</span></div>
 
       <header class="board-header" id="boardHeader">
         <div class="header-block title-block">
@@ -21,14 +22,6 @@
             <span id="boardNameText">AUCTION DRAFT BOARD</span>
             <span class="title-icon" id="titleFootballIcon"></span>
           </h1>
-          <div class="tracker-block" id="trackerBlock">
-            <div class="tracker-numbers">
-              <span class="tracker-value" id="draftedValue">0 / 156</span>
-              <span class="tracker-label">drafted · <span id="remainingValue">156</span> left</span>
-            </div>
-            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-          </div>
-          <div class="shot-banner" id="shotBanner" hidden>SHOT! SHOT! SHOT!</div>
         </div>
 
         <div class="header-block position-totals-block" id="positionTotalsBlock" hidden>
@@ -51,6 +44,13 @@
             <span class="scoreboard-post" id="goalPostLeft"></span>
             <span class="scoreboard-value" id="clockValue">--:--</span>
             <span class="scoreboard-post" id="goalPostRight"></span>
+          </div>
+          <div class="tracker-block" id="trackerBlock">
+            <div class="tracker-numbers">
+              <span class="tracker-value" id="draftedValue">0 / 156</span>
+              <span class="tracker-label">drafted · <span id="remainingValue">156</span> left</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
           </div>
         </div>
 
