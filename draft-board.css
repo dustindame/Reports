@@ -88,18 +88,21 @@ body { overflow: hidden; height: 100vh; }
 }
 .title-icon { display: flex; line-height: 0; }
 
-.tracker-block { min-width: 220px; }
+/* Condensed and moved under the board name instead of its own header
+   column -- one line of numbers + a slim bar, in the brand blue used
+   for fan messages instead of gold. */
+.tracker-block { margin-top: 4px; }
 .tracker-numbers {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
 }
-.tracker-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); }
-.tracker-value { font-size: 18px; font-weight: 700; color: var(--gold-bright); }
+.tracker-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-faint); }
+.tracker-value { font-size: 14px; font-weight: 700; color: #59c2f0; }
 .progress-bar {
-  margin-top: 5px;
-  width: 200px;
-  height: 8px;
+  margin-top: 3px;
+  width: 180px;
+  height: 6px;
   border-radius: 999px;
   background: var(--panel-alt);
   border: 1px solid var(--border);
@@ -107,11 +110,10 @@ body { overflow: hidden; height: 100vh; }
 }
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright));
+  background: linear-gradient(90deg, #005a8a, #0076b6);
   border-radius: 999px;
   transition: width 0.5s ease;
 }
-.tracker-remaining { margin-top: 4px; font-size: 11px; color: var(--text-dim); }
 .shot-banner {
   margin-top: 4px;
   font-size: 15px;
@@ -162,12 +164,18 @@ body { overflow: hidden; height: 100vh; }
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
   padding: 0 18px;
-  min-width: 360px;
+  /* Fixed width (not min-width) -- a flex item with no explicit width
+     sizes to its content's natural/preferred size, and once real picks
+     (longer names) populated the grid, that preferred size grew past
+     what was measured at page load, pushing the clock/QR past the
+     board's right edge since the board's own width was already fixed by
+     then. A hard width means chip text just ellipsis-truncates instead
+     of ever growing the box. */
+  width: 300px;
 }
 .recent-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); }
-/* Stacked 3x3 instead of one long horizontal row -- shows more picks
-   (up to 9) in far less horizontal space, which is what was crowding the
-   clock/QR out of view on smaller screens. */
+/* Stacked 3x2 instead of one long horizontal row -- shows several picks
+   in far less horizontal space than a single row would need. */
 .recent-strip {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
