@@ -14,9 +14,7 @@ body { overflow: hidden; height: 100vh; }
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
 }
 
 .board-content {
@@ -27,8 +25,19 @@ body { overflow: hidden; height: 100vh; }
      is widest" let that huge ticker content balloon the whole board,
      which then had to be zoomed way down to fit -- making the grid look
      tiny). The ticker instead just fills whatever width this ends up
-     being and clips its own overflow. */
-  position: relative;
+     being and clips its own overflow.
+
+     Positioned absolute + transform:scale(x,y) (independent horizontal/
+     vertical factors, set by fitBoardToScreen()) instead of the previous
+     zoom-based approach -- zoom only supports one uniform factor, which
+     preserves aspect ratio but leaves blank bars on whichever axis isn't
+     the limiting one. Scaling to exactly fill both dimensions removes
+     the bars entirely (at the cost of a slight, generally unnoticeable
+     stretch on a grid/text UI like this one). */
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
   display: flex;
   flex-direction: column;
   align-items: stretch;

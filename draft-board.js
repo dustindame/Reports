@@ -93,12 +93,20 @@
     elapsedValue.textContent = h > 0 ? `${h}h ${m}m` : `${m}m`;
   }
 
+  // "Davante Adams" -> "D. Adams" -- full names just ellipsis-truncated
+  // to 3-4 characters in a chip this narrow (e.g. "Dav..."), which wasn't
+  // readable at all. Initial + last name fits and is still identifiable.
+  function shortPlayerName(name) {
+    const idx = name.indexOf(" ");
+    return idx === -1 ? name : `${name[0]}. ${name.slice(idx + 1)}`;
+  }
+
   function renderRecent() {
     recentStrip.innerHTML = recentPicks(6)
       .map(
         (p) => `<div class="recent-chip">
           <span class="rc-pos-dot" style="background: var(${POSITION_COLOR_VAR[p.position]})"></span>
-          <span class="rc-name">${escapeHtml(p.name)}</span>
+          <span class="rc-name">${escapeHtml(shortPlayerName(p.name))}</span>
           <span class="rc-price">$${p.price}</span>
         </div>`
       )
@@ -201,16 +209,17 @@
   function isNiceMessage(text) {
     return text === NICE_TEXT;
   }
+  let niceFlashTimer = null;
   function showNiceFlash() {
     niceFlash.hidden = false;
-    setTimeout(() => { niceFlash.hidden = true; }, 3000);
+    clearTimeout(niceFlashTimer);
+    niceFlashTimer = setTimeout(() => { niceFlash.hidden = true; }, 10000);
   }
 
   /* ---------------- Shots: "SHOT! SHOT! SHOT!" flash ----------------
-     Same full-board flash treatment as Nice, just red and shown for a
-     fixed 20 seconds instead of 3, whenever a pick lands on one of the
-     league's randomly-designated shot pick numbers. Not part of the
-     message ticker at all -- doesn't touch header layout. */
+     Same full-board flash treatment as Nice, just red, whenever a pick
+     lands on one of the league's randomly-designated shot pick numbers.
+     Not part of the message ticker at all -- doesn't touch header layout. */
   const announcedShotPicks = new Set();
   let shotFlashTimer = null;
 
@@ -219,7 +228,7 @@
     clearTimeout(shotFlashTimer);
     shotFlashTimer = setTimeout(() => {
       shotFlash.hidden = true;
-    }, 20000);
+    }, 10000);
   }
 
   function checkForShotPicks() {
@@ -304,17 +313,21 @@
     boardContent.style.width = `${Math.max(gridBaseWidth, headerWidth)}px`;
   }
 
-  // Measures the board's natural (unzoomed) size and scales the whole
-  // thing down (or up) with a single zoom factor so it always fits the
-  // screen exactly -- no horizontal or vertical scrolling, ever.
+  // Measures the board's natural size and stretches it to exactly fill
+  // the screen in both dimensions -- no scrolling, and (per feedback) no
+  // letterboxing bars either. A single uniform zoom factor (the min of
+  // the two ratios) preserved aspect ratio but left blank bars on
+  // whichever axis wasn't the limiting one; scaling width and height
+  // independently via transform fills the screen completely instead.
   function fitBoardToScreen() {
-    boardContent.style.zoom = 1;
+    boardContent.style.transform = "none";
     const naturalWidth = boardContent.scrollWidth;
     const naturalHeight = boardContent.scrollHeight;
     const availableWidth = boardScroll.clientWidth;
     const availableHeight = boardScroll.clientHeight;
-    const scale = Math.min(availableWidth / naturalWidth, availableHeight / naturalHeight);
-    boardContent.style.zoom = scale > 0 ? scale : 1;
+    const scaleX = naturalWidth > 0 ? availableWidth / naturalWidth : 1;
+    const scaleY = naturalHeight > 0 ? availableHeight / naturalHeight : 1;
+    boardContent.style.transform = `scale(${scaleX}, ${scaleY})`;
   }
 
   await configReady;
