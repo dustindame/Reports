@@ -44,6 +44,7 @@ let SHOW_ELAPSED_TIME = false;
 let NICE_ENABLED = false;
 let SHOTS_COUNT = 0;
 let SHOT_PICK_NUMBERS = [];
+let ROAST_ENABLED = true;
 
 const FLEX_ELIGIBLE = ["RB", "WR", "TE"];
 const POSITION_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te", DEF: "--def" };
@@ -278,11 +279,17 @@ function buildMockDraft() {
 
   const picks = [];
   let pickNumber = 0;
+  const draftStart = Date.now() - 90 * 60 * 1000; // pretend the demo draft started 90 min ago
   chronological.forEach(({ ti, si }) => {
     const resolved = pickByTeamSlot.get(`${TEAMS[ti].id}:${si}`);
     if (!resolved) return;
     pickNumber += 1;
-    const pick = { pickNumber, ...resolved };
+    // Mostly a steady ~40s/pick pace, with a handful of longer breaks
+    // (bathroom/beer runs) so the demo recap's pace chart has something
+    // interesting to show.
+    const gapSeconds = rng() < 0.12 ? 180 + rng() * 420 : 20 + rng() * 60;
+    const loggedAt = draftStart + pickNumber * gapSeconds * 1000;
+    const pick = { pickNumber, ...resolved, loggedAt };
     roster[ti].slots[si] = pick;
     picks.push(pick);
   });
@@ -317,6 +324,7 @@ function applyRealConfig(config, leagueCode) {
   NICE_ENABLED = Boolean(config.nice_enabled);
   SHOTS_COUNT = Number(config.shots_count) || 0;
   SHOT_PICK_NUMBERS = Array.isArray(config.shot_pick_numbers) ? config.shot_pick_numbers : [];
+  ROAST_ENABLED = config.roast_enabled !== false;
 }
 
 function applyDemoConfig() {
@@ -337,6 +345,7 @@ function applyDemoConfig() {
   NICE_ENABLED = false;
   SHOTS_COUNT = 0;
   SHOT_PICK_NUMBERS = [];
+  ROAST_ENABLED = true;
 }
 
 function getTeamRoster(teamId) {
@@ -383,7 +392,7 @@ const DraftStore = {
     const { data, error } = await supabaseClient
       .from("draft_config")
       .select(
-        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time, nice_enabled, shots_count, shot_pick_numbers"
+        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time, nice_enabled, shots_count, shot_pick_numbers, roast_enabled"
       )
       .eq("league_code", leagueCode)
       .maybeSingle();
@@ -413,6 +422,7 @@ const DraftStore = {
       p_nice_enabled: Boolean(boardOptions.niceEnabled),
       p_shots_count: Number(boardOptions.shotsCount) || 0,
       p_shot_pick_numbers: boardOptions.shotPickNumbers || [],
+      p_roast_enabled: boardOptions.roastEnabled !== false,
     });
     if (error) return { error: error.message };
     return { error: null, id: data };
@@ -438,6 +448,7 @@ const DraftStore = {
       p_nice_enabled: Boolean(boardOptions.niceEnabled),
       p_shots_count: Number(boardOptions.shotsCount) || 0,
       p_shot_pick_numbers: boardOptions.shotPickNumbers || [],
+      p_roast_enabled: boardOptions.roastEnabled !== false,
     });
     if (error) return { error: error.message };
     if (data === false) return { error: "Incorrect commissioner PIN." };

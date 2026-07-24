@@ -277,6 +277,26 @@ body {
   border-color: #2dd4bf;
   box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.35), 0 0 18px rgba(45, 212, 191, 0.5), inset 0 -22px 30px rgba(0, 0, 0, 0.4);
 }
+.team-box.out-of-money {
+  cursor: not-allowed;
+  filter: grayscale(0.9) brightness(0.55);
+}
+.team-box.out-of-money:active { transform: none; }
+.team-box-out-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(0, 0, 0, 0.45);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
 .team-box-check {
   position: absolute;
   top: 6px;
