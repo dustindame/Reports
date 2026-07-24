@@ -39,6 +39,12 @@
           <div class="recent-strip" id="recentStrip"></div>
         </div>
 
+        <div class="header-block tools-block">
+          <button class="tool-btn" id="exportBtn" title="Download a backup of all picks (JSON)"><span id="exportIcon"></span></button>
+          <button class="tool-btn" id="snapshotBtn" title="Save the board as an image"><span id="snapshotIcon"></span></button>
+          <a class="tool-btn" id="recapLink" href="recap.html" title="View draft recap"><span id="recapIcon"></span></a>
+        </div>
+
         <div class="header-block clock-block">
           <div class="scoreboard-clock">
             <span class="scoreboard-post" id="goalPostLeft"></span>
@@ -75,6 +81,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="shared/supabase-config.js"></script>
   <script src="shared/data.js"></script>
   <script src="shared/league-gate.js"></script>

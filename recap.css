@@ -1,0 +1,250 @@
+body {
+  min-height: 100vh;
+  margin: 0;
+}
+
+.recap-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 0 60px;
+}
+
+/* ---------------- Header ---------------- */
+
+.recap-header {
+  padding: 22px 28px 18px;
+  position: relative;
+  border-bottom: 1px solid var(--border-soft);
+}
+.back-btn {
+  position: absolute;
+  left: 28px;
+  top: 24px;
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.back-btn:hover { border-color: var(--gold-dim); }
+.header-row { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.title-icon { display: flex; line-height: 0; }
+.recap-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  text-shadow: 0 0 18px rgba(212, 175, 55, 0.25);
+  text-align: center;
+}
+
+.recap-main { padding: 28px; display: flex; flex-direction: column; gap: 28px; }
+
+/* ---------------- Stat tiles ---------------- */
+
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+.stat-tile {
+  background: var(--panel-grad);
+  box-shadow: var(--panel-sheen);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+}
+.stat-tile .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); }
+.stat-tile .stat-value { font-size: 30px; font-weight: 800; color: var(--gold-bright); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.stat-tile .stat-sub { font-size: 12.5px; color: var(--text-dim); margin-top: 3px; }
+
+/* ---------------- Chart cards ---------------- */
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 20px;
+}
+.chart-card {
+  background: var(--panel-grad);
+  box-shadow: var(--panel-sheen);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px 22px;
+}
+.chart-card h2 {
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text);
+}
+.chart-body { display: flex; flex-direction: column; gap: 10px; }
+.chart-empty { font-size: 13px; color: var(--text-faint); padding: 12px 0; }
+
+/* Horizontal bar rows (avg price / team spend / rookies) */
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-row .bar-label {
+  flex: none;
+  width: 108px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-row .bar-track {
+  flex: 1;
+  height: 16px;
+  background: var(--panel-alt);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.bar-row .bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+.bar-row .bar-value {
+  flex: none;
+  width: 58px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Stacked position-mix bar per team */
+.mix-row { display: flex; align-items: center; gap: 10px; }
+.mix-row .mix-label {
+  flex: none;
+  width: 108px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mix-row .mix-track {
+  flex: 1;
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  background: var(--panel-alt);
+}
+.mix-row .mix-seg { height: 100%; }
+.mix-row .mix-seg + .mix-seg { border-left: 2px solid var(--panel); }
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
+.legend-item .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+
+/* ---------------- Trend chart (SVG) ---------------- */
+
+/* No width:100% here on purpose -- the SVG's width/viewBox are set in JS
+   to match the container's measured pixel width 1:1, so dots stay
+   perfectly circular and the tooltip's cx/cy-based positioning lines up
+   exactly. Forcing a CSS width would let the two disagree and stretch
+   the marks. */
+.trend-svg { height: 220px; display: block; }
+.trend-axis-label { font-size: 10px; fill: var(--text-faint); }
+.trend-gridline { stroke: var(--border-soft); stroke-width: 1; }
+.trend-line { fill: none; stroke: var(--text-faint); stroke-width: 2; }
+.trend-dot { stroke: var(--bg); stroke-width: 1; cursor: pointer; }
+.trend-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: var(--panel-alt);
+  border: 1px solid var(--gold-dim);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  transform: translate(-50%, -130%);
+  opacity: 0;
+  transition: opacity 0.1s ease;
+  z-index: 5;
+}
+.trend-wrap { position: relative; }
+
+/* ---------------- Steals & Reaches ---------------- */
+
+.value-list { display: flex; flex-direction: column; gap: 8px; }
+.value-list-heading { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); margin-top: 4px; }
+.value-list-heading:first-child { margin-top: 0; }
+.value-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--panel-alt);
+  border: 1px solid var(--border-soft);
+}
+.value-row .vr-pos-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.value-row .vr-name { flex: 1; font-size: 13px; font-weight: 700; color: var(--text); }
+.value-row .vr-team { font-size: 11.5px; color: var(--text-faint); margin-left: 6px; }
+.value-row .vr-price { font-size: 14px; font-weight: 800; color: var(--gold-bright); }
+.value-row.steal { border-color: rgba(76, 175, 80, 0.4); }
+.value-row.reach { border-color: rgba(197, 61, 61, 0.4); }
+
+/* ---------------- Roast ---------------- */
+
+.roast-section {
+  background: linear-gradient(155deg, #241414 0%, var(--panel) 60%);
+  border: 1px solid rgba(197, 61, 61, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px 26px;
+  box-shadow: 0 0 30px -12px rgba(197, 61, 61, 0.4);
+}
+.roast-heading {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #f2a541;
+  text-align: center;
+  margin-bottom: 18px;
+  text-shadow: 0 0 14px rgba(242, 165, 65, 0.4);
+}
+.roast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.roast-card {
+  background: var(--panel-alt-grad);
+  box-shadow: var(--panel-sheen);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold-dim);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+.roast-card .roast-team-name { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.roast-card .roast-team-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.roast-card .roast-line { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-top: 6px; }
+.roast-card .roast-line:first-of-type { margin-top: 0; }
+
+@media (max-width: 640px) {
+  .recap-main { padding: 18px; }
+  .recap-title { font-size: 19px; }
+  .back-btn { left: 16px; top: 18px; }
+  .recap-header { padding: 18px 16px 14px; }
+}
