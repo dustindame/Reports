@@ -30,15 +30,10 @@
           <div class="chart-body" id="chartAvgPrice"></div>
         </div>
 
-        <div class="chart-card">
-          <h2>Price Trend Through the Draft</h2>
+        <div class="chart-card wide">
+          <h2>Price Trend Through the Draft (by Position)</h2>
           <div class="chart-body" id="chartTrend"></div>
           <div class="chart-legend" id="trendLegend"></div>
-        </div>
-
-        <div class="chart-card">
-          <h2>Total Spend by Team</h2>
-          <div class="chart-body" id="chartTeamSpend"></div>
         </div>
 
         <div class="chart-card">
@@ -60,19 +55,48 @@
         </div>
 
         <div class="chart-card">
-          <h2>Advanced: Position Price Volatility</h2>
-          <p class="chart-note">How much the price swung around the average for each position — a high number means bidding wars, a low one means everyone paid about the same.</p>
-          <div class="chart-body" id="chartVolatility"></div>
+          <h2>Advanced: Price Distribution by Position</h2>
+          <p class="chart-note">Box &amp; whisker: the box spans the middle 50% of prices at that position, the line inside is the median, and the whiskers reach to the cheapest and priciest pick.</p>
+          <div class="chart-body" id="chartBoxWhisker"></div>
         </div>
 
         <div class="chart-card">
-          <h2>Advanced: Budget Concentration</h2>
-          <p class="chart-note">Share of each team's budget that went to their single biggest pick — higher means they bet it all on one player instead of spreading it around.</p>
-          <div class="chart-body" id="chartConcentration"></div>
+          <h2>Advanced: Value Quadrant</h2>
+          <p class="chart-note">Every pick plotted by price (x) vs. our value ranking (y). Top-left is where the steals live, bottom-right is where the reaches live.</p>
+          <div class="chart-body" id="chartQuadrant"></div>
+        </div>
+
+        <div class="chart-card">
+          <h2>Advanced: League-Wide Position Mix</h2>
+          <p class="chart-note">Every dollar spent across the whole draft, one square per 1%, colored by position.</p>
+          <div class="chart-body" id="chartWaffle"></div>
+          <div class="chart-legend" id="waffleLegend"></div>
+        </div>
+
+        <div class="chart-card wide">
+          <h2>Advanced: Budget Used per Team</h2>
+          <p class="chart-note">Bullet chart: the bar is what's been spent so far, the tick mark is the full budget target.</p>
+          <div class="chart-body" id="chartBullet"></div>
+        </div>
+
+        <div class="chart-card wide">
+          <h2>Advanced: Draft Pace &amp; Pick Timing</h2>
+          <p class="chart-note">Every pick plotted by pick number (x) and price (y), sized by how highly-valued the player was, colored by position. Tall gaps in the strip below mark the longest breaks between picks.</p>
+          <div class="chart-body" id="chartBubble"></div>
+          <div class="chart-legend" id="bubbleLegend"></div>
+          <div class="pace-strip" id="paceStrip"></div>
+          <div class="longest-breaks" id="longestBreaks"></div>
+        </div>
+
+        <div class="chart-card wide">
+          <h2>Advanced: Team Draft Profile</h2>
+          <p class="chart-note">Each team's share of budget spent per position vs. the league average (dashed) — pick a team to compare.</p>
+          <select class="team-select" id="radarTeamSelect"></select>
+          <div class="chart-body" id="chartRadar"></div>
         </div>
       </section>
 
-      <section class="roast-section">
+      <section class="roast-section" id="roastSection">
         <div class="roast-heading">🔥 THE ROAST</div>
         <div class="roast-grid" id="roastGrid"></div>
       </section>

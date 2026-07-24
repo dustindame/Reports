@@ -23,6 +23,7 @@
   const togglePositionTotals = document.getElementById("togglePositionTotals");
   const toggleElapsedTime = document.getElementById("toggleElapsedTime");
   const toggleNice = document.getElementById("toggleNice");
+  const toggleRoast = document.getElementById("toggleRoast");
   const shotsValue = document.getElementById("shotsValue");
   const shotsMinus = document.getElementById("shotsMinus");
   const shotsPlus = document.getElementById("shotsPlus");
@@ -56,6 +57,7 @@
   let showElapsedTime = false;
   let niceEnabled = false;
   let shotsCount = 0;
+  let roastEnabled = true;
 
   /* ---------------- small overlay prompts (reuses shared/league-gate.css) ---------------- */
 
@@ -184,6 +186,7 @@
     showElapsedTime = Boolean(config.show_elapsed_time);
     niceEnabled = Boolean(config.nice_enabled);
     shotsCount = Number(config.shots_count) || 0;
+    roastEnabled = config.roast_enabled !== false;
   }
 
   function switchToCreate() {
@@ -202,6 +205,7 @@
     showElapsedTime = false;
     niceEnabled = false;
     shotsCount = 0;
+    roastEnabled = true;
     renderAll();
   }
 
@@ -317,6 +321,7 @@
     togglePositionTotals.checked = showPositionTotals;
     toggleElapsedTime.checked = showElapsedTime;
     toggleNice.checked = niceEnabled;
+    toggleRoast.checked = roastEnabled;
     shotsValue.textContent = shotsCount;
   }
 
@@ -397,6 +402,7 @@
   togglePositionTotals.addEventListener("change", () => { showPositionTotals = togglePositionTotals.checked; });
   toggleElapsedTime.addEventListener("change", () => { showElapsedTime = toggleElapsedTime.checked; });
   toggleNice.addEventListener("change", () => { niceEnabled = toggleNice.checked; });
+  toggleRoast.addEventListener("change", () => { roastEnabled = toggleRoast.checked; });
   shotsMinus.addEventListener("click", () => {
     if (shotsCount <= 0) return;
     shotsCount -= 1;
@@ -489,6 +495,7 @@
       niceEnabled,
       shotsCount,
       shotPickNumbers: pickRandomShotNumbers(shotsCount, totalPicks),
+      roastEnabled,
     };
 
     const { error } =

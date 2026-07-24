@@ -36,11 +36,17 @@
     await applyLivePicks();
     teamGrid.innerHTML = TEAMS.map((team) => {
       const budget = computeTeamBudget(team.id);
-      return `<div class="team-box" data-team-id="${team.id}" style="background:${team.color}">
+      // A team with no open roster slots, or with $0 left to spend, can't
+      // take part in any further bidding -- grey it out and block
+      // selecting it instead of letting someone pick it and then hit a
+      // "no open slot"/budget error on confirm.
+      const isOut = budget.open === 0 || budget.remaining <= 0;
+      return `<div class="team-box${isOut ? " out-of-money" : ""}" data-team-id="${team.id}" style="background:${team.color}">
         <span class="team-box-check" id="check-${team.id}"></span>
         <div class="team-box-name">${team.name}</div>
         <div class="team-box-divider"></div>
         <div class="team-box-stat"><span class="tbs-icon">🔨</span><span class="tbs-val">$${budget.maxBid}</span><span class="tbs-icon">💰</span><span class="tbs-val">$${budget.remaining}</span></div>
+        ${isOut ? `<div class="team-box-out-label">${budget.open === 0 ? "ROSTER FULL" : "OUT OF MONEY"}</div>` : ""}
       </div>`;
     }).join("");
 
@@ -50,6 +56,10 @@
 
     teamGrid.querySelectorAll(".team-box").forEach((box) => {
       box.classList.toggle("selected", box.dataset.teamId === selectedTeamId);
+      if (box.classList.contains("out-of-money")) {
+        if (selectedTeamId === box.dataset.teamId) selectedTeamId = null;
+        return;
+      }
       box.addEventListener("click", () => {
         selectedTeamId = box.dataset.teamId;
         teamGrid.querySelectorAll(".team-box").forEach((b) => b.classList.toggle("selected", b === box));
