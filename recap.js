@@ -147,27 +147,10 @@
       .join("");
   }
 
-  /* ---------------- Rookies drafted ---------------- */
-  function renderRookies() {
-    const el = document.getElementById("chartRookies");
-    const sorted = teamStats.slice().sort((a, b) => b.rookieCount - a.rookieCount);
-    if (picks.length === 0 || sorted.every((t) => t.rookieCount === 0)) {
-      el.innerHTML = `<div class="chart-empty">No rookies drafted yet.</div>`;
-      return;
-    }
-    const maxCount = Math.max(...sorted.map((t) => t.rookieCount), 1);
-    el.innerHTML = sorted
-      .map(
-        (t) => `<div class="bar-row">
-          <span class="bar-label">${escapeHtml(t.name)}</span>
-          <span class="bar-track"><span class="bar-fill" style="width:${((t.rookieCount / maxCount) * 100).toFixed(1)}%; background:${t.color}"></span></span>
-          <span class="bar-value">${t.rookieCount}</span>
-        </div>`
-      )
-      .join("");
-  }
-
-  /* ---------------- Price trend through the draft (SVG) ---------------- */
+  /* ---------------- Price trend through the draft (SVG) ----------------
+     One line per position (not one combined line across everyone) so you
+     can see e.g. whether RB prices climbed while WR stayed flat, instead
+     of a single zig-zag that mixes every position together. */
   function renderTrend() {
     const wrap = document.getElementById("chartTrend");
     if (picks.length === 0) {
@@ -187,12 +170,23 @@
     const xFor = (i) => padL + (n <= 1 ? innerW / 2 : (i / (n - 1)) * innerW);
     const yFor = (price) => padT + innerH - (price / maxPrice) * innerH;
 
-    const linePoints = picks.map((p, i) => `${xFor(i).toFixed(1)},${yFor(p.price).toFixed(1)}`).join(" ");
-    const dots = picks
-      .map((p, i) => {
-        const colorVar = POSITION_COLOR_VAR[p.position] || "--text-faint";
-        return `<circle class="trend-dot" cx="${xFor(i).toFixed(1)}" cy="${yFor(p.price).toFixed(1)}" r="4.5" fill="var(${colorVar})" data-idx="${i}"></circle>`;
+    const byPosition = POS_KEYS.map((pos) => {
+      const posPicks = picks.map((p, i) => ({ ...p, seq: i })).filter((p) => p.position === pos);
+      return { pos, posPicks };
+    }).filter((g) => g.posPicks.length > 0);
+
+    const linesSvg = byPosition
+      .map((g) => {
+        const points = g.posPicks.map((p) => `${xFor(p.seq).toFixed(1)},${yFor(p.price).toFixed(1)}`).join(" ");
+        return `<polyline class="trend-line" style="stroke:var(${POSITION_COLOR_VAR[g.pos]})" points="${points}"/>`;
       })
+      .join("");
+    const dotsSvg = byPosition
+      .flatMap((g) =>
+        g.posPicks.map(
+          (p) => `<circle class="trend-dot" cx="${xFor(p.seq).toFixed(1)}" cy="${yFor(p.price).toFixed(1)}" r="4.5" fill="var(${POSITION_COLOR_VAR[g.pos]})" data-idx="${p.seq}"></circle>`
+        )
+      )
       .join("");
 
     const gridCount = 4;
@@ -209,8 +203,8 @@
       <svg class="trend-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
         ${gridlines}
         ${yLabels}
-        <polyline class="trend-line" points="${linePoints}"/>
-        ${dots}
+        ${linesSvg}
+        ${dotsSvg}
       </svg>
       <div class="trend-tooltip" id="trendTooltip"></div>
     </div>`;
@@ -231,9 +225,94 @@
       });
     });
 
-    const legendPresent = POS_KEYS.filter((pos) => picks.some((p) => p.position === pos));
-    document.getElementById("trendLegend").innerHTML = legendPresent
-      .map((pos) => `<span class="legend-item"><span class="legend-dot" style="background:var(${POSITION_COLOR_VAR[pos]})"></span>${pos}</span>`)
+    document.getElementById("trendLegend").innerHTML = byPosition
+      .map((g) => `<span class="legend-item"><span class="legend-dot" style="background:var(${POSITION_COLOR_VAR[g.pos]})"></span>${g.pos}</span>`)
+      .join("");
+  }
+
+  /* ---------------- Advanced: avg spend by position, per team (matrix) ---------------- */
+  function renderPositionMatrix() {
+    const el = document.getElementById("positionMatrix");
+    const presentPositions = POS_KEYS.filter((pos) => picks.some((p) => p.position === pos));
+    if (picks.length === 0 || presentPositions.length === 0) {
+      el.innerHTML = `<div class="chart-empty">No picks yet.</div>`;
+      return;
+    }
+    const rows = teamStats
+      .map((t) => {
+        const cells = presentPositions
+          .map((pos) => {
+            const posPicks = t.picks.filter((p) => p.position === pos);
+            if (posPicks.length === 0) return `<td class="matrix-cell empty">—</td>`;
+            const avg = posPicks.reduce((s, p) => s + p.price, 0) / posPicks.length;
+            return `<td class="matrix-cell">$${avg.toFixed(0)}</td>`;
+          })
+          .join("");
+        return `<tr><td class="team-name-cell">${escapeHtml(t.name)}</td>${cells}</tr>`;
+      })
+      .join("");
+    el.innerHTML = `<div class="matrix-wrap"><table class="matrix-table">
+      <thead><tr><th></th>${presentPositions.map((pos) => `<th>${pos}</th>`).join("")}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+  }
+
+  /* ---------------- Advanced: position price volatility ----------------
+     Standard deviation of price within each position -- a high number
+     means that position had real bidding wars (some picks way above
+     others), a low number means everyone paid about the same. */
+  function renderVolatility() {
+    const el = document.getElementById("chartVolatility");
+    const present = POS_KEYS.filter((pos) => picks.filter((p) => p.position === pos).length >= 2);
+    if (present.length === 0) {
+      el.innerHTML = `<div class="chart-empty">Not enough picks per position yet.</div>`;
+      return;
+    }
+    const rows = present
+      .map((pos) => {
+        const prices = picks.filter((p) => p.position === pos).map((p) => p.price);
+        const mean = prices.reduce((s, v) => s + v, 0) / prices.length;
+        const variance = prices.reduce((s, v) => s + (v - mean) ** 2, 0) / prices.length;
+        return { pos, stdDev: Math.sqrt(variance) };
+      })
+      .sort((a, b) => b.stdDev - a.stdDev);
+    const maxDev = Math.max(...rows.map((r) => r.stdDev), 1);
+    el.innerHTML = rows
+      .map(
+        (r) => `<div class="bar-row">
+          <span class="bar-label">${r.pos}</span>
+          <span class="bar-track"><span class="bar-fill" style="width:${((r.stdDev / maxDev) * 100).toFixed(1)}%; background:var(${POSITION_COLOR_VAR[r.pos]})"></span></span>
+          <span class="bar-value">±$${r.stdDev.toFixed(0)}</span>
+        </div>`
+      )
+      .join("");
+  }
+
+  /* ---------------- Advanced: budget concentration ----------------
+     Each team's single biggest pick as a share of their total spend --
+     high share = "bet it all on one player," low share = spread evenly. */
+  function renderConcentration() {
+    const el = document.getElementById("chartConcentration");
+    const withPicks = teamStats.filter((t) => t.picks.length > 0);
+    if (withPicks.length === 0) {
+      el.innerHTML = `<div class="chart-empty">No picks yet.</div>`;
+      return;
+    }
+    const rows = withPicks
+      .map((t) => {
+        const maxPick = t.picks.reduce((max, p) => (p.price > max.price ? p : max), t.picks[0]);
+        const share = t.spend > 0 ? maxPick.price / t.spend : 0;
+        return { team: t, share, maxPick };
+      })
+      .sort((a, b) => b.share - a.share);
+    el.innerHTML = rows
+      .map(
+        (r) => `<div class="bar-row">
+          <span class="bar-label">${escapeHtml(r.team.name)}</span>
+          <span class="bar-track"><span class="bar-fill" style="width:${(r.share * 100).toFixed(1)}%; background:${r.team.color}"></span></span>
+          <span class="bar-value">${(r.share * 100).toFixed(0)}%</span>
+        </div>`
+      )
       .join("");
   }
 
@@ -274,10 +353,13 @@
     `;
   }
 
-  /* ---------------- Roast ---------------- */
+  /* ---------------- Roast ----------------
+     Harsher / more savage tone per request ("R rated"). Kept free of actual
+     profanity and slurs by design -- if genuinely explicit language is
+     wanted, that's a separate ask. */
   function generateRoastLines(t) {
     if (t.picks.length === 0) {
-      return ["Didn't draft a single player. Bold strategy showing up to an auction just to watch."];
+      return ["Didn't draft a single player. Showed up, took up a seat, contributed absolutely nothing — the human equivalent of a bye week."];
     }
     const maxPick = t.picks.reduce((max, p) => (p.price > max.price ? p : max), t.picks[0]);
     const maxShare = maxPick.price / BUDGET;
@@ -288,30 +370,30 @@
 
     const candidates = [];
     if (maxShare >= 0.3) {
-      candidates.push({ severity: maxShare, text: `Spent ${Math.round(maxShare * 100)}% of the whole budget on ${maxPick.name} alone. Hope that's the last player you ever need to think about.` });
+      candidates.push({ severity: maxShare, text: `Blew ${Math.round(maxShare * 100)}% of the entire budget on ${maxPick.name} like it was a bottle service tab. One injury away from a full-blown crisis.` });
     }
     if (topPosEntry && topPosShare >= 0.45) {
-      candidates.push({ severity: topPosShare, text: `${Math.round(topPosShare * 100)}% of the budget went to ${topPosEntry[0]}s. A one-position offense.` });
+      candidates.push({ severity: topPosShare, text: `${Math.round(topPosShare * 100)}% of the budget torched on ${topPosEntry[0]}s. This isn't a roster, it's a cry for help with a one-track mind.` });
     }
     if (t.rookieCount >= 3) {
-      candidates.push({ severity: 0.5 + t.rookieCount * 0.05, text: `Drafted ${t.rookieCount} rookies. Either a scout or a gambler — Week 1 will tell.` });
+      candidates.push({ severity: 0.5 + t.rookieCount * 0.05, text: `${t.rookieCount} rookies drafted. Either you found the next big thing or you built a daycare and called it a fantasy team.` });
     }
     if (t.rookieCount === 0 && t.picks.length >= 5) {
-      candidates.push({ severity: 0.4, text: `Zero rookies. Total distrust of anyone who hasn't already proven it.` });
+      candidates.push({ severity: 0.4, text: `Zero rookies. Terrified of upside, allergic to risk — the roster equivalent of ordering water at a bar.` });
     }
     if (dollarPicks >= Math.ceil(t.picks.length / 2)) {
-      candidates.push({ severity: 0.4 + dollarPicks * 0.02, text: `${dollarPicks} picks for $1 apiece. Half this roster was an afterthought.` });
+      candidates.push({ severity: 0.4 + dollarPicks * 0.02, text: `${dollarPicks} picks bought for a single dollar. Half this roster looks like it was drafted while checking a phone.` });
     }
     if (avgPrice >= BUDGET * 0.12) {
-      candidates.push({ severity: avgPrice / BUDGET, text: `Average pick price of $${avgPrice.toFixed(0)} — paid retail all night long.` });
+      candidates.push({ severity: avgPrice / BUDGET, text: `Average pick price of $${avgPrice.toFixed(0)} — paid full sticker on everyone, every time, like the auction had no other bidders in the room.` });
     } else if (avgPrice <= BUDGET * 0.04) {
-      candidates.push({ severity: 0.3, text: `Average pick price of just $${avgPrice.toFixed(0)}. The bargain bin has a new champion.` });
+      candidates.push({ severity: 0.3, text: `Average pick price of just $${avgPrice.toFixed(0)}. Congratulations on assembling the discount rack and calling it a strategy.` });
     }
 
     candidates.sort((a, b) => b.severity - a.severity);
     const picked = candidates.slice(0, 2).map((c) => c.text);
     if (picked.length === 0) {
-      picked.push("Played it perfectly down the middle — no scandals, no fireworks, just a spreadsheet come to life.");
+      picked.push("Painfully balanced, aggressively boring — the fantasy football equivalent of beige paint. No one will remember this roster, including the person who drafted it.");
     }
     return picked;
   }
@@ -332,8 +414,10 @@
   renderAvgPrice();
   renderTeamSpend();
   renderPositionMix();
-  renderRookies();
   renderTrend();
+  renderPositionMatrix();
+  renderVolatility();
+  renderConcentration();
   renderStealsReaches();
   renderRoasts();
 

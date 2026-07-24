@@ -84,10 +84,12 @@ body {
   letter-spacing: 0.5px;
   color: var(--text);
 }
+.chart-card.wide { grid-column: 1 / -1; }
+.chart-note { margin: -10px 0 14px; font-size: 12px; color: var(--text-faint); line-height: 1.4; }
 .chart-body { display: flex; flex-direction: column; gap: 10px; }
 .chart-empty { font-size: 13px; color: var(--text-faint); padding: 12px 0; }
 
-/* Horizontal bar rows (avg price / team spend / rookies) */
+/* Horizontal bar rows (avg price / team spend) */
 .bar-row { display: flex; align-items: center; gap: 10px; }
 .bar-row .bar-label {
   flex: none;
@@ -108,6 +110,10 @@ body {
   position: relative;
 }
 .bar-row .bar-fill {
+  /* It's a <span> -- display:inline by default, which silently ignores
+     any width set on it. That's why the numbers rendered correctly but
+     no visible bar ever appeared. */
+  display: block;
   height: 100%;
   border-radius: 999px;
   transition: width 0.6s ease;
@@ -184,6 +190,16 @@ body {
   z-index: 5;
 }
 .trend-wrap { position: relative; }
+
+/* ---------------- Advanced: position matrix, volatility, concentration ---------------- */
+
+.matrix-wrap { overflow-x: auto; }
+.matrix-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.matrix-table th, .matrix-table td { padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--border-soft); white-space: nowrap; }
+.matrix-table th { color: var(--text-faint); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-size: 10.5px; }
+.matrix-table td.team-name-cell { text-align: left; font-weight: 700; color: var(--text); }
+.matrix-table td.matrix-cell { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.matrix-table td.matrix-cell.empty { color: var(--text-faint); }
 
 /* ---------------- Steals & Reaches ---------------- */
 
