@@ -127,10 +127,10 @@ const LeagueSession = {
 };
 
 const PLAYER_POOL = {
-  QB: ["Patrick Mahomes", "Josh Allen", "Jalen Hurts", "Lamar Jackson", "Joe Burrow", "Justin Herbert", "C.J. Stroud", "Dak Prescott", "Trevor Lawrence", "Kyler Murray", "Brock Purdy", "Jordan Love", "Anthony Richardson", "Matthew Stafford", "Jared Goff", "Baker Mayfield", "Tua Tagovailoa", "Geno Smith", "Kirk Cousins", "Caleb Williams", "Bo Nix", "Drake Maye"],
-  RB: ["Christian McCaffrey", "Bijan Robinson", "Breece Hall", "Jonathan Taylor", "Saquon Barkley", "Derrick Henry", "Josh Jacobs", "Isiah Pacheco", "Kenneth Walker III", "Travis Etienne", "De'Von Achane", "Jahmyr Gibbs", "James Cook", "Rachaad White", "Alvin Kamara", "Joe Mixon", "Aaron Jones", "Najee Harris", "Tony Pollard", "Austin Ekeler", "Rhamondre Stevenson", "D'Andre Swift", "Javonte Williams", "James Conner", "Zack Moss", "Brian Robinson Jr.", "Miles Sanders", "Kareem Hunt", "Cam Akers", "Devin Singletary", "Alexander Mattison", "Chuba Hubbard", "Jerome Ford", "Roschon Johnson", "Zamir White", "Tyjae Spears", "Ezekiel Elliott", "Antonio Gibson", "Clyde Edwards-Helaire", "D'Onta Foreman", "David Montgomery", "Jaylen Warren", "Bucky Irving", "Ray Davis", "Tyler Allgeier", "Gus Edwards", "Rico Dowdle"],
-  WR: ["Justin Jefferson", "Ja'Marr Chase", "Tyreek Hill", "CeeDee Lamb", "Amon-Ra St. Brown", "A.J. Brown", "Stefon Diggs", "Puka Nacua", "Garrett Wilson", "Chris Olave", "DK Metcalf", "Davante Adams", "Mike Evans", "DeVonta Smith", "Deebo Samuel", "Jaylen Waddle", "Drake London", "Terry McLaurin", "Amari Cooper", "Calvin Ridley", "Tank Dell", "Nico Collins", "Brandon Aiyuk", "Christian Kirk", "Michael Pittman Jr.", "Keenan Allen", "Jordan Addison", "Zay Flowers", "Rashee Rice", "Marquise Brown", "Diontae Johnson", "Courtland Sutton", "Jerry Jeudy", "Tyler Lockett", "Adam Thielen", "George Pickens", "Chris Godwin", "Curtis Samuel", "Gabe Davis", "Jakobi Meyers", "DJ Moore", "Xavier Worthy", "Rome Odunze", "Malik Nabers", "Marvin Harrison Jr."],
-  TE: ["Travis Kelce", "Sam LaPorta", "Mark Andrews", "T.J. Hockenson", "Trey McBride", "Kyle Pitts", "George Kittle", "Dallas Goedert", "Evan Engram", "David Njoku", "Dalton Kincaid", "Cole Kmet", "Pat Freiermuth", "Jake Ferguson", "Tyler Higbee", "Hunter Henry", "Brock Bowers"],
+  QB: ["Patrick Mahomes", "Josh Allen", "Jalen Hurts", "Lamar Jackson", "Joe Burrow", "Justin Herbert", "C.J. Stroud", "Dak Prescott", "Trevor Lawrence", "Kyler Murray", "Brock Purdy", "Jordan Love", "Anthony Richardson", "Matthew Stafford", "Jared Goff", "Baker Mayfield", "Tua Tagovailoa", "Geno Smith", "Kirk Cousins", "Caleb Williams", "Bo Nix", "Drake Maye", "Fernando Mendoza", "Ty Simpson", "Carson Beck", "Drew Allar", "Cade Klubnik", "Taylen Green", "Cole Payton", "Garrett Nussmeier", "Behren Morton", "Athan Kaliakmanis"],
+  RB: ["Christian McCaffrey", "Bijan Robinson", "Breece Hall", "Jonathan Taylor", "Saquon Barkley", "Derrick Henry", "Josh Jacobs", "Isiah Pacheco", "Kenneth Walker III", "Travis Etienne", "De'Von Achane", "Jahmyr Gibbs", "James Cook", "Rachaad White", "Alvin Kamara", "Joe Mixon", "Aaron Jones", "Najee Harris", "Tony Pollard", "Austin Ekeler", "Rhamondre Stevenson", "D'Andre Swift", "Javonte Williams", "James Conner", "Zack Moss", "Brian Robinson Jr.", "Miles Sanders", "Kareem Hunt", "Cam Akers", "Devin Singletary", "Alexander Mattison", "Chuba Hubbard", "Jerome Ford", "Roschon Johnson", "Zamir White", "Tyjae Spears", "Ezekiel Elliott", "Antonio Gibson", "Clyde Edwards-Helaire", "D'Onta Foreman", "David Montgomery", "Jaylen Warren", "Bucky Irving", "Ray Davis", "Tyler Allgeier", "Gus Edwards", "Rico Dowdle", "Jeremiyah Love", "Jadarian Price", "Jonah Coleman", "Mike Washington Jr.", "Kaelon Black", "Adam Randall", "Nicholas Singleton", "Emmett Johnson", "Kaytron Allen", "Seth McGowan", "Demond Claiborne", "Eli Heidenreich", "Jam Miller"],
+  WR: ["Justin Jefferson", "Ja'Marr Chase", "Tyreek Hill", "CeeDee Lamb", "Amon-Ra St. Brown", "A.J. Brown", "Stefon Diggs", "Puka Nacua", "Garrett Wilson", "Chris Olave", "DK Metcalf", "Davante Adams", "Mike Evans", "DeVonta Smith", "Deebo Samuel", "Jaylen Waddle", "Drake London", "Terry McLaurin", "Amari Cooper", "Calvin Ridley", "Tank Dell", "Nico Collins", "Brandon Aiyuk", "Christian Kirk", "Michael Pittman Jr.", "Keenan Allen", "Jordan Addison", "Zay Flowers", "Rashee Rice", "Marquise Brown", "Diontae Johnson", "Courtland Sutton", "Jerry Jeudy", "Tyler Lockett", "Adam Thielen", "George Pickens", "Chris Godwin", "Curtis Samuel", "Gabe Davis", "Jakobi Meyers", "DJ Moore", "Xavier Worthy", "Rome Odunze", "Malik Nabers", "Marvin Harrison Jr.", "Carnell Tate", "Jordyn Tyson", "Makai Lemon", "KC Concepcion", "Omar Cooper Jr.", "Denzel Boston", "Germie Bernard", "Chris Bell", "Chris Brazzell II", "De'Zhaun Stribling", "Malachi Fields", "Ja'Kobi Lane", "Elijah Sarratt", "Zachariah Branch", "Antonio Williams", "Skyler Bell", "Caleb Douglas", "Ted Hurst", "Bryce Lance", "Zavion Thomas", "Kevin Coleman Jr.", "Reggie Virgil", "Colbie Young", "Brenen Thompson", "Josh Cameron", "CJ Daniels", "Kendrick Law", "Kaden Wetjen", "Malik Benson", "Barion Brown", "Emmanuel Henderson Jr.", "Cyrus Allen", "CJ Williams", "Lewis Bond", "Deion Burks", "Anthony Smith"],
+  TE: ["Travis Kelce", "Sam LaPorta", "Mark Andrews", "T.J. Hockenson", "Trey McBride", "Kyle Pitts", "George Kittle", "Dallas Goedert", "Evan Engram", "David Njoku", "Dalton Kincaid", "Cole Kmet", "Pat Freiermuth", "Jake Ferguson", "Tyler Higbee", "Hunter Henry", "Brock Bowers", "Kenyon Sadiq", "Eli Stowers", "Max Klare", "Marlin Klein", "Oscar Delp", "Nate Boerkircher", "Eli Raridon", "Will Kacmarek", "Sam Roush", "Justin Joly", "Josh Cuevas", "Joe Royer", "Tanner Koziol", "Matthew Hibner", "Riley Nowakowski", "Seydou Traore", "Jack Endries", "Bauer Sharp", "Jaren Kanak", "Dallen Bentley", "Carsen Ryan"],
   DEF: ["49ers D/ST", "Ravens D/ST", "Cowboys D/ST", "Eagles D/ST", "Bills D/ST", "Jets D/ST", "Steelers D/ST", "Dolphins D/ST", "Browns D/ST", "Broncos D/ST", "Patriots D/ST", "Saints D/ST", "Colts D/ST", "Bears D/ST", "Chiefs D/ST", "Texans D/ST", "Buccaneers D/ST", "Packers D/ST", "Chargers D/ST", "Lions D/ST"],
 };
 
@@ -151,14 +151,41 @@ const TOP_VALUE_ORDER = [
   "Rachaad White", "Alvin Kamara", "Joe Mixon", "Terry McLaurin", "Mark Andrews",
 ];
 
+/* This year's incoming rookie class, ranked 1-80 (per user-provided
+   rankings) -- slotted into the search-value order right after the
+   established veteran tier above, so e.g. the #1 rookie shows up ahead
+   of a random veteran deep on the depth chart, without leapfrogging
+   proven stars like McCaffrey or Lamb. */
+const ROOKIE_ORDER = [
+  "Jeremiyah Love", "Carnell Tate", "Jordyn Tyson", "Makai Lemon", "KC Concepcion",
+  "Fernando Mendoza", "Omar Cooper Jr.", "Kenyon Sadiq", "Jadarian Price", "Denzel Boston",
+  "Germie Bernard", "Chris Bell", "Eli Stowers", "Jonah Coleman", "Chris Brazzell II",
+  "De'Zhaun Stribling", "Malachi Fields", "Ja'Kobi Lane", "Elijah Sarratt", "Zachariah Branch",
+  "Antonio Williams", "Skyler Bell", "Mike Washington Jr.", "Kaelon Black", "Caleb Douglas",
+  "Ted Hurst", "Ty Simpson", "Bryce Lance", "Max Klare", "Marlin Klein",
+  "Adam Randall", "Nicholas Singleton", "Emmett Johnson", "Carson Beck", "Kaytron Allen",
+  "Drew Allar", "Oscar Delp", "Zavion Thomas", "Kevin Coleman Jr.", "Reggie Virgil",
+  "Colbie Young", "Brenen Thompson", "Josh Cameron", "CJ Daniels", "Nate Boerkircher",
+  "Eli Raridon", "Will Kacmarek", "Sam Roush", "Seth McGowan", "Demond Claiborne",
+  "Eli Heidenreich", "Kendrick Law", "Kaden Wetjen", "Malik Benson", "Barion Brown",
+  "Emmanuel Henderson Jr.", "Cyrus Allen", "CJ Williams", "Lewis Bond", "Justin Joly",
+  "Josh Cuevas", "Joe Royer", "Tanner Koziol", "Matthew Hibner", "Cade Klubnik",
+  "Taylen Green", "Cole Payton", "Riley Nowakowski", "Jam Miller", "Garrett Nussmeier",
+  "Deion Burks", "Seydou Traore", "Jack Endries", "Bauer Sharp", "Behren Morton",
+  "Athan Kaliakmanis", "Jaren Kanak", "Dallen Bentley", "Carsen Ryan", "Anthony Smith",
+];
+
 const ALL_PLAYERS = (() => {
   const flat = Object.entries(PLAYER_POOL).flatMap(([position, names]) =>
     names.map((name) => ({ name, position }))
   );
   flat.forEach((p, i) => { p._originalOrder = i; });
   const rankOf = (name) => {
-    const idx = TOP_VALUE_ORDER.indexOf(name);
-    return idx === -1 ? TOP_VALUE_ORDER.length + 1000 : idx;
+    const topIdx = TOP_VALUE_ORDER.indexOf(name);
+    if (topIdx !== -1) return topIdx;
+    const rookieIdx = ROOKIE_ORDER.indexOf(name);
+    if (rookieIdx !== -1) return TOP_VALUE_ORDER.length + rookieIdx;
+    return TOP_VALUE_ORDER.length + ROOKIE_ORDER.length + 1000;
   };
   return flat
     .slice()
