@@ -50,30 +50,32 @@
   // Data safety: a one-click JSON export of every pick (works in demo mode
   // too, straight from MOCK_DRAFT) so a commissioner always has a way to
   // get their draft out of the browser, independent of Supabase.
+  function csvField(value) {
+    const s = String(value);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
   async function exportBackup() {
     exportBtn.disabled = true;
     try {
       const picks = CURRENT_LEAGUE_CODE ? await DraftStore.getPicks() : MOCK_DRAFT.picks;
-      const payload = {
-        exportedAt: new Date().toISOString(),
-        leagueCode: CURRENT_LEAGUE_CODE || null,
-        boardName: BOARD_NAME,
-        budgetPerTeam: BUDGET,
-        rosterSlots: ROSTER_SLOTS,
-        teams: TEAMS.map((t) => ({ id: t.id, name: t.name })),
-        picks: picks.map((p) => ({
-          team: (teamById(p.teamId) || {}).name || p.teamId,
-          player: p.name,
-          position: p.position,
-          price: p.price,
-          loggedAt: p.loggedAt ? new Date(p.loggedAt).toISOString() : null,
-        })),
-      };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const rows = [["Pick #", "Team", "Player", "Position", "Price", "Logged At"]];
+      picks.forEach((p, i) => {
+        rows.push([
+          i + 1,
+          (teamById(p.teamId) || {}).name || p.teamId,
+          p.name,
+          p.position,
+          p.price,
+          p.loggedAt ? new Date(p.loggedAt).toISOString() : "",
+        ]);
+      });
+      const csv = rows.map((row) => row.map(csvField).join(",")).join("\r\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `draft-backup-${CURRENT_LEAGUE_CODE || "demo"}-${Date.now()}.json`;
+      a.download = `draft-backup-${CURRENT_LEAGUE_CODE || "demo"}-${Date.now()}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } finally {

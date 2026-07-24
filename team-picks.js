@@ -7,11 +7,17 @@
   const rosterList = document.getElementById("rosterList");
   const backBtn = document.getElementById("backBtn");
   const messageFab = document.getElementById("messageFab");
+  const recapBanner = document.getElementById("recapBanner");
 
   document.getElementById("headerFootball").innerHTML = Icons.helmet(24);
   document.getElementById("backIcon").innerHTML = Icons.chevronLeft(16);
   document.getElementById("pylonLeft").innerHTML = Icons.pylon(18);
   document.getElementById("pylonRight").innerHTML = Icons.pylon(18);
+  document.getElementById("recapBannerIcon").innerHTML = Icons.barChart(16, "#1a1305");
+
+  function updateRecapBanner() {
+    recapBanner.hidden = draftedCount() < TOTAL_SLOTS;
+  }
 
   let currentTeamId = null;
 
@@ -130,9 +136,12 @@
 
   await configReady;
   messageFab.hidden = !CURRENT_LEAGUE_CODE; // demo mode has no league to post to
+  recapBanner.href = `recap.html${CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : ""}`;
   await applyLivePicks();
+  updateRecapBanner();
   DraftStore.onChange(async () => {
     await applyLivePicks();
+    updateRecapBanner();
     if (!rosterView.hidden && currentTeamId) showRoster(currentTeamId);
   });
 
