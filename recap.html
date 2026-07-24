@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Draft Recap</title>
+  <link rel="stylesheet" href="shared/theme.css" />
+  <link rel="stylesheet" href="shared/league-gate.css" />
+  <link rel="stylesheet" href="recap.css" />
+</head>
+<body class="turf-bg">
+  <div class="recap-page">
+
+    <header class="recap-header">
+      <a class="back-btn" href="draft-board.html" aria-label="Back to Draft Board"><span id="backIcon"></span></a>
+      <div class="header-row">
+        <span class="title-icon" id="fieldIcon"></span>
+        <h1 class="recap-title">DRAFT <span class="gold-text">RECAP</span> — <span id="recapBoardName">Auction Draft Board</span></h1>
+        <span class="title-icon" id="footballIcon"></span>
+      </div>
+    </header>
+
+    <main class="recap-main">
+
+      <section class="stat-tiles" id="statTiles"></section>
+
+      <section class="chart-grid">
+        <div class="chart-card">
+          <h2>Average Price by Position</h2>
+          <div class="chart-body" id="chartAvgPrice"></div>
+        </div>
+
+        <div class="chart-card">
+          <h2>Price Trend Through the Draft</h2>
+          <div class="chart-body" id="chartTrend"></div>
+          <div class="chart-legend" id="trendLegend"></div>
+        </div>
+
+        <div class="chart-card">
+          <h2>Total Spend by Team</h2>
+          <div class="chart-body" id="chartTeamSpend"></div>
+        </div>
+
+        <div class="chart-card">
+          <h2>Position Mix by Team</h2>
+          <div class="chart-body" id="chartPositionMix"></div>
+          <div class="chart-legend" id="mixLegend"></div>
+        </div>
+
+        <div class="chart-card">
+          <h2>Rookies Drafted</h2>
+          <div class="chart-body" id="chartRookies"></div>
+        </div>
+
+        <div class="chart-card">
+          <h2>Biggest Steals &amp; Reaches</h2>
+          <div class="chart-body" id="stealsReaches"></div>
+        </div>
+      </section>
+
+      <section class="roast-section">
+        <div class="roast-heading">🔥 THE ROAST</div>
+        <div class="roast-grid" id="roastGrid"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="shared/supabase-config.js"></script>
+  <script src="shared/data.js"></script>
+  <script src="shared/league-gate.js"></script>
+  <script src="shared/icons.js"></script>
+  <script src="recap.js"></script>
+</body>
+</html>

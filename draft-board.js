@@ -22,11 +22,17 @@
   const messageTrack = document.getElementById("messageTrack");
   const shotFlash = document.getElementById("shotFlash");
   const niceFlash = document.getElementById("niceFlash");
+  const exportBtn = document.getElementById("exportBtn");
+  const snapshotBtn = document.getElementById("snapshotBtn");
+  const recapLink = document.getElementById("recapLink");
 
   document.getElementById("fieldIcon").innerHTML = Icons.field(22, "var(--wr)");
   document.getElementById("titleFootballIcon").innerHTML = Icons.football(22, "var(--qb)");
   document.getElementById("goalPostLeft").innerHTML = Icons.goalPost(13, "#f2c14e");
   document.getElementById("goalPostRight").innerHTML = Icons.goalPost(13, "#f2c14e");
+  document.getElementById("exportIcon").innerHTML = Icons.download(16);
+  document.getElementById("snapshotIcon").innerHTML = Icons.camera(16);
+  document.getElementById("recapIcon").innerHTML = Icons.barChart(16);
 
   // Real scannable QR (not the earlier decorative placeholder) now that the
   // app has a stable hosted URL — points at Team Picks, with the current
@@ -40,6 +46,58 @@
     qr.make();
     qrCode.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2 });
   }
+
+  // Data safety: a one-click JSON export of every pick (works in demo mode
+  // too, straight from MOCK_DRAFT) so a commissioner always has a way to
+  // get their draft out of the browser, independent of Supabase.
+  async function exportBackup() {
+    exportBtn.disabled = true;
+    try {
+      const picks = CURRENT_LEAGUE_CODE ? await DraftStore.getPicks() : MOCK_DRAFT.picks;
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        leagueCode: CURRENT_LEAGUE_CODE || null,
+        boardName: BOARD_NAME,
+        budgetPerTeam: BUDGET,
+        rosterSlots: ROSTER_SLOTS,
+        teams: TEAMS.map((t) => ({ id: t.id, name: t.name })),
+        picks: picks.map((p) => ({
+          team: (teamById(p.teamId) || {}).name || p.teamId,
+          player: p.name,
+          position: p.position,
+          price: p.price,
+          loggedAt: p.loggedAt ? new Date(p.loggedAt).toISOString() : null,
+        })),
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `draft-backup-${CURRENT_LEAGUE_CODE || "demo"}-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      exportBtn.disabled = false;
+    }
+  }
+
+  // A visual snapshot as a second, independent form of backup alongside
+  // the JSON export -- captures exactly what's on screen right now.
+  async function saveSnapshot() {
+    snapshotBtn.disabled = true;
+    try {
+      const canvas = await html2canvas(boardContent, { backgroundColor: "#08080b" });
+      const link = document.createElement("a");
+      link.download = `draft-board-${CURRENT_LEAGUE_CODE || "demo"}-${Date.now()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } finally {
+      snapshotBtn.disabled = false;
+    }
+  }
+
+  exportBtn.addEventListener("click", exportBackup);
+  snapshotBtn.addEventListener("click", saveSnapshot);
 
   function renderClock() {
     const now = new Date();
@@ -350,6 +408,7 @@
   messageRow.hidden = !SHOW_MESSAGES; // fully collapsed when the feature is off; when on, space stays reserved via .empty
 
   renderQr();
+  recapLink.href = `recap.html${CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : ""}`;
   await applyLivePicks();
   renderTracker();
   renderPositionTotals();
