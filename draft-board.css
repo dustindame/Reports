@@ -193,12 +193,16 @@ body { overflow: hidden; height: 100vh; }
   width: 360px;
 }
 .recent-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); }
-/* 2x2 instead of 3 columns -- 3 columns left so little width per chip
-   that even the shortened "F. Lastname" format still got truncated to a
-   handful of characters. Fewer, wider chips actually fit the text. */
+/* 2 columns instead of 3 -- 3 columns left so little width per chip that
+   even the shortened "F. Lastname" format still got truncated to a
+   handful of characters. Fewer, wider chips actually fit the text.
+   Row height is fixed (3 explicit rows for up to 6 picks) rather than
+   left to auto-size, so the header doesn't grow/shift the whole board
+   down the moment a second or third row of picks actually appears. */
 .recent-strip {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 30px);
   gap: 6px 10px;
 }
 .recent-chip {
@@ -248,7 +252,7 @@ body { overflow: hidden; height: 100vh; }
 
 .qr-block { display: flex; align-items: center; margin-left: 14px; }
 .qr-code { line-height: 0; border-radius: 5px; overflow: hidden; box-shadow: 0 0 0 2px var(--gold-dim); }
-.qr-code svg { display: block; width: 52px; height: 52px; }
+.qr-code svg { display: block; width: 64px; height: 64px; }
 
 /* ---------------- Grid ---------------- */
 

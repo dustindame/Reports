@@ -102,7 +102,7 @@
   }
 
   function renderRecent() {
-    recentStrip.innerHTML = recentPicks(4)
+    recentStrip.innerHTML = recentPicks(6)
       .map(
         (p) => `<div class="recent-chip">
           <span class="rc-pos-dot" style="background: var(${POSITION_COLOR_VAR[p.position]})"></span>
