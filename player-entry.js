@@ -164,6 +164,8 @@
     return MOCK_DRAFT.picks.some((p) => p.name === name && p.position === position);
   }
 
+  const CUSTOM_ENTRY_POSITIONS = ["QB", "RB", "WR", "TE", "DEF"];
+
   function renderResults(query) {
     if (!query) {
       searchResults.innerHTML = "";
@@ -171,7 +173,7 @@
     }
     const q = query.toLowerCase();
     const matches = ALL_PLAYERS.filter((p) => p.name.toLowerCase().includes(q) && !isAlreadyDrafted(p.name, p.position)).slice(0, 8);
-    searchResults.innerHTML = matches
+    const matchesHtml = matches
       .map(
         (p) => `<div class="search-result-item" data-name="${p.name}" data-position="${p.position}">
           <span class="sr-name">${p.name}</span>
@@ -180,9 +182,37 @@
       )
       .join("");
 
+    // Not every real player is in the built-in pool -- this lets the
+    // commissioner add whoever's missing on the fly instead of being
+    // stuck. Only free text (not tied to ALL_PLAYERS) so it works for
+    // literally anyone.
+    const trimmedQuery = query.trim();
+    const customHtml = trimmedQuery
+      ? `<div class="search-result-custom">
+          <div class="src-label">Not in the list? Add "${escapeHtml(trimmedQuery)}" as:</div>
+          <div class="src-pos-row">
+            ${CUSTOM_ENTRY_POSITIONS.map((pos) => `<button class="src-pos-btn" data-pos="${pos}" style="border-color:var(${POSITION_COLOR_VAR[pos]})">${pos}</button>`).join("")}
+          </div>
+        </div>`
+      : "";
+
+    searchResults.innerHTML = matchesHtml + customHtml;
+
     searchResults.querySelectorAll(".search-result-item").forEach((item) => {
       item.addEventListener("click", () => {
         selectPlayer({ name: item.dataset.name, position: item.dataset.position });
+      });
+    });
+    searchResults.querySelectorAll(".src-pos-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const name = trimmedQuery;
+        const position = btn.dataset.pos;
+        if (!name) return;
+        if (isAlreadyDrafted(name, position)) {
+          showToast(`${name} was already drafted`);
+          return;
+        }
+        selectPlayer({ name, position });
       });
     });
   }

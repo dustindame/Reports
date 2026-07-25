@@ -179,6 +179,34 @@ body {
   border-radius: 999px;
 }
 
+.search-result-custom {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--panel-alt-grad);
+  border: 1px dashed var(--border-soft);
+}
+.search-result-custom .src-label {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-bottom: 8px;
+}
+.search-result-custom .src-pos-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.src-pos-btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background: var(--panel-alt);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.src-pos-btn:active { transform: scale(0.96); }
+
 /* ---------------- Preview card ---------------- */
 
 .preview-card {
