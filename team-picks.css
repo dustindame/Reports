@@ -202,6 +202,75 @@ body {
 .poll-vote-result-row .pvr-fill { height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright)); border-radius: 999px; }
 .poll-vote-result-row .pvr-count { flex: none; width: 40px; text-align: right; font-size: 12px; font-weight: 800; color: var(--text); }
 
+.poll-live[hidden] { display: none; }
+.poll-new-toggle-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
+  background: none;
+  color: var(--text-faint);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Anyone (not just the commissioner) can start a poll here -- see
+   team-picks.js and the create_poll RPC, which only checks that the
+   league is actually on break, no PIN. */
+.poll-create[hidden] { display: none; }
+.poll-create { display: flex; flex-direction: column; gap: 10px; }
+.poll-create-heading { font-size: 11px; font-weight: 800; color: var(--text-faint); text-transform: uppercase; letter-spacing: 1px; }
+.poll-question-input,
+.poll-option-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  color: var(--text);
+  font-size: 13px;
+}
+.poll-teams-toggle { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-dim); }
+.poll-options-list { display: flex; flex-direction: column; gap: 8px; }
+.poll-option-row { display: flex; align-items: center; gap: 6px; }
+.poll-option-row .poll-option-input { flex: 1; }
+.poll-option-remove {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  color: var(--text-faint);
+  cursor: pointer;
+}
+.poll-add-option-btn,
+.poll-cancel-btn {
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.poll-cancel-btn[hidden] { display: none; }
+.poll-start-btn {
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+  color: #201703;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.poll-create-error[hidden] { display: none; }
+.poll-create-error { font-size: 12px; color: #f28b82; }
+
 .team-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

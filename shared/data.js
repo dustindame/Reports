@@ -616,16 +616,18 @@ const DraftStore = {
     return { error: null };
   },
 
-  async createPoll(question, options, pinHash) {
+  // No PIN -- anyone with the league code can start a poll (same trust
+  // level as voting), not just the commissioner. Server-side still
+  // requires the league to actually be on break (see the migration).
+  async createPoll(question, options) {
     if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
     const { data, error } = await supabaseClient.rpc("create_poll", {
       p_league_code: CURRENT_LEAGUE_CODE,
-      p_pin_hash: pinHash,
       p_question: question,
       p_options: options,
     });
     if (error) return { error: error.message };
-    if (!data) return { error: "Incorrect commissioner PIN." };
+    if (!data) return { error: "The draft isn't on break right now." };
     return { error: null, id: data };
   },
 
