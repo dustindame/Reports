@@ -11,9 +11,20 @@
   const exportDraftBtn = document.getElementById("exportDraftBtn");
   const viewBoardBtn = document.getElementById("viewBoardBtn");
   const pollVoteSection = document.getElementById("pollVoteSection");
+  const pollLive = document.getElementById("pollLive");
   const pollVoteQuestion = document.getElementById("pollVoteQuestion");
   const pollVoteOptions = document.getElementById("pollVoteOptions");
   const pollVoteResults = document.getElementById("pollVoteResults");
+  const pollNewToggleBtn = document.getElementById("pollNewToggleBtn");
+  const pollCreate = document.getElementById("pollCreate");
+  const pollCreateHeading = document.getElementById("pollCreateHeading");
+  const pollQuestionInput = document.getElementById("pollQuestionInput");
+  const pollUseTeamsCheckbox = document.getElementById("pollUseTeamsCheckbox");
+  const pollOptionsList = document.getElementById("pollOptionsList");
+  const pollAddOptionBtn = document.getElementById("pollAddOptionBtn");
+  const pollStartBtn = document.getElementById("pollStartBtn");
+  const pollCreateError = document.getElementById("pollCreateError");
+  const pollCancelBtn = document.getElementById("pollCancelBtn");
 
   document.getElementById("headerFootball").innerHTML = Icons.helmet(24);
   document.getElementById("backIcon").innerHTML = Icons.chevronLeft(16);
@@ -128,11 +139,43 @@
 
   exportDraftBtn.addEventListener("click", exportDraft);
 
-  /* ---------------- Poll voting (break mode) ----------------
+  /* ---------------- Poll voting + creation (break mode) ----------------
      Shown at the very top of the page, above even the team picker, so
-     it takes priority whenever the league's on break. Voting is
-     anonymous (one vote per device, via LeagueSession.getVoterToken())
-     and changeable -- tapping a different option just resubmits. */
+     it takes priority whenever the league's on break. Anyone who
+     scanned the QR code can start a poll here (no PIN -- the server
+     just checks the league is actually on break, see the create_poll
+     RPC); the commissioner only controls break mode itself, from Player
+     Entry. Voting is anonymous (one vote per device, via
+     LeagueSession.getVoterToken()) and changeable. */
+  let pollOptionValues = ["", ""];
+  let showingCreateForm = false;
+
+  function renderPollOptionsList() {
+    pollOptionsList.hidden = pollUseTeamsCheckbox.checked;
+    pollAddOptionBtn.hidden = pollUseTeamsCheckbox.checked;
+    if (pollUseTeamsCheckbox.checked) return;
+    pollOptionsList.innerHTML = pollOptionValues
+      .map(
+        (val, i) => `<div class="poll-option-row">
+          <input type="text" class="poll-option-input" data-idx="${i}" value="${escapeHtml(val)}" placeholder="Answer ${i + 1}" maxlength="60" autocomplete="off" />
+          <button class="poll-option-remove" data-idx="${i}" ${pollOptionValues.length <= 2 ? "disabled" : ""} aria-label="Remove this answer">✕</button>
+        </div>`
+      )
+      .join("");
+    pollOptionsList.querySelectorAll(".poll-option-input").forEach((inp) => {
+      inp.addEventListener("input", (e) => {
+        pollOptionValues[Number(e.target.dataset.idx)] = e.target.value;
+      });
+    });
+    pollOptionsList.querySelectorAll(".poll-option-remove").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (pollOptionValues.length <= 2) return;
+        pollOptionValues.splice(Number(btn.dataset.idx), 1);
+        renderPollOptionsList();
+      });
+    });
+  }
+
   function renderPollResults(poll, votes) {
     const myToken = LeagueSession.getVoterToken();
     const myVote = votes.find((v) => v.voterToken === myToken);
@@ -172,26 +215,98 @@
     pollVoteOptions.hidden = false;
   }
 
+  function resetPollCreateForm() {
+    pollQuestionInput.value = "";
+    pollOptionValues = ["", ""];
+    pollUseTeamsCheckbox.checked = false;
+    pollCreateError.hidden = true;
+    renderPollOptionsList();
+  }
+
+  let latestPoll = null;
+
   async function refreshPoll() {
     if (!ON_BREAK) {
       pollVoteSection.hidden = true;
-      return;
-    }
-    const poll = await DraftStore.getActivePoll();
-    if (!poll) {
-      pollVoteSection.hidden = true;
+      latestPoll = null;
       return;
     }
     pollVoteSection.hidden = false;
-    pollVoteQuestion.textContent = poll.question;
-    const votes = await DraftStore.getPollVotes(poll.id);
+    latestPoll = await DraftStore.getActivePoll();
+
+    if (!latestPoll) {
+      // Nobody's started a poll yet -- go straight to the creator, no
+      // point showing a "+ Start a New Poll" toggle for a poll that
+      // doesn't exist.
+      pollLive.hidden = true;
+      pollCreate.hidden = false;
+      pollCreateHeading.textContent = "Start a Poll";
+      pollCancelBtn.hidden = true;
+      showingCreateForm = false;
+      return;
+    }
+
+    if (showingCreateForm) {
+      pollLive.hidden = true;
+      pollCreate.hidden = false;
+      pollCreateHeading.textContent = "Start a New Poll";
+      pollCancelBtn.hidden = false;
+      return;
+    }
+
+    pollLive.hidden = false;
+    pollCreate.hidden = true;
+    pollVoteQuestion.textContent = latestPoll.question;
+    const votes = await DraftStore.getPollVotes(latestPoll.id);
     const myToken = LeagueSession.getVoterToken();
     if (votes.some((v) => v.voterToken === myToken)) {
-      renderPollResults(poll, votes);
+      renderPollResults(latestPoll, votes);
     } else {
-      renderPollOptions(poll);
+      renderPollOptions(latestPoll);
     }
   }
+
+  pollNewToggleBtn.addEventListener("click", () => {
+    showingCreateForm = true;
+    resetPollCreateForm();
+    refreshPoll();
+  });
+  pollCancelBtn.addEventListener("click", () => {
+    showingCreateForm = false;
+    refreshPoll();
+  });
+  pollUseTeamsCheckbox.addEventListener("change", renderPollOptionsList);
+  pollAddOptionBtn.addEventListener("click", () => {
+    if (pollOptionValues.length >= 8) return;
+    pollOptionValues.push("");
+    renderPollOptionsList();
+  });
+  pollStartBtn.addEventListener("click", async () => {
+    pollCreateError.hidden = true;
+    const question = pollQuestionInput.value.trim();
+    if (!question) {
+      pollCreateError.textContent = "Enter a question first.";
+      pollCreateError.hidden = false;
+      return;
+    }
+    const options = pollUseTeamsCheckbox.checked ? TEAMS.map((t) => t.name) : pollOptionValues.map((v) => v.trim()).filter(Boolean);
+    if (options.length < 2) {
+      pollCreateError.textContent = "Add at least 2 answers.";
+      pollCreateError.hidden = false;
+      return;
+    }
+    pollStartBtn.disabled = true;
+    const { error } = await DraftStore.createPoll(question, options);
+    pollStartBtn.disabled = false;
+    if (error) {
+      pollCreateError.textContent = error;
+      pollCreateError.hidden = false;
+      return;
+    }
+    showingCreateForm = false;
+    resetPollCreateForm();
+    await refreshPoll();
+  });
 
   /* ---------------- Fan message to the Draft Board ---------------- */
 
@@ -261,6 +376,7 @@
   });
 
   if (CURRENT_LEAGUE_CODE) {
+    renderPollOptionsList();
     await refreshPoll();
     DraftStore.onConfigChange((newConfig) => {
       const nowOnBreak = Boolean(newConfig.on_break);
