@@ -284,17 +284,13 @@
     niceFlashTimer = setTimeout(() => { niceFlash.hidden = true; }, 10000);
   }
 
-  /* ---------------- Shots: "SHOT! SHOT! SHOT!" flash ----------------
-     Same full-board flash treatment as Nice, just red, whenever a pick
-     lands on one of the league's randomly-designated shot pick numbers.
-     Not part of the message ticker at all -- doesn't touch header layout. */
   /* ---------------- Pick sound ----------------
-     A short synthesized two-tone chime (Web Audio API -- no audio file
-     to host, works offline) that plays whenever a new pick streams in,
-     similar to the alert sound ESPN's draft room plays on a selection.
-     Browsers block audio from playing before any user interaction with
-     the page, so the AudioContext is created lazily and resumed on the
-     first tap/click anywhere on the board. */
+     A short synthesized chime (Web Audio API -- no audio file to host,
+     works offline) that plays whenever a new pick streams in, similar to
+     the alert sound ESPN's draft room plays on a selection. Browsers
+     block audio from playing before any user interaction with the page,
+     so the AudioContext is created lazily and resumed on the first
+     tap/click anywhere on the board. */
   let pickAudioCtx = null;
   function getPickAudioCtx() {
     if (!pickAudioCtx) pickAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -311,23 +307,65 @@
     },
     { once: true }
   );
+  // A short percussive "thock" (a burst of filtered noise, like a mallet
+  // hit) followed by a bright three-note ascending chime -- closer to the
+  // hit-then-chime shape of ESPN's draft-room selection alert than a
+  // plain two-tone beep. Built from an in-memory noise buffer + a few
+  // oscillators, so there's still no audio file to host.
+  let pickNoiseBuffer = null;
+  function getPickNoiseBuffer(ctx) {
+    if (pickNoiseBuffer) return pickNoiseBuffer;
+    const length = Math.floor(ctx.sampleRate * 0.12);
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length);
+    pickNoiseBuffer = buffer;
+    return buffer;
+  }
   function playPickSound() {
     try {
       const ctx = getPickAudioCtx();
       if (ctx.state === "suspended") ctx.resume();
       const now = ctx.currentTime;
-      [660, 880].forEach((freq, i) => {
+
+      // The "thock": filtered noise burst + a short low thump underneath.
+      const noise = ctx.createBufferSource();
+      noise.buffer = getPickNoiseBuffer(ctx);
+      const noiseFilter = ctx.createBiquadFilter();
+      noiseFilter.type = "bandpass";
+      noiseFilter.frequency.value = 1800;
+      noiseFilter.Q.value = 0.8;
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.5, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      noise.connect(noiseFilter).connect(noiseGain).connect(ctx.destination);
+      noise.start(now);
+
+      const thump = ctx.createOscillator();
+      const thumpGain = ctx.createGain();
+      thump.type = "sine";
+      thump.frequency.setValueAtTime(160, now);
+      thump.frequency.exponentialRampToValueAtTime(60, now + 0.12);
+      thumpGain.gain.setValueAtTime(0.35, now);
+      thumpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+      thump.connect(thumpGain).connect(ctx.destination);
+      thump.start(now);
+      thump.stop(now + 0.15);
+
+      // The bright ascending chime, starting just after the hit.
+      const chimeStart = now + 0.08;
+      [784, 988, 1319].forEach((freq, i) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = "sine";
+        osc.type = "triangle";
         osc.frequency.value = freq;
-        const start = now + i * 0.12;
+        const start = chimeStart + i * 0.09;
         gain.gain.setValueAtTime(0, start);
-        gain.gain.linearRampToValueAtTime(0.28, start + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.28);
+        gain.gain.linearRampToValueAtTime(0.3, start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
         osc.connect(gain).connect(ctx.destination);
         osc.start(start);
-        osc.stop(start + 0.3);
+        osc.stop(start + 0.36);
       });
     } catch (e) {
       console.warn("Couldn't play pick sound:", e);
@@ -336,17 +374,41 @@
 
   // Same pre-seed-then-diff pattern as the shot banner below -- picks
   // that already existed when the board loaded shouldn't retroactively
-  // play the sound, only ones that arrive from here on.
+  // play the sound or flash the border, only ones that arrive from here
+  // on. Returns the list of newly-seen pick ids so the caller can also
+  // trigger the border-trace animation on the right grid cells once
+  // they've been re-rendered.
   const announcedPickIds = new Set();
-  function checkForNewPicks() {
+  function collectNewPickIds() {
+    const newIds = [];
     MOCK_DRAFT.picks.forEach((p) => {
       if (!announcedPickIds.has(p.id)) {
         announcedPickIds.add(p.id);
-        playPickSound();
+        newIds.push(p.id);
       }
+    });
+    return newIds;
+  }
+
+  // Briefly traces a bright border around each newly-filled slot cell so
+  // it's obvious at a glance where a pick just landed, not just that the
+  // grid changed somewhere. Requires renderGrid() to have already run
+  // (so the cells exist) and each filled cell to carry data-pick-id.
+  function flashNewPickCells(ids) {
+    ids.forEach((id) => {
+      const el = grid.querySelector(`[data-pick-id="${id}"]`);
+      if (!el) return;
+      el.classList.remove("pick-flash");
+      void el.offsetWidth; // restart the animation if it's somehow still mid-flash
+      el.classList.add("pick-flash");
+      setTimeout(() => el.classList.remove("pick-flash"), 1600);
     });
   }
 
+  /* ---------------- Shots: "SHOT! SHOT! SHOT!" flash ----------------
+     Same full-board flash treatment as Nice, just red, whenever a pick
+     lands on one of the league's randomly-designated shot pick numbers.
+     Not part of the message ticker at all -- doesn't touch header layout. */
   const announcedShotPicks = new Set();
   let shotFlashTimer = null;
 
@@ -397,7 +459,7 @@
           const spaceIdx = pick.name.indexOf(" ");
           const firstName = spaceIdx === -1 ? pick.name : pick.name.slice(0, spaceIdx);
           const lastName = spaceIdx === -1 ? "" : pick.name.slice(spaceIdx + 1);
-          cells.push(`<div class="slot-cell filled pos-${pick.position}">
+          cells.push(`<div class="slot-cell filled pos-${pick.position}" data-pick-id="${pick.id}">
             <div class="slot-player-first">${escapeHtml(firstName)}</div>
             <div class="slot-player-last">${escapeHtml(lastName)}</div>
             <div class="slot-price">$${pick.price}</div>
@@ -515,13 +577,17 @@
   // Supabase Realtime — fold it in and refresh the affected panels.
   DraftStore.onChange(async () => {
     await applyLivePicks();
+    const newPickIds = collectNewPickIds();
     renderTracker();
     renderPositionTotals();
     renderRecent();
     renderGrid();
     layoutGrid(); // re-measure in case header content width changed (defense in depth)
     fitBoardToScreen();
-    checkForNewPicks();
+    if (newPickIds.length) {
+      playPickSound();
+      flashNewPickCells(newPickIds);
+    }
     checkForShotPicks();
   });
 })();

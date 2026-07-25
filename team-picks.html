@@ -16,6 +16,10 @@
         <button class="back-btn" id="backBtn" hidden>
           <span id="backIcon"></span>
         </button>
+        <div class="header-actions" id="headerActions" hidden>
+          <button class="header-action-btn" id="exportRosterBtn" title="Export this roster (CSV)"><span id="exportRosterIcon"></span></button>
+          <button class="header-action-btn" id="rosterSnapshotBtn" title="Save a screenshot of this screen"><span id="rosterSnapshotIcon"></span></button>
+        </div>
         <div class="header-row">
           <span class="pylon-icon" id="pylonLeft"></span>
           <span class="header-football" id="headerFootball"></span>
@@ -55,6 +59,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="shared/supabase-config.js"></script>
   <script src="shared/data.js"></script>
   <script src="shared/league-gate.js"></script>
