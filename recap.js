@@ -518,16 +518,18 @@
   // says about players regardless of the truth. Deterministic so the same
   // player always gets the same bit within a given recap.
   const ARCHETYPES = [
-    (n) => `${n}, a player who is "probable" more often than he's actually on the field`,
-    (n) => `${n}, who peaked in a preseason highlight video and has been chasing that high ever since`,
-    (n) => `${n}, allegedly a professional athlete, mostly famous for getting hurt tying his shoes`,
-    (n) => `${n}, who plays like a superstar for three quarters and like a stranger for the fourth`,
-    (n) => `${n}, who's one bad game from a very passionate podcast segment about him`,
-    (n) => `${n}, who's been "about to break out" for so many years it's basically his personality now`,
-    (n) => `${n}, who only shows up on the injury report, never the box score`,
-    (n) => `${n}, a walking boom-or-bust warning label`,
-    (n) => `${n}, who needs a perfect offensive line, perfect weather, and a full moon to have a good game`,
-    (n) => `${n}, whose ceiling is enormous and whose floor is a courtside seat on the bench`,
+    (n) => `${n}, a player who is "probable" more often than he's actually on the goddamn field`,
+    (n) => `${n}, who peaked in a preseason highlight video and has been chasing that high like a washed-up ex ever since`,
+    (n) => `${n}, allegedly a professional athlete, mostly famous for pulling a hamstring tying his shoes`,
+    (n) => `${n}, who plays like a superstar for three quarters and completely disappears for the fourth, like a deadbeat dad at Christmas`,
+    (n) => `${n}, one bad game away from his own devastating 30-for-30`,
+    (n) => `${n}, who's been "about to break out" for so many years it's basically a personality disorder at this point`,
+    (n) => `${n}, who shows up on the injury report more reliably than he shows up in the box score`,
+    (n) => `${n}, a walking, talking boom-or-bust warning label that somehow still gets drafted every year`,
+    (n) => `${n}, who needs a perfect offensive line, perfect weather, and a full moon just to be mediocre`,
+    (n) => `${n}, whose ceiling is enormous and whose floor is a folding chair on the sideline in street clothes`,
+    (n) => `${n}, a certified locker-room migraine who happens to also play football`,
+    (n) => `${n}, who's one bad drop away from getting benched by his own mother`,
   ];
   function archetypeSeed(name) {
     let hash = 0;
@@ -542,10 +544,10 @@
   function generateRoastLines(t, teamIndex) {
     if (t.picks.length === 0) {
       const variants = [
-        "Drafted jack shit. Sat in the room, took up a chair, contributed absolutely nothing — a bye week with a pulse.",
-        "Zero picks. Zero effort. Showed up just to eat the snacks other people paid for and vanish.",
-        "Didn't draft a single player. This isn't a roster, it's an empty chair with a name tag taped to it.",
-        "Ghosted the entire draft. Somewhere out there, a bunch of empty roster slots are still waiting by the phone.",
+        "Drafted jack shit. Zero players, zero effort, zero excuse — just an empty chair with a name tag taped to it and a fridge full of everyone else's beer.",
+        "Didn't draft a single fucking player. This roster isn't rebuilding, it's not even conceived yet.",
+        "Ghosted the entire draft like a coward. Somewhere out there, a stack of empty roster slots is still waiting up, wondering what it did wrong.",
+        "Showed up, contributed absolutely nothing, and left with a roster so empty it's an insult to the word \"team.\"",
       ];
       return [pickVariant(variants, teamIndex)];
     }
@@ -565,11 +567,12 @@
     // player they drafted and a made-up-but-familiar archetype, since
     // that's the actual point -- roasting the roster, not the spreadsheet.
     const flavorVariants = [
-      `Handed the keys to ${roastPlayer(maxPick.name, teamIndex)}. Hope that goes well.`,
-      `Building the whole season around ${roastPlayer(maxPick.name, teamIndex + 3)}. Brave.`,
-      `Went all in on ${roastPlayer(maxPick.name, teamIndex + 6)} and called it a plan.`,
-      `The face of this roster is ${roastPlayer(maxPick.name, teamIndex + 9)}. Good luck with that.`,
-      `This team's whole identity rides on ${roastPlayer(maxPick.name, teamIndex + 12)}.`,
+      `Handed the keys to the whole goddamn season to ${roastPlayer(maxPick.name, teamIndex)}. Hope that's worth the therapy bills come November.`,
+      `Building an entire season around ${roastPlayer(maxPick.name, teamIndex + 3)}. That's not a strategy, that's a hostage note.`,
+      `Went all in on ${roastPlayer(maxPick.name, teamIndex + 6)} and called it a plan, like a gambler mortgaging the house on a hunch.`,
+      `The face of this dumpster fire is ${roastPlayer(maxPick.name, teamIndex + 9)}. God help everyone involved.`,
+      `This team's entire identity rides on ${roastPlayer(maxPick.name, teamIndex + 12)}, which is a genuinely terrifying sentence to type out loud.`,
+      `Staked the whole roster on ${roastPlayer(maxPick.name, teamIndex + 15)} like it was a sure thing. It was not a sure thing.`,
     ];
 
     const candidates = [{ id: 0, severity: 0.5, variants: flavorVariants }];
@@ -579,11 +582,12 @@
         id: 1,
         severity: topPosShare,
         variants: [
-          `Never met a ${topPosEntry[0]} they didn't want to marry. This roster is basically a ${topPosEntry[0]} fan club with a football team attached.`,
-          `Somebody's got a serious ${topPosEntry[0]} obsession, and the rest of the roster is paying for that therapy.`,
-          `Bet the whole farm on ${topPosEntry[0]}s. Real "eggs, one basket, dropped the basket down the stairs" energy.`,
-          `Drafted like ${topPosEntry[0]} was the only position in football and everyone else forgot to remind them otherwise.`,
-          `This roster loves ${topPosEntry[0]}s so much it's honestly a little concerning.`,
+          `Never met a ${topPosEntry[0]} they didn't want to marry, adopt, and name a kid after. This roster is a ${topPosEntry[0]} cult with a football team attached.`,
+          `Somebody's got a genuinely unhinged ${topPosEntry[0]} obsession, and the rest of the roster is footing the therapy bill.`,
+          `Bet the whole goddamn farm on ${topPosEntry[0]}s. Real "put every egg in one basket, then set the basket on fire" energy.`,
+          `Drafted like ${topPosEntry[0]} was the only position in football and nobody had the balls to correct them.`,
+          `This roster's love of ${topPosEntry[0]}s isn't a strategy anymore, it's a cry for help that nobody's answering.`,
+          `Went so hard on ${topPosEntry[0]}s the rest of the roster looks like an afterthought scribbled on a napkin.`,
         ],
       });
     }
@@ -592,10 +596,11 @@
         id: 2,
         severity: 0.55,
         variants: [
-          `Somehow forgot ${missingStarterPos} was a position that exists. Bold way to find out the hard way that it matters.`,
-          `Zero ${missingStarterPos}s on this roster. Either a genius contrarian strategy or a total blackout during that part of the draft.`,
-          `No ${missingStarterPos}s anywhere. Someone's Week 1 lineup is going to look like a cry for help.`,
-          `Skipped ${missingStarterPos} entirely. That's not a strategy, that's a blind spot the size of a stadium.`,
+          `Somehow forgot ${missingStarterPos} was a position that exists. Absolutely staggering level of incompetence.`,
+          `Zero ${missingStarterPos}s on this roster. Either a suicidal contrarian strategy or a total blackout, and it's probably not the former.`,
+          `No ${missingStarterPos}s anywhere. Week 1's lineup is going to look like a hostage tape.`,
+          `Skipped ${missingStarterPos} entirely. That's not a blind spot, that's a full-blown coma during the draft.`,
+          `Didn't draft a single ${missingStarterPos}. Somebody should genuinely check on this person.`,
         ],
       });
     }
@@ -604,9 +609,9 @@
         id: 3,
         severity: 0.4,
         variants: [
-          `Drafted ${defPick.name} like a defense is a sure thing and not eleven strangers who change every single week.`,
-          `Spent actual money on ${defPick.name}. A defense. The most randomized unit in the sport. Bold call.`,
-          `Trusted ${defPick.name} with real budget. There's a coin flip that's more predictable than a defense's weekly output.`,
+          `Drafted ${defPick.name} like a defense is a sure thing and not eleven strangers who change every single week out of spite.`,
+          `Spent real, actual money on ${defPick.name}. A defense. The single most random unit in the sport. Absolutely brainless.`,
+          `Trusted ${defPick.name} with hard-earned budget. A coin flip has better odds than that defense on any given Sunday.`,
         ],
       });
     }
@@ -615,10 +620,10 @@
         id: 4,
         severity: 0.5,
         variants: [
-          `Loaded up on rookies like this roster is a scouting report, not a team that has to win games this year.`,
-          `Went full nursery school with the rookies on this roster. Somebody watched one highlight reel and called it "film study."`,
-          `Betting the whole season on guys who haven't taken a real hit yet. Bold, dumb, or both.`,
-          `This roster is basically a preseason hype reel that somehow costs real money.`,
+          `Loaded up on rookies like this is a scouting report and not a team that has to actually win games this year.`,
+          `Went full daycare with the rookies on this roster. Watched one hype reel and called it "film study," you absolute mark.`,
+          `Betting the entire season on guys who haven't taken a real hit yet. Bold. Idiotic. Possibly both.`,
+          `This roster is a preseason hype video that somehow, tragically, costs real money.`,
         ],
       });
     }
@@ -627,10 +632,10 @@
         id: 5,
         severity: 0.4,
         variants: [
-          `Wouldn't touch a rookie with a ten-foot pole. Total distrust of anyone who hasn't already proven it to a stranger on TV first.`,
-          `The most cowardly, play-it-safe roster in the league, and somehow still not even good.`,
-          `Too scared to gamble on anyone who wasn't already famous before the season started.`,
-          `This roster has the risk tolerance of a substitute teacher on the last day before summer.`,
+          `Wouldn't touch a rookie with a ten-foot pole. Complete and total distrust of anyone who hasn't already been vouched for by a stranger on TV.`,
+          `The single most cowardly, play-it-safe roster in the entire league, and somehow still not even good. Impressive failure.`,
+          `Too gutless to gamble on anyone who wasn't already famous before the season even started.`,
+          `This roster has the risk tolerance of a man checking his own pulse every five minutes.`,
         ],
       });
     }
@@ -640,10 +645,10 @@
         id: 6,
         severity: 0.45,
         variants: [
-          `Half this bench looks like it was drafted with a dartboard, blindfolded, at closing time — see ${throwaway.name}.`,
-          `Filled the roster with bargain-bin leftovers, capped off by ${throwaway.name}, and is somehow proud of it.`,
-          `Assembled this bench like a clearance rack nobody else wanted to dig through — exhibit A: ${throwaway.name}.`,
-          `Every roster needs depth. This roster needed a miracle, and got ${throwaway.name} instead.`,
+          `Half this bench got drafted with a dartboard, blindfolded, three drinks deep — exhibit A: ${throwaway.name}.`,
+          `Filled the roster with bargain-bin garbage, capped off by ${throwaway.name}, and somehow has the audacity to look proud.`,
+          `Assembled this bench like a clearance rack nobody else would touch with gloves on — see ${throwaway.name}.`,
+          `Every roster needs depth. This roster needed a miracle and a prayer, and got ${throwaway.name} instead.`,
         ],
       });
     }
@@ -652,10 +657,10 @@
         id: 7,
         severity: 0.4,
         variants: [
-          `Paid full retail on every single player all night. Never once heard the word "bargain" in his entire life.`,
-          `This guy tips 40% and still somehow overpaid for a punter's cousin.`,
-          `Drafted with a checkbook and zero self-control. Somebody take the paddle away.`,
-          `Spent this whole draft like the auction house was on fire and money didn't matter.`,
+          `Paid full retail on every single player, all night, like the word "discount" personally murdered his family.`,
+          `This guy tips 40% and still somehow got fleeced on a punter's backup.`,
+          `Drafted with a blank checkbook and zero impulse control. Somebody take the paddle away before he mortgages his kids.`,
+          `Spent this whole draft like the building was on fire and money meant absolutely nothing.`,
         ],
       });
     } else if (isPennyPincher) {
@@ -663,10 +668,10 @@
         id: 8,
         severity: 0.35,
         variants: [
-          `Built this whole roster out of the clearance bin and is somehow strutting around proud of it.`,
-          `Cheaper than a gas station hot dog and about as trustworthy come Sunday.`,
-          `Either a genius bargain hunter or flat broke by round three — no in between, and it shows.`,
-          `Drafted like every dollar personally owed this guy money.`,
+          `Built this entire roster out of the clearance bin and is strutting around like he found gold.`,
+          `Cheaper than a gas station hot dog and about as trustworthy come Sunday afternoon.`,
+          `Either a bargain-hunting savant or flat-out broke by round three. It's the second one. It's obviously the second one.`,
+          `Drafted like every single dollar personally owed him money and he wanted it back with interest.`,
         ],
       });
     }
@@ -675,12 +680,12 @@
     const picked = candidates.slice(0, 2).map((c) => pickVariant(c.variants, teamIndex * 7 + c.id * 13));
     if (picked.length === 1) {
       const boringVariants = [
-        "Suspiciously balanced, aggressively boring — this roster has the personality of wet cardboard.",
-        "Perfectly average in every category. The fantasy football equivalent of beige — technically a color, forgettable as hell.",
-        "Textbook, spreadsheet, zero personality. Drafted by someone who's never taken a real risk in his life.",
-        "No overpays, no steals, no rookies gone wild, nothing. Just a well-behaved, thoroughly unremarkable pile of players.",
-        "Middle of the pack on every metric. Impressive, in a deeply pathetic, play-it-safe kind of way.",
-        "This roster is the human equivalent of a Tuesday. Nothing happened. Nothing will happen. Move along.",
+        "Suspiciously balanced, aggressively boring — this roster has the raw sexual energy of a filing cabinet.",
+        "Perfectly average in every category. The fantasy football equivalent of beige — technically a color, forgettable as absolute hell.",
+        "Textbook, spreadsheet, zero personality. Drafted by someone who's never taken a real risk in his sad, cautious little life.",
+        "No overpays, no steals, no rookies gone wild, nothing. Just a spineless, well-behaved pile of players and a manager too scared to be interesting.",
+        "Middle of the pack on every metric. Impressive, in a deeply pathetic, terrified-of-its-own-shadow kind of way.",
+        "This roster is the human equivalent of a Tuesday afternoon dentist appointment. Nothing happened. Nothing will happen. Move along.",
       ];
       picked.push(pickVariant(boringVariants, teamIndex));
     }
