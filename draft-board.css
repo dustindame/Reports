@@ -43,13 +43,18 @@ body { overflow: hidden; height: 100vh; }
   align-items: stretch;
 }
 
+/* NICE and SHOT can both be triggered around the same time -- if that
+   happens they used to render dead center on top of each other,
+   unreadable. NICE now sits in the upper third, SHOT in the lower third,
+   so both can be on screen at once without colliding. */
 .nice-flash {
   position: absolute;
   inset: 0;
   z-index: 20;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 10%;
   pointer-events: none;
 }
 .nice-flash[hidden] { display: none; }
@@ -72,8 +77,9 @@ body { overflow: hidden; height: 100vh; }
   inset: 0;
   z-index: 20;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
+  padding-bottom: 10%;
   pointer-events: none;
 }
 .shot-flash[hidden] { display: none; }

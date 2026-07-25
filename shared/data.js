@@ -689,3 +689,40 @@ async function fetchNewsHeadlines() {
   }
   return headlines;
 }
+
+/* ---------- live NFL betting odds for the Draft Board ticker ----------
+   ESPN's public scoreboard endpoint (the same one their own site uses)
+   sends Access-Control-Allow-Origin: * and includes a game's spread/
+   over-under once a sportsbook has posted odds for it -- no API key,
+   no backend, no scraping. There's no free, keyless, CORS-friendly
+   endpoint for full-season futures odds (win totals, Super Bowl odds,
+   etc.) from ESPN or DraftKings, so this covers upcoming-week game
+   lines only; it naturally returns nothing in the deep offseason before
+   books have posted lines for the next slate. */
+const ODDS_FEED_URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
+
+async function fetchBettingOdds() {
+  const headlines = [];
+  try {
+    const res = await fetch(ODDS_FEED_URL);
+    if (!res.ok) return headlines;
+    const data = await res.json();
+    (data.events || []).forEach((event) => {
+      const comp = event.competitions && event.competitions[0];
+      const odds = comp && comp.odds && comp.odds[0];
+      if (!odds || !odds.details) return;
+      const competitors = comp.competitors || [];
+      const home = competitors.find((c) => c.homeAway === "home");
+      const away = competitors.find((c) => c.homeAway === "away");
+      const matchup =
+        home && away
+          ? `${away.team.abbreviation} @ ${home.team.abbreviation}`
+          : event.shortName || "Upcoming game";
+      const ouText = odds.overUnder ? ` · O/U ${odds.overUnder}` : "";
+      headlines.push(`🎲 ${escapeHtml(matchup)}: ${escapeHtml(odds.details)}${ouText}`);
+    });
+  } catch (e) {
+    console.warn("Failed to fetch betting odds:", e);
+  }
+  return headlines;
+}
