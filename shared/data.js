@@ -45,6 +45,7 @@ let NICE_ENABLED = false;
 let SHOTS_COUNT = 0;
 let SHOT_PICK_NUMBERS = [];
 let ROAST_ENABLED = true;
+let ON_BREAK = false;
 
 const FLEX_ELIGIBLE = ["RB", "WR", "TE"];
 const POSITION_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te", DEF: "--def" };
@@ -124,6 +125,17 @@ const LeagueSession = {
   },
   clearPinHash(leagueCode) {
     sessionStorage.removeItem(this.pinStorageKey(leagueCode));
+  },
+  // A random per-device id (not tied to any real identity) so a poll
+  // vote can be "one per device" and changeable, without any login.
+  VOTER_KEY: "auctionDraft.voterToken",
+  getVoterToken() {
+    let token = localStorage.getItem(this.VOTER_KEY);
+    if (!token) {
+      token = crypto.randomUUID();
+      localStorage.setItem(this.VOTER_KEY, token);
+    }
+    return token;
   },
 };
 
@@ -325,6 +337,7 @@ function applyRealConfig(config, leagueCode) {
   SHOTS_COUNT = Number(config.shots_count) || 0;
   SHOT_PICK_NUMBERS = Array.isArray(config.shot_pick_numbers) ? config.shot_pick_numbers : [];
   ROAST_ENABLED = config.roast_enabled !== false;
+  ON_BREAK = Boolean(config.on_break);
 }
 
 function applyDemoConfig() {
@@ -346,6 +359,7 @@ function applyDemoConfig() {
   SHOTS_COUNT = 0;
   SHOT_PICK_NUMBERS = [];
   ROAST_ENABLED = true;
+  ON_BREAK = false; // demo mode has no backend to toggle a break against
 }
 
 function getTeamRoster(teamId) {
@@ -392,7 +406,7 @@ const DraftStore = {
     const { data, error } = await supabaseClient
       .from("draft_config")
       .select(
-        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time, nice_enabled, shots_count, shot_pick_numbers, roast_enabled"
+        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time, nice_enabled, shots_count, shot_pick_numbers, roast_enabled, on_break"
       )
       .eq("league_code", leagueCode)
       .maybeSingle();
@@ -582,7 +596,148 @@ const DraftStore = {
       )
       .subscribe();
   },
+
+  /* ---------------- Break mode + polls ----------------
+     A break is just a flag on draft_config (see set_draft_break) --
+     switching Draft Board over to the break screen and letting Team
+     Picks show the poll. Polls themselves are separate rows (one league
+     can only have one *active* poll at a time; starting a new one
+     retires the last). Voting has no PIN -- it's public and anonymous,
+     see LeagueSession.getVoterToken(). */
+  async setBreak(onBreak, pinHash) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
+    const { data, error } = await supabaseClient.rpc("set_draft_break", {
+      p_league_code: CURRENT_LEAGUE_CODE,
+      p_pin_hash: pinHash,
+      p_on_break: onBreak,
+    });
+    if (error) return { error: error.message };
+    if (data === false) return { error: "Incorrect commissioner PIN." };
+    return { error: null };
+  },
+
+  async createPoll(question, options, pinHash) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
+    const { data, error } = await supabaseClient.rpc("create_poll", {
+      p_league_code: CURRENT_LEAGUE_CODE,
+      p_pin_hash: pinHash,
+      p_question: question,
+      p_options: options,
+    });
+    if (error) return { error: error.message };
+    if (!data) return { error: "Incorrect commissioner PIN." };
+    return { error: null, id: data };
+  },
+
+  async closePoll(pollId, pinHash) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
+    const { data, error } = await supabaseClient.rpc("close_poll", {
+      p_league_code: CURRENT_LEAGUE_CODE,
+      p_pin_hash: pinHash,
+      p_poll_id: pollId,
+    });
+    if (error) return { error: error.message };
+    if (data === false) return { error: "Incorrect commissioner PIN." };
+    return { error: null };
+  },
+
+  async getActivePoll() {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return null;
+    const { data, error } = await supabaseClient
+      .from("polls")
+      .select("*")
+      .eq("league_code", CURRENT_LEAGUE_CODE)
+      .eq("active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) {
+      console.error("Failed to load active poll:", error);
+      return null;
+    }
+    if (!data) return null;
+    return { id: data.id, question: data.question, options: data.options, createdAt: new Date(data.created_at).getTime() };
+  },
+
+  async getPollVotes(pollId) {
+    if (!supabaseClient || !pollId) return [];
+    const { data, error } = await supabaseClient.from("poll_votes").select("option_index, voter_token").eq("poll_id", pollId);
+    if (error) {
+      console.error("Failed to load poll votes:", error);
+      return [];
+    }
+    return data.map((row) => ({ optionIndex: row.option_index, voterToken: row.voter_token }));
+  },
+
+  async submitPollVote(pollId, optionIndex) {
+    if (!supabaseClient) return { error: "Supabase isn't configured yet." };
+    const { data, error } = await supabaseClient.rpc("submit_poll_vote", {
+      p_poll_id: pollId,
+      p_option_index: optionIndex,
+      p_voter_token: LeagueSession.getVoterToken(),
+    });
+    if (error) return { error: error.message };
+    if (data === false) return { error: "This poll isn't active anymore." };
+    return { error: null };
+  },
+
+  // Fires whenever draft_config changes for this league -- used to
+  // notice on_break flipping without a manual refresh.
+  onConfigChange(cb) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return;
+    supabaseClient
+      .channel(`draft-config-changes-${CURRENT_LEAGUE_CODE}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "draft_config", filter: `league_code=eq.${CURRENT_LEAGUE_CODE}` },
+        (payload) => cb(payload.new)
+      )
+      .subscribe();
+  },
+
+  // Fires on any poll or poll_votes change for this league -- covers a
+  // new poll starting, the active poll closing, and vote counts ticking
+  // up live.
+  onPollChange(cb) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return;
+    supabaseClient
+      .channel(`poll-changes-${CURRENT_LEAGUE_CODE}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "polls", filter: `league_code=eq.${CURRENT_LEAGUE_CODE}` }, () => cb())
+      .on("postgres_changes", { event: "*", schema: "public", table: "poll_votes" }, () => cb())
+      .subscribe();
+  },
 };
+
+/* One-liner NFL facts for the Draft Board's break screen -- static and
+   local (not fetched), so they show up instantly with zero network
+   dependency during a break. */
+const NFL_FUN_FACTS = [
+  "The Green Bay Packers are the only publicly-owned, nonprofit team in the four major U.S. pro sports leagues.",
+  "The NFL was founded in 1920 in a car dealership showroom in Canton, Ohio.",
+  "The Super Bowl trophy is named after Vince Lombardi, who never actually coached in a game called \"the Super Bowl.\"",
+  "An NFL football is officially called \"The Duke,\" named after former Giants owner Wellington Mara's nickname.",
+  "The longest field goal in NFL history is 66 yards, kicked by Justin Tucker in 2021.",
+  "The Detroit Lions once played (and lost) a Thanksgiving game every year since 1934, except during WWII.",
+  "Tom Brady was picked 199th overall in the 2000 NFL Draft -- six quarterbacks were taken before him.",
+  "The shortest player in NFL history, Jack \"180\" Shapiro, was listed at 5'1\".",
+  "The Chicago Bears and Arizona Cardinals are the NFL's two oldest franchises, both dating to 1898 and 1920 respectively as different sports clubs.",
+  "An NFL game ball is used for only about one play before officials swap it out in cold or wet weather.",
+  "The NFL didn't allow the forward pass until 1906, and it wasn't common until the 1930s.",
+  "The Miami Dolphins' 1972 team remains the only perfect season (17-0) in NFL history.",
+  "Instant replay review was first used by the NFL in 1986, removed in 1992, then reinstated in 1999.",
+  "The two-point conversion wasn't adopted by the NFL until 1994 -- college football had it since 1958.",
+  "A regulation NFL football weighs between 14 and 15 ounces, about the same as a can of soup.",
+  "The Pro Football Hall of Fame is in Canton, Ohio because that's where the NFL (as the APFA) was founded.",
+  "NFL kickers make roughly 85% of field goal attempts league-wide in a given season.",
+  "The term \"Hail Mary\" pass was popularized by Roger Staubach after a 1975 playoff touchdown.",
+  "Overtime in the NFL used to be strictly sudden death until a 2010 rule change added conditions for possession.",
+  "The Buffalo Bills lost four consecutive Super Bowls from 1991 to 1994 -- a record no team wants to match.",
+  "An NFL season used to be just 12 games long until it expanded to 14 in 1961, then 16 in 1978, then 17 in 2021.",
+  "The widest halftime show TV audience ever recorded belongs to Super Bowl LVIII's 2024 broadcast.",
+  "NFL referees run an average of about 4 miles during a single game.",
+  "The Cleveland Browns are named after their first head coach, Paul Brown, not a color scheme.",
+  "Deion Sanders is the only athlete to play in both a Super Bowl and a World Series.",
+];
 
 /* Folds any picks logged on Player Entry (via DraftStore) into MOCK_DRAFT
    so the Draft Board / Team Picks views reflect them. Call once on load

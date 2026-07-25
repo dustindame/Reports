@@ -116,6 +116,98 @@ body {
   flex: none;
 }
 
+/* ---------------- Break mode + poll admin ---------------- */
+
+.break-section[hidden] { display: none; }
+.break-toggle-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--panel-alt-grad);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+}
+.break-toggle-btn.active {
+  background: linear-gradient(180deg, #e8544a, #c53d3d);
+  border-color: #c53d3d;
+  color: #fff;
+}
+.poll-admin[hidden] { display: none; }
+.poll-admin {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--panel-alt-grad);
+  border: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.poll-admin-heading { font-size: 12px; font-weight: 800; color: var(--text-faint); text-transform: uppercase; letter-spacing: 1px; }
+.poll-question-input,
+.poll-option-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  color: var(--text);
+  font-size: 13px;
+}
+.poll-teams-toggle { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-dim); }
+.poll-options-list { display: flex; flex-direction: column; gap: 8px; }
+.poll-option-row { display: flex; align-items: center; gap: 6px; }
+.poll-option-row .poll-option-input { flex: 1; }
+.poll-option-remove {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  color: var(--text-faint);
+  cursor: pointer;
+}
+.poll-add-option-btn,
+.poll-start-btn,
+.poll-close-btn {
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.poll-start-btn { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); color: #201703; border: none; font-weight: 800; }
+.poll-admin-error[hidden] { display: none; }
+.poll-admin-error { font-size: 12px; color: #f28b82; }
+.poll-active-card[hidden] { display: none; }
+.poll-active-card {
+  margin-top: 6px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--panel-alt);
+  border: 1px solid var(--gold-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.poll-active-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--gold-bright); font-weight: 800; }
+.poll-active-question { font-size: 13.5px; font-weight: 700; color: var(--text); }
+.poll-active-results { display: flex; flex-direction: column; gap: 6px; }
+.poll-result-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.poll-result-row .pr-label { flex: none; width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-dim); }
+.poll-result-row .pr-track { flex: 1; height: 12px; border-radius: 999px; background: var(--panel); overflow: hidden; }
+.poll-result-row .pr-fill { height: 100%; background: var(--gold-bright); border-radius: 999px; }
+.poll-result-row .pr-count { flex: none; width: 34px; text-align: right; font-weight: 700; color: var(--text); }
+.poll-close-btn { color: #f28b82; }
+
 /* ---------------- Search ---------------- */
 
 .search-box {

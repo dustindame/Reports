@@ -10,6 +10,10 @@
   const recapBanner = document.getElementById("recapBanner");
   const exportDraftBtn = document.getElementById("exportDraftBtn");
   const viewBoardBtn = document.getElementById("viewBoardBtn");
+  const pollVoteSection = document.getElementById("pollVoteSection");
+  const pollVoteQuestion = document.getElementById("pollVoteQuestion");
+  const pollVoteOptions = document.getElementById("pollVoteOptions");
+  const pollVoteResults = document.getElementById("pollVoteResults");
 
   document.getElementById("headerFootball").innerHTML = Icons.helmet(24);
   document.getElementById("backIcon").innerHTML = Icons.chevronLeft(16);
@@ -124,6 +128,71 @@
 
   exportDraftBtn.addEventListener("click", exportDraft);
 
+  /* ---------------- Poll voting (break mode) ----------------
+     Shown at the very top of the page, above even the team picker, so
+     it takes priority whenever the league's on break. Voting is
+     anonymous (one vote per device, via LeagueSession.getVoterToken())
+     and changeable -- tapping a different option just resubmits. */
+  function renderPollResults(poll, votes) {
+    const myToken = LeagueSession.getVoterToken();
+    const myVote = votes.find((v) => v.voterToken === myToken);
+    const counts = poll.options.map((_, i) => votes.filter((v) => v.optionIndex === i).length);
+    const total = votes.length;
+    const maxCount = Math.max(...counts, 1);
+    pollVoteResults.innerHTML = poll.options
+      .map((opt, i) => {
+        const mine = myVote && myVote.optionIndex === i;
+        return `<div class="poll-vote-result-row${mine ? " mine" : ""}">
+          <span class="pvr-label">${escapeHtml(opt)}${mine ? " (you)" : ""}</span>
+          <span class="pvr-track"><span class="pvr-fill" style="width:${((counts[i] / maxCount) * 100).toFixed(1)}%"></span></span>
+          <span class="pvr-count">${counts[i]}${total ? ` · ${Math.round((counts[i] / total) * 100)}%` : ""}</span>
+        </div>`;
+      })
+      .join("");
+    pollVoteOptions.hidden = true;
+    pollVoteResults.hidden = false;
+  }
+
+  function renderPollOptions(poll) {
+    pollVoteOptions.innerHTML = poll.options
+      .map((opt, i) => `<button class="poll-vote-option-btn" data-idx="${i}">${escapeHtml(opt)}</button>`)
+      .join("");
+    pollVoteOptions.querySelectorAll(".poll-vote-option-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        btn.disabled = true;
+        const { error } = await DraftStore.submitPollVote(poll.id, Number(btn.dataset.idx));
+        if (error) {
+          btn.disabled = false;
+          return;
+        }
+        await refreshPoll();
+      });
+    });
+    pollVoteResults.hidden = true;
+    pollVoteOptions.hidden = false;
+  }
+
+  async function refreshPoll() {
+    if (!ON_BREAK) {
+      pollVoteSection.hidden = true;
+      return;
+    }
+    const poll = await DraftStore.getActivePoll();
+    if (!poll) {
+      pollVoteSection.hidden = true;
+      return;
+    }
+    pollVoteSection.hidden = false;
+    pollVoteQuestion.textContent = poll.question;
+    const votes = await DraftStore.getPollVotes(poll.id);
+    const myToken = LeagueSession.getVoterToken();
+    if (votes.some((v) => v.voterToken === myToken)) {
+      renderPollResults(poll, votes);
+    } else {
+      renderPollOptions(poll);
+    }
+  }
+
   /* ---------------- Fan message to the Draft Board ---------------- */
 
   function showMessageComposer() {
@@ -190,6 +259,17 @@
     updateRecapBanner();
     if (!rosterView.hidden && currentTeamId) showRoster(currentTeamId);
   });
+
+  if (CURRENT_LEAGUE_CODE) {
+    await refreshPoll();
+    DraftStore.onConfigChange((newConfig) => {
+      const nowOnBreak = Boolean(newConfig.on_break);
+      if (nowOnBreak === ON_BREAK) return;
+      ON_BREAK = nowOnBreak;
+      refreshPoll();
+    });
+    DraftStore.onPollChange(refreshPoll);
+  }
 
   renderTeamGrid();
 

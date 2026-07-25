@@ -28,6 +28,28 @@
 
       <main class="entry-main">
 
+        <section class="break-section" id="breakSection" hidden>
+          <div class="section-label">Break Mode</div>
+          <button class="break-toggle-btn" id="breakToggleBtn">START BREAK</button>
+
+          <div class="poll-admin" id="pollAdmin" hidden>
+            <div class="poll-admin-heading">Create a Poll</div>
+            <input type="text" class="poll-question-input" id="pollQuestionInput" placeholder="Ask something..." maxlength="140" autocomplete="off" />
+            <label class="poll-teams-toggle"><input type="checkbox" id="pollUseTeamsCheckbox" /> Use team names as answers</label>
+            <div class="poll-options-list" id="pollOptionsList"></div>
+            <button class="poll-add-option-btn" id="pollAddOptionBtn">+ Add Answer</button>
+            <button class="poll-start-btn" id="pollStartBtn">START POLL</button>
+            <div class="poll-admin-error" id="pollAdminError" hidden></div>
+
+            <div class="poll-active-card" id="pollActiveCard" hidden>
+              <div class="poll-active-label">Live Poll</div>
+              <div class="poll-active-question" id="pollActiveQuestion"></div>
+              <div class="poll-active-results" id="pollActiveResults"></div>
+              <button class="poll-close-btn" id="pollCloseBtn">CLOSE POLL</button>
+            </div>
+          </div>
+        </section>
+
         <section class="search-section">
           <div class="search-box">
             <span class="search-icon" id="searchIcon"></span>

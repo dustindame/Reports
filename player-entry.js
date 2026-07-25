@@ -331,6 +331,175 @@
     await showPinPrompt();
   }
 
+  /* ---------------- Break mode + poll admin ----------------
+     Not available in demo mode (no backend to toggle a break against or
+     store a poll in). While on break, the Draft Board switches to a
+     condensed screen with the poll and some NFL trivia, and Team Picks
+     surfaces the poll for fans to vote on -- see draft-board.js and
+     team-picks.js. */
+  const breakSection = document.getElementById("breakSection");
+  const breakToggleBtn = document.getElementById("breakToggleBtn");
+  const pollAdmin = document.getElementById("pollAdmin");
+  const pollQuestionInput = document.getElementById("pollQuestionInput");
+  const pollUseTeamsCheckbox = document.getElementById("pollUseTeamsCheckbox");
+  const pollOptionsList = document.getElementById("pollOptionsList");
+  const pollAddOptionBtn = document.getElementById("pollAddOptionBtn");
+  const pollStartBtn = document.getElementById("pollStartBtn");
+  const pollAdminError = document.getElementById("pollAdminError");
+  const pollActiveCard = document.getElementById("pollActiveCard");
+  const pollActiveQuestion = document.getElementById("pollActiveQuestion");
+  const pollActiveResults = document.getElementById("pollActiveResults");
+  const pollCloseBtn = document.getElementById("pollCloseBtn");
+
+  let pollOptionValues = ["", ""];
+  let activePoll = null;
+
+  function renderPollOptionsList() {
+    pollOptionsList.hidden = pollUseTeamsCheckbox.checked;
+    pollAddOptionBtn.hidden = pollUseTeamsCheckbox.checked;
+    if (pollUseTeamsCheckbox.checked) return;
+    pollOptionsList.innerHTML = pollOptionValues
+      .map(
+        (val, i) => `<div class="poll-option-row">
+          <input type="text" class="poll-option-input" data-idx="${i}" value="${escapeHtml(val)}" placeholder="Answer ${i + 1}" maxlength="60" autocomplete="off" />
+          <button class="poll-option-remove" data-idx="${i}" ${pollOptionValues.length <= 2 ? "disabled" : ""} aria-label="Remove this answer">✕</button>
+        </div>`
+      )
+      .join("");
+    pollOptionsList.querySelectorAll(".poll-option-input").forEach((inp) => {
+      inp.addEventListener("input", (e) => {
+        pollOptionValues[Number(e.target.dataset.idx)] = e.target.value;
+      });
+    });
+    pollOptionsList.querySelectorAll(".poll-option-remove").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (pollOptionValues.length <= 2) return;
+        pollOptionValues.splice(Number(btn.dataset.idx), 1);
+        renderPollOptionsList();
+      });
+    });
+  }
+
+  function renderActivePoll() {
+    if (!activePoll) {
+      pollActiveCard.hidden = true;
+      return;
+    }
+    pollActiveCard.hidden = false;
+    pollActiveQuestion.textContent = activePoll.question;
+    const votes = activePoll.votes || [];
+    const total = votes.length;
+    const counts = activePoll.options.map((_, i) => votes.filter((v) => v.optionIndex === i).length);
+    const maxCount = Math.max(...counts, 1);
+    pollActiveResults.innerHTML = activePoll.options
+      .map(
+        (opt, i) => `<div class="poll-result-row">
+          <span class="pr-label">${escapeHtml(opt)}</span>
+          <span class="pr-track"><span class="pr-fill" style="width:${((counts[i] / maxCount) * 100).toFixed(1)}%"></span></span>
+          <span class="pr-count">${counts[i]}</span>
+        </div>`
+      )
+      .join("") + `<div class="poll-admin-heading">${total} vote${total === 1 ? "" : "s"} total</div>`;
+  }
+
+  async function refreshActivePoll() {
+    const poll = await DraftStore.getActivePoll();
+    if (!poll) {
+      activePoll = null;
+      renderActivePoll();
+      return;
+    }
+    const votes = await DraftStore.getPollVotes(poll.id);
+    activePoll = { ...poll, votes };
+    renderActivePoll();
+  }
+
+  function updateBreakUi() {
+    breakToggleBtn.textContent = ON_BREAK ? "END BREAK" : "START BREAK";
+    breakToggleBtn.classList.toggle("active", ON_BREAK);
+    pollAdmin.hidden = !ON_BREAK;
+    if (ON_BREAK) refreshActivePoll();
+  }
+
+  breakToggleBtn.addEventListener("click", async () => {
+    breakToggleBtn.disabled = true;
+    const pinHash = LeagueSession.getPinHash(CURRENT_LEAGUE_CODE);
+    const { error } = await DraftStore.setBreak(!ON_BREAK, pinHash);
+    breakToggleBtn.disabled = false;
+    if (error) {
+      if (error === "Incorrect commissioner PIN.") {
+        LeagueSession.clearPinHash(CURRENT_LEAGUE_CODE);
+        showToast("Wrong PIN — try again");
+        await ensurePinUnlocked();
+      } else {
+        showToast(`Couldn't update break: ${error}`);
+      }
+      return;
+    }
+    ON_BREAK = !ON_BREAK;
+    updateBreakUi();
+    showToast(ON_BREAK ? "Break started" : "Break ended");
+  });
+
+  pollUseTeamsCheckbox.addEventListener("change", renderPollOptionsList);
+  pollAddOptionBtn.addEventListener("click", () => {
+    if (pollOptionValues.length >= 8) return;
+    pollOptionValues.push("");
+    renderPollOptionsList();
+  });
+
+  pollStartBtn.addEventListener("click", async () => {
+    pollAdminError.hidden = true;
+    const question = pollQuestionInput.value.trim();
+    if (!question) {
+      pollAdminError.textContent = "Enter a question first.";
+      pollAdminError.hidden = false;
+      return;
+    }
+    const options = pollUseTeamsCheckbox.checked ? TEAMS.map((t) => t.name) : pollOptionValues.map((v) => v.trim()).filter(Boolean);
+    if (options.length < 2) {
+      pollAdminError.textContent = "Add at least 2 answers.";
+      pollAdminError.hidden = false;
+      return;
+    }
+    pollStartBtn.disabled = true;
+    const pinHash = LeagueSession.getPinHash(CURRENT_LEAGUE_CODE);
+    const { error } = await DraftStore.createPoll(question, options, pinHash);
+    pollStartBtn.disabled = false;
+    if (error) {
+      if (error === "Incorrect commissioner PIN.") {
+        LeagueSession.clearPinHash(CURRENT_LEAGUE_CODE);
+        showToast("Wrong PIN — try again");
+        await ensurePinUnlocked();
+      } else {
+        pollAdminError.textContent = error;
+        pollAdminError.hidden = false;
+      }
+      return;
+    }
+    pollQuestionInput.value = "";
+    pollOptionValues = ["", ""];
+    pollUseTeamsCheckbox.checked = false;
+    renderPollOptionsList();
+    showToast("Poll started");
+    await refreshActivePoll();
+  });
+
+  pollCloseBtn.addEventListener("click", async () => {
+    if (!activePoll) return;
+    pollCloseBtn.disabled = true;
+    const pinHash = LeagueSession.getPinHash(CURRENT_LEAGUE_CODE);
+    const { error } = await DraftStore.closePoll(activePoll.id, pinHash);
+    pollCloseBtn.disabled = false;
+    if (error) {
+      showToast(`Couldn't close poll: ${error}`);
+      return;
+    }
+    activePoll = null;
+    renderActivePoll();
+    showToast("Poll closed");
+  });
+
   async function confirmPick() {
     if (!isReady()) return;
     const team = teamById(selectedTeamId);
@@ -495,4 +664,11 @@
   updateAmount();
   updateConfirmState();
   setHandle(0);
+
+  breakSection.hidden = !CURRENT_LEAGUE_CODE; // demo mode has no league to toggle a break for
+  if (CURRENT_LEAGUE_CODE) {
+    renderPollOptionsList();
+    updateBreakUi();
+    DraftStore.onPollChange(refreshActivePoll);
+  }
 })();
