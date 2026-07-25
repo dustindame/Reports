@@ -21,7 +21,7 @@ body {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.18), 0 0 70px -18px rgba(212, 175, 55, 0.35);
 }
 
-/* Export/screenshot/message all live in one stack, bottom-right, so
+/* Export/view-board/message all live in one stack, bottom-right, so
    they're reachable from the team-selection screen (not buried behind a
    team pick) -- this is the "next to the send-a-message button" spot. */
 .fab-stack {
@@ -48,6 +48,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  text-decoration: none;
 }
 .board-message-fab:active,
 .board-fab:active { transform: scale(0.95); }

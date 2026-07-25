@@ -9,7 +9,7 @@
   const messageFab = document.getElementById("messageFab");
   const recapBanner = document.getElementById("recapBanner");
   const exportDraftBtn = document.getElementById("exportDraftBtn");
-  const snapshotBtn = document.getElementById("snapshotBtn");
+  const viewBoardBtn = document.getElementById("viewBoardBtn");
 
   document.getElementById("headerFootball").innerHTML = Icons.helmet(24);
   document.getElementById("backIcon").innerHTML = Icons.chevronLeft(16);
@@ -17,7 +17,7 @@
   document.getElementById("pylonRight").innerHTML = Icons.pylon(18);
   document.getElementById("recapBannerIcon").innerHTML = Icons.barChart(16, "#1a1305");
   document.getElementById("exportDraftIcon").innerHTML = Icons.download(20);
-  document.getElementById("snapshotIcon").innerHTML = Icons.camera(20);
+  document.getElementById("viewBoardIcon").innerHTML = Icons.field(20, "#1a1305");
 
   function updateRecapBanner() {
     recapBanner.hidden = draftedCount() < TOTAL_SLOTS;
@@ -83,11 +83,21 @@
 
   backBtn.addEventListener("click", showPicker);
 
-  /* ---------------- Export the full draft / screenshot ----------------
+  /* ---------------- Export the full draft / view the real board ----------------
      Live on the team-selection screen (next to the message button)
      instead of being buried inside a specific team's roster view, so
      they're reachable the moment someone scans the QR code -- no need
-     to pick a team first just to get to them. */
+     to pick a team first just to get to them.
+
+     There used to be a "snapshot" button here too, screenshotting
+     whatever was on the phone -- but the phone never rendered the
+     actual Draft Board, only this Team Picks page, so the screenshot
+     was never a picture of "the board" at all, just the team-picker
+     grid or a roster list. Draft Board itself already scales to fit any
+     screen size (fitBoardToScreen() in draft-board.js), including a
+     phone's, and already has its own working Snapshot button that
+     captures the real board -- so instead of faking it here, this just
+     links straight there. */
   function csvField(value) {
     const s = String(value);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
@@ -112,21 +122,7 @@
     URL.revokeObjectURL(url);
   }
 
-  async function saveSnapshot() {
-    snapshotBtn.disabled = true;
-    try {
-      const canvas = await html2canvas(document.querySelector(".phone-screen"), { backgroundColor: "#08080b" });
-      const link = document.createElement("a");
-      link.download = `team-picks-${CURRENT_LEAGUE_CODE || "demo"}-${Date.now()}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    } finally {
-      snapshotBtn.disabled = false;
-    }
-  }
-
   exportDraftBtn.addEventListener("click", exportDraft);
-  snapshotBtn.addEventListener("click", saveSnapshot);
 
   /* ---------------- Fan message to the Draft Board ---------------- */
 
@@ -186,6 +182,7 @@
   await configReady;
   messageFab.hidden = !CURRENT_LEAGUE_CODE; // demo mode has no league to post to
   recapBanner.href = `recap.html${CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : ""}`;
+  viewBoardBtn.href = `draft-board.html${CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : ""}`;
   await applyLivePicks();
   updateRecapBanner();
   DraftStore.onChange(async () => {
