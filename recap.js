@@ -18,20 +18,6 @@
   function isRookie(name) {
     return ROOKIE_ORDER.includes(name);
   }
-  // Ranked only against other players at the same position
-  // (using their order within PLAYER_POOL[position], which is roughly
-  // best-to-worst) instead of the whole league. The global ranking above
-  // only meaningfully separates ~120 "name brand" players -- everyone else
-  // gets dumped at the same rock-bottom score, which is why the Value
-  // Quadrant used to just show two clumps at the extreme top/bottom. This
-  // spreads every drafted player out across the full 0..1 range.
-  function positionQuality(name, position) {
-    const pool = PLAYER_POOL[position] || [];
-    const idx = pool.indexOf(name);
-    if (idx === -1 || pool.length <= 1) return 0.5;
-    return 1 - idx / (pool.length - 1);
-  }
-
   // Picks come back in draft order already (getPicks() orders by
   // created_at ascending; the demo's buildMockDraft() picks are already
   // sorted by pickNumber) -- that order doubles as the pick sequence used
@@ -318,79 +304,24 @@
     </svg>`;
   }
 
-  /* ---------------- Value quadrant scatter ----------------
-     x = price paid, y = value relative to other players at the same
-     position (see positionQuality above). Quadrant lines sit at the
-     league averages of each, splitting the field into steal / reach /
-     expected-good / expected-bad zones. */
-  function renderQuadrant() {
-    const el = document.getElementById("chartQuadrant");
-    if (picks.length === 0) {
-      el.innerHTML = `<div class="chart-empty">No picks yet.</div>`;
-      return;
-    }
-    const scored = picks.map((p) => ({ ...p, quality: positionQuality(p.name, p.position) }));
-    const height = 280;
-    const width = Math.max(320, el.clientWidth || 600);
-    const pad = 40;
-    const innerW = width - pad * 2;
-    const innerH = height - pad * 2;
-    const maxPrice = Math.max(...scored.map((p) => p.price), 10);
-    const xFor = (price) => pad + (price / maxPrice) * innerW;
-    const yFor = (quality) => pad + innerH - quality * innerH;
-    const avgPrice = scored.reduce((s, p) => s + p.price, 0) / scored.length;
-    const avgQuality = scored.reduce((s, p) => s + p.quality, 0) / scored.length;
-    const midX = xFor(avgPrice);
-    const midY = yFor(avgQuality);
-
-    const dots = scored
-      .map(
-        (p, i) => `<circle class="quad-dot" cx="${xFor(p.price).toFixed(1)}" cy="${yFor(p.quality).toFixed(1)}" r="5.5" fill="var(${POSITION_COLOR_VAR[p.position]})" data-idx="${i}"></circle>`
-      )
-      .join("");
-
-    el.innerHTML = `<div class="trend-wrap">
-      <svg class="quad-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-        <line class="quad-gridline" x1="${pad}" y1="${midY.toFixed(1)}" x2="${width - pad}" y2="${midY.toFixed(1)}"/>
-        <line class="quad-gridline" x1="${midX.toFixed(1)}" y1="${pad}" x2="${midX.toFixed(1)}" y2="${height - pad}"/>
-        <text class="quad-quadrant-label" x="${pad + 4}" y="${pad + 12}">Steals</text>
-        <text class="quad-quadrant-label" x="${width - pad - 4}" y="${pad + 12}" text-anchor="end">Studs (paid up)</text>
-        <text class="quad-quadrant-label" x="${pad + 4}" y="${height - pad - 4}">Avoided</text>
-        <text class="quad-quadrant-label" x="${width - pad - 4}" y="${height - pad - 4}" text-anchor="end">Reaches</text>
-        <text class="quad-axis-label" x="${width / 2}" y="${height - 8}" text-anchor="middle">Price paid →</text>
-        <text class="quad-axis-label" x="14" y="${height / 2}" text-anchor="middle" transform="rotate(-90 14 ${height / 2})">Value vs. position →</text>
-        ${dots}
-      </svg>
-      <div class="quad-tooltip" id="quadTooltip"></div>
-    </div>`;
-
-    const tooltip = document.getElementById("quadTooltip");
-    el.querySelectorAll(".quad-dot").forEach((dot) => {
-      dot.addEventListener("mouseenter", () => {
-        const p = scored[Number(dot.dataset.idx)];
-        const team = teamById(p.teamId);
-        tooltip.textContent = `${p.name} (${p.position}) — $${p.price}${team ? ` · ${team.name}` : ""}`;
-        tooltip.style.left = `${dot.getAttribute("cx")}px`;
-        tooltip.style.top = `${dot.getAttribute("cy")}px`;
-        tooltip.style.opacity = "1";
-      });
-      dot.addEventListener("mouseleave", () => { tooltip.style.opacity = "0"; });
-    });
-  }
-
-  /* ---------------- Advanced: league-wide position mix (waffle) ---------------- */
-  function renderWaffle() {
+  /* ---------------- Rookie vs. Veteran spend (waffle) ----------------
+     Same waffle mechanic as before, but a more useful split: instead of
+     showing WHERE money went (positions -- already covered by Team
+     Composition/Avg Price/the matrix above), this shows WHO it went to
+     -- rookies vs. established veterans, league-wide. */
+  function renderRookieWaffle() {
     const el = document.getElementById("chartWaffle");
     const totalSpend = picks.reduce((s, p) => s + p.price, 0);
     if (totalSpend === 0) {
       el.innerHTML = `<div class="chart-empty">No picks yet.</div>`;
       return;
     }
-    const present = POS_KEYS.filter((pos) => picks.some((p) => p.position === pos));
-    const shares = present.map((pos) => ({
-      pos,
-      pct: picks.filter((p) => p.position === pos).reduce((s, p) => s + p.price, 0) / totalSpend,
-    }));
+    const rookieSpend = picks.filter((p) => isRookie(p.name)).reduce((s, p) => s + p.price, 0);
+    const vetSpend = totalSpend - rookieSpend;
+    const shares = [
+      { key: "rookie", label: "Rookies", pct: rookieSpend / totalSpend, color: "var(--gold-bright)" },
+      { key: "vet", label: "Veterans", pct: vetSpend / totalSpend, color: "var(--text-faint)" },
+    ];
 
     // Largest-remainder rounding so 100 squares are allocated exactly,
     // instead of just flooring each share and coming up short.
@@ -400,17 +331,27 @@
     const order = raw.map((v, i) => ({ i, frac: v - floors[i] })).sort((a, b) => b.frac - a.frac);
     for (let k = 0; k < remaining; k++) floors[order[k % order.length].i] += 1;
 
-    const cellPos = [];
-    shares.forEach((s, i) => { for (let k = 0; k < floors[i]; k++) cellPos.push(s.pos); });
-    while (cellPos.length < 100) cellPos.push(shares[shares.length - 1].pos);
+    const cells = [];
+    shares.forEach((s, i) => { for (let k = 0; k < floors[i]; k++) cells.push(s); });
+    while (cells.length < 100) cells.push(shares[shares.length - 1]);
 
-    el.innerHTML = `<div class="waffle-grid">${cellPos
-      .map((pos) => `<div class="waffle-cell" style="background:var(${POSITION_COLOR_VAR[pos]})" title="${pos}"></div>`)
+    el.innerHTML = `<div class="waffle-grid">${cells
+      .map((s) => `<div class="waffle-cell" style="background:${s.color}" title="${s.label}"></div>`)
       .join("")}</div>`;
 
     document.getElementById("waffleLegend").innerHTML = shares
-      .map((s) => `<span class="legend-item"><span class="legend-dot" style="background:var(${POSITION_COLOR_VAR[s.pos]})"></span>${s.pos} — ${(s.pct * 100).toFixed(0)}%</span>`)
+      .map((s) => `<span class="legend-item"><span class="legend-dot" style="background:${s.color}"></span>${s.label} — ${(s.pct * 100).toFixed(0)}%</span>`)
       .join("");
+  }
+
+  /* ---------------- Shared: gaps between consecutive picks by timestamp ---------------- */
+  function computeTimedGaps() {
+    const timed = picks.filter((p) => typeof p.loggedAt === "number").slice().sort((a, b) => a.loggedAt - b.loggedAt);
+    const gaps = [];
+    for (let i = 1; i < timed.length; i++) {
+      gaps.push({ before: timed[i - 1], after: timed[i], seconds: (timed[i].loggedAt - timed[i - 1].loggedAt) / 1000 });
+    }
+    return { timed, gaps };
   }
 
   /* ---------------- Draft Pace ----------------
@@ -420,15 +361,11 @@
   function renderPace() {
     const el = document.getElementById("chartPace");
     const longestBreaksEl = document.getElementById("longestBreaks");
-    const timed = picks.filter((p) => typeof p.loggedAt === "number").slice().sort((a, b) => a.loggedAt - b.loggedAt);
+    const { timed, gaps } = computeTimedGaps();
     if (timed.length < 2) {
       el.innerHTML = `<div class="chart-empty">Not enough timing data yet.</div>`;
       longestBreaksEl.innerHTML = "";
       return;
-    }
-    const gaps = [];
-    for (let i = 1; i < timed.length; i++) {
-      gaps.push({ before: timed[i - 1], after: timed[i], seconds: (timed[i].loggedAt - timed[i - 1].loggedAt) / 1000 });
     }
     const longBreakThreshold = 150; // 2.5 min+ counts as a "long break"
 
@@ -485,6 +422,138 @@
     }
   }
 
+  /* ---------------- Oddities & Fun Facts ----------------
+     Deliberately silly stats that don't matter for any real strategy --
+     just fun trivia pulled out of data nobody normally looks at (name
+     length, vowels, pick timing, position streaks). */
+  function renderOddities() {
+    const container = document.getElementById("oddityTiles");
+    if (picks.length === 0) {
+      container.innerHTML = `<div class="stat-tile"><div class="stat-label">Oddities</div><div class="stat-value">—</div><div class="stat-sub">No picks yet.</div></div>`;
+      return;
+    }
+    const VOWELS = /[aeiou]/gi;
+    const nameLetters = (name) => name.replace(/[^a-z]/gi, "");
+
+    const byLength = picks.slice().sort((a, b) => nameLetters(a.name).length - nameLetters(b.name).length);
+    const longest = byLength[byLength.length - 1];
+    const shortest = byLength[0];
+    const totalLetters = picks.reduce((s, p) => s + nameLetters(p.name).length, 0);
+
+    const vowelHeaviest = picks
+      .map((p) => {
+        const letters = nameLetters(p.name);
+        const vowels = (letters.match(VOWELS) || []).length;
+        return { ...p, ratio: letters.length > 0 ? vowels / letters.length : 0 };
+      })
+      .sort((a, b) => b.ratio - a.ratio)[0];
+
+    const { gaps } = computeTimedGaps();
+    const fastest = gaps.length > 0 ? gaps.slice().sort((a, b) => a.seconds - b.seconds)[0] : null;
+
+    // Longest run of consecutive picks (in draft order) at the same position.
+    let longestStreak = { position: null, length: 0, startSeq: 0 };
+    let curPos = null;
+    let curLen = 0;
+    let curStart = 0;
+    picks.forEach((p, i) => {
+      if (p.position === curPos) {
+        curLen += 1;
+      } else {
+        curPos = p.position;
+        curLen = 1;
+        curStart = i;
+      }
+      if (curLen > longestStreak.length) {
+        longestStreak = { position: curPos, length: curLen, startSeq: curStart + 1 };
+      }
+    });
+
+    const tiles = [
+      { label: "Longest Name Drafted", value: longest.name, sub: `${nameLetters(longest.name).length} letters` },
+      { label: "Shortest Name Drafted", value: shortest.name, sub: `${nameLetters(shortest.name).length} letters` },
+      { label: "Total Letters Drafted", value: totalLetters, sub: `across ${picks.length} names` },
+      { label: "Most Vowel-Heavy Pick", value: vowelHeaviest.name, sub: `${Math.round(vowelHeaviest.ratio * 100)}% vowels` },
+      fastest
+        ? { label: "Fastest Pick (Impulse Buy)", value: fastest.seconds < 1 ? "<1s" : `${fastest.seconds.toFixed(0)}s`, sub: fastest.after.name }
+        : { label: "Fastest Pick (Impulse Buy)", value: "—", sub: "not enough timing data" },
+      longestStreak.length >= 2
+        ? { label: "Longest Position Streak", value: `${longestStreak.length}x ${longestStreak.position}`, sub: `starting at pick #${longestStreak.startSeq}` }
+        : { label: "Longest Position Streak", value: "None", sub: "every pick switched it up" },
+    ];
+    container.innerHTML = tiles
+      .map((t) => `<div class="stat-tile"><div class="stat-label">${escapeHtml(t.label)}</div><div class="stat-value">${escapeHtml(String(t.value))}</div><div class="stat-sub">${escapeHtml(t.sub)}</div></div>`)
+      .join("");
+  }
+
+  /* ---------------- Draft Superlatives ---------------- */
+  function renderSuperlatives() {
+    const container = document.getElementById("superlatives");
+    const withPicks = teamStats.filter((t) => t.picks.length > 0);
+    if (withPicks.length === 0) {
+      container.innerHTML = `<div class="chart-empty">No picks yet.</div>`;
+      return;
+    }
+
+    const benchPicks = picks.filter((p) => {
+      const roster = getTeamRoster(p.teamId);
+      return roster && ROSTER_SLOTS[roster.slots.findIndex((s) => s && s.id === p.id)] === "BENCH";
+    });
+    const priciestBench = benchPicks.length > 0 ? benchPicks.reduce((max, p) => (p.price > max.price ? p : max), benchPicks[0]) : null;
+
+    const starterPicks = picks.filter((p) => {
+      const roster = getTeamRoster(p.teamId);
+      const idx = roster ? roster.slots.findIndex((s) => s && s.id === p.id) : -1;
+      return idx !== -1 && ROSTER_SLOTS[idx] !== "BENCH";
+    });
+    const bargainStarter = starterPicks.length > 0 ? starterPicks.reduce((min, p) => (p.price < min.price ? p : min), starterPicks[0]) : null;
+
+    const { gaps } = computeTimedGaps();
+    const slowest = gaps.length > 0 ? gaps.slice().sort((a, b) => b.seconds - a.seconds)[0] : null;
+
+    const consistency = withPicks
+      .filter((t) => t.picks.length >= 3)
+      .map((t) => {
+        const prices = t.picks.map((p) => p.price);
+        const mean = prices.reduce((s, v) => s + v, 0) / prices.length;
+        const variance = prices.reduce((s, v) => s + (v - mean) ** 2, 0) / prices.length;
+        return { team: t, stdDev: Math.sqrt(variance) };
+      })
+      .sort((a, b) => a.stdDev - b.stdDev)[0];
+
+    const cards = [];
+    if (priciestBench) {
+      const team = teamById(priciestBench.teamId);
+      cards.push({ emoji: "💰", title: "Priciest Bench Warmer", name: priciestBench.name, sub: `$${priciestBench.price} · ${team ? team.name : ""} — riding the pine at a premium` });
+    }
+    if (bargainStarter) {
+      const team = teamById(bargainStarter.teamId);
+      cards.push({ emoji: "🪙", title: "Best Bargain Starter", name: bargainStarter.name, sub: `$${bargainStarter.price} · ${team ? team.name : ""} — starting lineup on a clearance budget` });
+    }
+    if (slowest) {
+      const team = teamById(slowest.after.teamId);
+      const mins = slowest.seconds / 60;
+      const label = mins >= 1 ? `${mins.toFixed(1)} min` : `${Math.round(slowest.seconds)} sec`;
+      cards.push({ emoji: "🐌", title: "Slowest On The Clock", name: slowest.after.name, sub: `${team ? team.name : ""} took ${label} to pull the trigger` });
+    }
+    if (consistency) {
+      cards.push({ emoji: "🧊", title: "Ice In The Veins", name: consistency.team.name, sub: `±$${consistency.stdDev.toFixed(0)} price swing — the same steady number every single pick` });
+    }
+
+    container.innerHTML = cards
+      .map(
+        (c) => `<div class="superlative-card">
+          <div class="sl-emoji">${c.emoji}</div>
+          <div class="sl-body">
+            <div class="sl-title">${escapeHtml(c.title)}</div>
+            <div class="sl-name">${escapeHtml(c.name)}</div>
+            <div class="sl-sub">${escapeHtml(c.sub)}</div>
+          </div>
+        </div>`
+      )
+      .join("");
+  }
+
   /* ---------------- Steals & Reaches ----------------
      "Value" here is a proxy, not real market data: how well-regarded the
      player is (their spot in the same TOP_VALUE_ORDER/ROOKIE_ORDER
@@ -524,15 +593,42 @@
 
   /* ---------------- Roast ----------------
      Explicitly "R rated" / vulgar per request -- real profanity is in
-     play here on purpose. The one hard line that doesn't move: no slurs,
-     no racial/ethnic/identity references of any kind. Every line is
-     aimed strictly at the draft decisions (overpays, hoarding, cowardice,
-     general incompetence), never at who someone is. Commissioner can turn
-     this whole section off in league settings (ROAST_ENABLED, see
-     setup.html) if the group doesn't want it. */
-  function generateRoastLines(t) {
+     play here on purpose, and pushed harder than the first pass. The one
+     hard line that doesn't move: no slurs, no racial/ethnic/identity
+     references of any kind. Every line is aimed strictly at the draft
+     decisions (overpays, hoarding, cowardice, general incompetence),
+     never at who someone is. Commissioner can turn this whole section
+     off in league settings (ROAST_ENABLED, see setup.html).
+
+     Each condition below has multiple phrasing variants instead of one
+     fixed line -- with enough teams hitting the same condition (e.g.
+     several teams all going overweight one position), a single fixed
+     string was showing up verbatim on multiple cards. pickVariant()
+     rotates through variants and tracks what's already been used across
+     the whole page so repeats only happen if every variant for a
+     condition is exhausted. */
+  const usedRoastLines = new Set();
+  function pickVariant(variants, seed) {
+    for (let i = 0; i < variants.length; i++) {
+      const candidate = variants[(seed + i) % variants.length];
+      if (!usedRoastLines.has(candidate)) {
+        usedRoastLines.add(candidate);
+        return candidate;
+      }
+    }
+    // Every variant already used elsewhere on the page -- allow a repeat
+    // rather than showing nothing.
+    return variants[seed % variants.length];
+  }
+
+  function generateRoastLines(t, teamIndex) {
     if (t.picks.length === 0) {
-      return ["Drafted jack shit. Sat in the room, took up a chair, contributed absolutely nothing — a bye week with a pulse."];
+      const variants = [
+        "Drafted jack shit. Sat in the room, took up a chair, contributed absolutely nothing — a bye week with a goddamn pulse.",
+        "Zero picks. Zero effort. Showed up just to breathe the air and eat the snacks other people paid for.",
+        "Didn't draft a single fucking player. This isn't a roster, it's an empty chair with a name tag on it.",
+      ];
+      return [pickVariant(variants, teamIndex)];
     }
     const maxPick = t.picks.reduce((max, p) => (p.price > max.price ? p : max), t.picks[0]);
     const maxShare = maxPick.price / BUDGET;
@@ -543,30 +639,88 @@
 
     const candidates = [];
     if (maxShare >= 0.3) {
-      candidates.push({ severity: maxShare, text: `Blew ${Math.round(maxShare * 100)}% of the whole goddamn budget on ${maxPick.name} in one shot, like a degenerate who thinks the slot machine is "due." Everyone else on this roster is getting fed scraps so that one bet could feel like a big dick move.` });
+      const pct = Math.round(maxShare * 100);
+      candidates.push({
+        severity: maxShare,
+        variants: [
+          `Pissed away ${pct}% of the entire fucking budget on ${maxPick.name} in one swing, like a degenerate who thinks the slot machine is "due." Everyone else on this roster is eating scraps so that one dumbass bet could feel important.`,
+          `${pct}% of the budget on ${maxPick.name} alone. That's not an auction strategy, that's a mid-life crisis with a bid card.`,
+          `Went full lunatic and dropped ${pct}% of the budget on ${maxPick.name}. One bad Sunday from this whole roster being a smoking crater.`,
+        ],
+      });
     }
     if (topPosEntry && topPosShare >= 0.45) {
-      candidates.push({ severity: topPosShare, text: `${Math.round(topPosShare * 100)}% of the budget torched on ${topPosEntry[0]}s alone. That's not a strategy, that's a hostage situation — every other position got held at gunpoint and this dipshit still lost the ransom money.` });
+      const pct = Math.round(topPosShare * 100);
+      candidates.push({
+        severity: topPosShare,
+        variants: [
+          `${pct}% of the budget torched on ${topPosEntry[0]}s alone. That's not a strategy, that's a hostage situation — every other position got held at gunpoint and this idiot still lost the ransom money.`,
+          `${pct}% dumped into ${topPosEntry[0]}s. Somebody's got a fetish and it's costing the whole roster dearly.`,
+          `Bet the entire farm on ${topPosEntry[0]}s (${pct}% of the budget). Real "put all your eggs in one basket, then drop the basket" energy.`,
+        ],
+      });
     }
     if (t.rookieCount >= 3) {
-      candidates.push({ severity: 0.5 + t.rookieCount * 0.05, text: `${t.rookieCount} rookies drafted on nothing but vibes and a hype-reel boner. This isn't a roster, it's a fucking science project that's due in September and everyone already knows it's getting an F.` });
+      candidates.push({
+        severity: 0.5 + t.rookieCount * 0.05,
+        variants: [
+          `${t.rookieCount} rookies drafted on nothing but vibes and a hype-reel boner. This isn't a roster, it's a fucking science project due in September and everyone already knows it's getting an F.`,
+          `${t.rookieCount} unproven rookies on this roster. Betting the season on guys who haven't taken a real hit yet — bold, stupid, or both.`,
+          `${t.rookieCount} rookies. Somebody watched one YouTube highlight reel and decided that counted as "research."`,
+        ],
+      });
     }
     if (t.rookieCount === 0 && t.picks.length >= 5) {
-      candidates.push({ severity: 0.4, text: `Zero rookies, zero balls. Wouldn't touch a player unless some talking head on TV already sucked him off first — pure gutless, follow-the-herd bullshit dressed up as "discipline."` });
+      candidates.push({
+        severity: 0.4,
+        variants: [
+          `Zero rookies, zero balls. Wouldn't touch a player unless some talking head on TV already vouched for him first — gutless, follow-the-herd bullshit dressed up as "discipline."`,
+          `Not one single rookie. The most cowardly, play-it-safe roster in the entire league, and somehow still not good.`,
+          `Zero rookies drafted — too scared to gamble on anything that wasn't already famous before the season started.`,
+        ],
+      });
     }
     if (dollarPicks >= Math.ceil(t.picks.length / 2)) {
-      candidates.push({ severity: 0.4 + dollarPicks * 0.02, text: `${dollarPicks} picks bought for a single dollar apiece. Half this roster got drafted with the same energy as taking a shit — quick, joyless, and everyone in the room wishing it'd hurry up.` });
+      candidates.push({
+        severity: 0.4 + dollarPicks * 0.02,
+        variants: [
+          `${dollarPicks} picks bought for a single dollar apiece. Half this roster got drafted with the same energy as taking a shit — quick, joyless, and everyone in the room wishing it'd hurry the fuck up.`,
+          `${dollarPicks} dollar-store picks on this roster. Assembled like a discount bin nobody else wanted to dig through.`,
+          `${dollarPicks} picks at rock-bottom dollar prices. This roster is held together with pocket lint and desperation.`,
+        ],
+      });
     }
     if (avgPrice >= BUDGET * 0.12) {
-      candidates.push({ severity: avgPrice / BUDGET, text: `Average pick price of $${avgPrice.toFixed(0)} — paid full goddamn retail on every single player all night, like the idea of a discount personally pissed in this idiot's cereal.` });
+      candidates.push({
+        severity: avgPrice / BUDGET,
+        variants: [
+          `Average pick price of $${avgPrice.toFixed(0)} — paid full goddamn retail on every single player all night, like the idea of a discount personally pissed in this idiot's cereal.`,
+          `$${avgPrice.toFixed(0)} average price. Never once heard the word "bargain" in their entire life.`,
+          `Averaged $${avgPrice.toFixed(0)} a player. This roster was drafted with a checkbook and zero self-control.`,
+        ],
+      });
     } else if (avgPrice <= BUDGET * 0.04) {
-      candidates.push({ severity: 0.3, text: `Average pick price of just $${avgPrice.toFixed(0)}. Built this whole sorry-ass roster out of the clearance bin and is somehow strutting around proud of it.` });
+      candidates.push({
+        severity: 0.3,
+        variants: [
+          `Average pick price of just $${avgPrice.toFixed(0)}. Built this whole sorry-ass roster out of the clearance bin and is somehow strutting around proud of it.`,
+          `$${avgPrice.toFixed(0)} average. Cheaper than a gas station hot dog and about as reliable.`,
+          `Averaged a measly $${avgPrice.toFixed(0)} a pick. Either a genius bargain hunter or flat broke by round three — no in between.`,
+        ],
+      });
     }
 
     candidates.sort((a, b) => b.severity - a.severity);
-    const picked = candidates.slice(0, 2).map((c) => c.text);
+    const picked = candidates.slice(0, 2).map((c) => pickVariant(c.variants, teamIndex));
     if (picked.length === 0) {
-      picked.push("Suspiciously balanced, aggressively boring as hell — this roster has the personality of wet cardboard. Nobody's going to remember a single pick, including the dumbass who made them.");
+      const boringVariants = [
+        "Suspiciously balanced, aggressively boring as hell — this roster has the personality of wet cardboard. Nobody's going to remember a single pick, including the dumbass who made them.",
+        "Perfectly average in every category. The fantasy football equivalent of beige — technically a color, forgettable as hell.",
+        "Textbook, spreadsheet, zero personality. This roster was drafted by someone who's never taken a risk in their entire goddamn life.",
+        "No overpays, no steals, no rookies gone wild, nothing. Just a well-behaved, thoroughly unremarkable pile of players.",
+        "Middle of the pack on every single metric. Impressive, in a deeply pathetic, play-it-safe kind of way.",
+      ];
+      picked.push(pickVariant(boringVariants, teamIndex));
     }
     return picked;
   }
@@ -579,8 +733,8 @@
     }
     section.hidden = false;
     document.getElementById("roastGrid").innerHTML = teamStats
-      .map((t) => {
-        const lines = generateRoastLines(t);
+      .map((t, i) => {
+        const lines = generateRoastLines(t, i);
         return `<div class="roast-card">
           <div class="roast-team-name"><span class="roast-team-dot" style="background:${t.color}"></span>${escapeHtml(t.name)}</div>
           ${lines.map((l) => `<div class="roast-line">${escapeHtml(l)}</div>`).join("")}
@@ -595,16 +749,16 @@
   renderTrend();
   renderPositionMatrix();
   renderBoxWhisker();
-  renderQuadrant();
-  renderWaffle();
+  renderRookieWaffle();
   renderPace();
   renderStealsReaches();
+  renderOddities();
+  renderSuperlatives();
   renderRoasts();
 
   window.addEventListener("resize", () => {
     renderTrend();
     renderBoxWhisker();
-    renderQuadrant();
     renderPace();
   });
 })();

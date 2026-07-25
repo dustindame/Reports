@@ -220,29 +220,6 @@ body {
 .bw-median { stroke-width: 2; }
 .bw-pos-label { font-size: 11px; font-weight: 700; fill: var(--text-dim); text-anchor: middle; }
 
-/* ---------------- Advanced: value quadrant scatter ---------------- */
-
-.quad-svg { display: block; }
-.quad-axis-label { font-size: 10px; fill: var(--text-faint); }
-.quad-gridline { stroke: var(--border-soft); stroke-width: 1; stroke-dasharray: 3 3; }
-.quad-quadrant-label { font-size: 10px; fill: var(--text-faint); text-transform: uppercase; letter-spacing: 0.5px; }
-.quad-dot { stroke: var(--bg); stroke-width: 1; cursor: pointer; }
-.quad-tooltip {
-  position: absolute;
-  pointer-events: none;
-  background: var(--panel-alt);
-  border: 1px solid var(--gold-dim);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
-  font-size: 12px;
-  color: var(--text);
-  white-space: nowrap;
-  transform: translate(-50%, -130%);
-  opacity: 0;
-  transition: opacity 0.1s ease;
-  z-index: 5;
-}
-
 /* ---------------- Advanced: waffle ---------------- */
 
 .waffle-grid {
@@ -321,6 +298,29 @@ body {
 .roast-card .roast-team-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
 .roast-card .roast-line { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-top: 6px; }
 .roast-card .roast-line:first-of-type { margin-top: 0; }
+
+/* ---------------- Draft Superlatives ---------------- */
+
+.superlatives-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.superlative-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--panel-alt-grad);
+  box-shadow: var(--panel-sheen);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--gold-dim);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+.superlative-card .sl-emoji { font-size: 26px; line-height: 1; flex: none; }
+.superlative-card .sl-title { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-faint); font-weight: 700; }
+.superlative-card .sl-name { font-size: 15px; font-weight: 800; color: var(--text); margin-top: 2px; }
+.superlative-card .sl-sub { font-size: 12px; color: var(--text-dim); margin-top: 3px; line-height: 1.4; }
 
 @media (max-width: 640px) {
   .recap-main { padding: 18px; }
