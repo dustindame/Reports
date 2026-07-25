@@ -220,15 +220,12 @@ body {
 .bw-median { stroke-width: 2; }
 .bw-pos-label { font-size: 11px; font-weight: 700; fill: var(--text-dim); text-anchor: middle; }
 
-/* ---------------- Advanced: waffle ---------------- */
+/* ---------------- Spending Race ---------------- */
 
-.waffle-grid {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 2px;
-  max-width: 260px;
-}
-.waffle-cell { aspect-ratio: 1 / 1; border-radius: 2px; }
+.race-svg { display: block; }
+.race-axis-label { font-size: 10px; fill: var(--text-faint); }
+.race-gridline { stroke: var(--border-soft); stroke-width: 1; }
+.race-line { fill: none; stroke-width: 2; opacity: 0.9; }
 
 /* ---------------- Draft Pace ---------------- */
 
