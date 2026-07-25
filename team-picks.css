@@ -21,10 +21,21 @@ body {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.18), 0 0 70px -18px rgba(212, 175, 55, 0.35);
 }
 
-.board-message-fab {
+/* Export/screenshot/message all live in one stack, bottom-right, so
+   they're reachable from the team-selection screen (not buried behind a
+   team pick) -- this is the "next to the send-a-message button" spot. */
+.fab-stack {
   position: absolute;
   bottom: 20px;
   right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 5;
+}
+.board-message-fab,
+.board-fab {
   width: 54px;
   height: 54px;
   border-radius: 50%;
@@ -34,10 +45,22 @@ body {
   font-size: 22px;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(212, 175, 55, 0.2);
-  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.board-message-fab:active { transform: scale(0.95); }
-.board-message-fab[hidden] { display: none; }
+.board-message-fab:active,
+.board-fab:active { transform: scale(0.95); }
+.board-message-fab[hidden],
+.board-fab[hidden] { display: none; }
+.board-fab {
+  width: 46px;
+  height: 46px;
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+}
 
 .phone-screen {
   height: 100%;
@@ -68,26 +91,6 @@ body {
   justify-content: center;
   cursor: pointer;
 }
-.header-actions[hidden] { display: none; }
-.header-actions {
-  position: absolute;
-  right: 16px;
-  top: 22px;
-  display: flex;
-  gap: 8px;
-}
-.header-action-btn {
-  background: var(--panel-alt);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-.header-action-btn:active { transform: scale(0.94); }
 .header-row {
   display: flex;
   align-items: center;

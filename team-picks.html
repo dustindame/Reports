@@ -16,10 +16,6 @@
         <button class="back-btn" id="backBtn" hidden>
           <span id="backIcon"></span>
         </button>
-        <div class="header-actions" id="headerActions" hidden>
-          <button class="header-action-btn" id="exportRosterBtn" title="Export this roster (CSV)"><span id="exportRosterIcon"></span></button>
-          <button class="header-action-btn" id="rosterSnapshotBtn" title="Save a screenshot of this screen"><span id="rosterSnapshotIcon"></span></button>
-        </div>
         <div class="header-row">
           <span class="pylon-icon" id="pylonLeft"></span>
           <span class="header-football" id="headerFootball"></span>
@@ -55,7 +51,11 @@
 
     </div>
 
-    <button class="board-message-fab" id="messageFab" aria-label="Send a message to the Draft Board">📣</button>
+    <div class="fab-stack">
+      <button class="board-fab" id="exportDraftBtn" aria-label="Export the full draft (CSV)" title="Export the full draft (CSV)"><span id="exportDraftIcon"></span></button>
+      <button class="board-fab" id="snapshotBtn" aria-label="Save a screenshot of this screen" title="Save a screenshot of this screen"><span id="snapshotIcon"></span></button>
+      <button class="board-message-fab" id="messageFab" aria-label="Send a message to the Draft Board">📣</button>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

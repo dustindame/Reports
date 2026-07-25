@@ -8,17 +8,16 @@
   const backBtn = document.getElementById("backBtn");
   const messageFab = document.getElementById("messageFab");
   const recapBanner = document.getElementById("recapBanner");
-  const headerActions = document.getElementById("headerActions");
-  const exportRosterBtn = document.getElementById("exportRosterBtn");
-  const rosterSnapshotBtn = document.getElementById("rosterSnapshotBtn");
+  const exportDraftBtn = document.getElementById("exportDraftBtn");
+  const snapshotBtn = document.getElementById("snapshotBtn");
 
   document.getElementById("headerFootball").innerHTML = Icons.helmet(24);
   document.getElementById("backIcon").innerHTML = Icons.chevronLeft(16);
   document.getElementById("pylonLeft").innerHTML = Icons.pylon(18);
   document.getElementById("pylonRight").innerHTML = Icons.pylon(18);
   document.getElementById("recapBannerIcon").innerHTML = Icons.barChart(16, "#1a1305");
-  document.getElementById("exportRosterIcon").innerHTML = Icons.download(16);
-  document.getElementById("rosterSnapshotIcon").innerHTML = Icons.camera(16);
+  document.getElementById("exportDraftIcon").innerHTML = Icons.download(20);
+  document.getElementById("snapshotIcon").innerHTML = Icons.camera(20);
 
   function updateRecapBanner() {
     recapBanner.hidden = draftedCount() < TOTAL_SLOTS;
@@ -74,63 +73,60 @@
     teamPicker.hidden = true;
     rosterView.hidden = false;
     backBtn.hidden = false;
-    headerActions.hidden = false;
   }
 
   function showPicker() {
     rosterView.hidden = true;
     teamPicker.hidden = false;
     backBtn.hidden = true;
-    headerActions.hidden = true;
   }
 
   backBtn.addEventListener("click", showPicker);
 
-  /* ---------------- Export roster / screenshot ----------------
-     Same tools already on the Draft Board (backup export, snapshot),
-     scoped to just the team someone's looking at -- handy right after
-     scanning the QR code to grab your own roster instead of the whole
-     board. */
+  /* ---------------- Export the full draft / screenshot ----------------
+     Live on the team-selection screen (next to the message button)
+     instead of being buried inside a specific team's roster view, so
+     they're reachable the moment someone scans the QR code -- no need
+     to pick a team first just to get to them. */
   function csvField(value) {
     const s = String(value);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   }
 
-  function exportRoster() {
-    if (!currentTeamId) return;
-    const team = teamById(currentTeamId);
-    const roster = getTeamRoster(currentTeamId);
-    const rows = [["Slot", "Player", "Position", "Price"]];
-    roster.slots.forEach((pick, i) => {
-      const slotType = ROSTER_SLOTS[i];
-      rows.push(pick ? [slotType, pick.name, pick.position, pick.price] : [slotType, "Open Slot", "", ""]);
-    });
+  function exportDraft() {
+    const rows = [["Pick #", "Team", "Player", "Position", "Price"]];
+    MOCK_DRAFT.picks
+      .slice()
+      .sort((a, b) => a.pickNumber - b.pickNumber)
+      .forEach((p) => {
+        const team = teamById(p.teamId);
+        rows.push([p.pickNumber, team ? team.name : p.teamId, p.name, p.position, p.price]);
+      });
     const csv = rows.map((row) => row.map(csvField).join(",")).join("\r\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${team.name.replace(/[^a-z0-9]+/gi, "-")}-roster-${Date.now()}.csv`;
+    a.download = `draft-picks-${CURRENT_LEAGUE_CODE || "demo"}-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
 
-  async function saveRosterSnapshot() {
-    rosterSnapshotBtn.disabled = true;
+  async function saveSnapshot() {
+    snapshotBtn.disabled = true;
     try {
       const canvas = await html2canvas(document.querySelector(".phone-screen"), { backgroundColor: "#08080b" });
       const link = document.createElement("a");
-      const team = teamById(currentTeamId);
-      link.download = `${team ? team.name.replace(/[^a-z0-9]+/gi, "-") : "roster"}-${Date.now()}.png`;
+      link.download = `team-picks-${CURRENT_LEAGUE_CODE || "demo"}-${Date.now()}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
     } finally {
-      rosterSnapshotBtn.disabled = false;
+      snapshotBtn.disabled = false;
     }
   }
 
-  exportRosterBtn.addEventListener("click", exportRoster);
-  rosterSnapshotBtn.addEventListener("click", saveRosterSnapshot);
+  exportDraftBtn.addEventListener("click", exportDraft);
+  snapshotBtn.addEventListener("click", saveSnapshot);
 
   /* ---------------- Fan message to the Draft Board ---------------- */
 
