@@ -445,159 +445,6 @@
     }
   }
 
-  /* ---------------- Oddities & Fun Facts ----------------
-     League-wide trivia that doesn't matter for any real strategy --
-     just weird patterns pulled out of data nobody normally looks at. */
-  function renderOddities() {
-    const container = document.getElementById("oddityTiles");
-    if (picks.length === 0) {
-      container.innerHTML = `<div class="stat-tile"><div class="stat-label">Oddities</div><div class="stat-value">—</div><div class="stat-sub">No picks yet.</div></div>`;
-      return;
-    }
-
-    const opening = picks[0];
-    const openingTeam = teamById(opening.teamId);
-    const closing = picks[picks.length - 1];
-    const closingTeam = teamById(closing.teamId);
-
-    // Most common first letter across every drafted name.
-    const letterCounts = {};
-    picks.forEach((p) => {
-      const letter = p.name.trim()[0].toUpperCase();
-      letterCounts[letter] = (letterCounts[letter] || 0) + 1;
-    });
-    const favoriteLetter = Object.entries(letterCounts).sort((a, b) => b[1] - a[1])[0];
-
-    // Most common price paid, league-wide (the "mode").
-    const priceCounts = {};
-    picks.forEach((p) => { priceCounts[p.price] = (priceCounts[p.price] || 0) + 1; });
-    const favoritePrice = Object.entries(priceCounts).sort((a, b) => b[1] - a[1])[0];
-
-    // Position with the wildest price swings (highest std dev, min 2 picks).
-    const posStats = POS_KEYS
-      .map((pos) => picks.filter((p) => p.position === pos).map((p) => p.price))
-      .map((prices, i) => {
-        if (prices.length < 2) return null;
-        const mean = prices.reduce((s, v) => s + v, 0) / prices.length;
-        const variance = prices.reduce((s, v) => s + (v - mean) ** 2, 0) / prices.length;
-        return { pos: POS_KEYS[i], stdDev: Math.sqrt(variance) };
-      })
-      .filter(Boolean)
-      .sort((a, b) => b.stdDev - a.stdDev);
-    const wildestPos = posStats[0];
-
-    // "Twinsies" -- two different teams paying the exact same price for
-    // the same position, purely a coincidence-spotter.
-    const byPosPrice = {};
-    picks.forEach((p) => {
-      const key = `${p.position}:${p.price}`;
-      (byPosPrice[key] = byPosPrice[key] || []).push(p);
-    });
-    const twinsGroups = Object.values(byPosPrice).filter((group) => new Set(group.map((p) => p.teamId)).size >= 2);
-    const twins = twinsGroups.sort((a, b) => b.length - a.length)[0];
-
-    const tiles = [
-      { label: "🎬 Opening Act", value: opening.name, sub: `$${opening.price} · the very first pick, by ${openingTeam ? openingTeam.name : "someone"}` },
-      { label: "🎬 Closing Act", value: closing.name, sub: `$${closing.price} · the last pick standing, by ${closingTeam ? closingTeam.name : "someone"}` },
-      favoriteLetter
-        ? { label: "🔤 The League's Favorite Letter", value: `"${favoriteLetter[0]}"`, sub: `${favoriteLetter[1]} drafted names start with it` }
-        : { label: "🔤 The League's Favorite Letter", value: "—", sub: "" },
-      favoritePrice
-        ? { label: "💵 Most Popular Price Tag", value: `$${favoritePrice[0]}`, sub: `paid ${favoritePrice[1]} separate times` }
-        : { label: "💵 Most Popular Price Tag", value: "—", sub: "" },
-      wildestPos
-        ? { label: "🎢 Wildest Position", value: wildestPos.pos, sub: `±$${wildestPos.stdDev.toFixed(0)} swing — total chaos on every bid` }
-        : { label: "🎢 Wildest Position", value: "—", sub: "not enough picks yet" },
-      twins
-        ? { label: "🪞 Twinsies", value: `${twins.length} teams`, sub: `all paid $${twins[0].price} for a ${twins[0].position} — pure coincidence, right?` }
-        : { label: "🪞 Twinsies", value: "None yet", sub: "no two teams have matched a price" },
-    ];
-    container.innerHTML = tiles
-      .map((t) => `<div class="stat-tile"><div class="stat-label">${escapeHtml(t.label)}</div><div class="stat-value">${escapeHtml(String(t.value))}</div><div class="stat-sub">${escapeHtml(t.sub)}</div></div>`)
-      .join("");
-  }
-
-  /* ---------------- Draft Superlatives ---------------- */
-  function renderSuperlatives() {
-    const container = document.getElementById("superlatives");
-    const withPicks = teamStats.filter((t) => t.picks.length > 0);
-    if (withPicks.length === 0) {
-      container.innerHTML = `<div class="chart-empty">No picks yet.</div>`;
-      return;
-    }
-
-    const benchPicks = picks.filter((p) => {
-      const roster = getTeamRoster(p.teamId);
-      return roster && ROSTER_SLOTS[roster.slots.findIndex((s) => s && s.id === p.id)] === "BENCH";
-    });
-    const priciestBench = benchPicks.length > 0 ? benchPicks.reduce((max, p) => (p.price > max.price ? p : max), benchPicks[0]) : null;
-
-    const starterPicks = picks.filter((p) => {
-      const roster = getTeamRoster(p.teamId);
-      const idx = roster ? roster.slots.findIndex((s) => s && s.id === p.id) : -1;
-      return idx !== -1 && ROSTER_SLOTS[idx] !== "BENCH";
-    });
-    const bargainStarter = starterPicks.length > 0 ? starterPicks.reduce((min, p) => (p.price < min.price ? p : min), starterPicks[0]) : null;
-
-    const { gaps } = computeTimedGaps();
-    const slowest = gaps.length > 0 ? gaps.slice().sort((a, b) => b.seconds - a.seconds)[0] : null;
-
-    const withVariance = withPicks
-      .filter((t) => t.picks.length >= 3)
-      .map((t) => {
-        const prices = t.picks.map((p) => p.price);
-        const mean = prices.reduce((s, v) => s + v, 0) / prices.length;
-        const variance = prices.reduce((s, v) => s + (v - mean) ** 2, 0) / prices.length;
-        return { team: t, stdDev: Math.sqrt(variance) };
-      })
-      .sort((a, b) => a.stdDev - b.stdDev);
-    const consistency = withVariance[0];
-    const chaos = withVariance[withVariance.length - 1];
-
-    const leagueAvgPrice = picks.reduce((s, p) => s + p.price, 0) / picks.length;
-    const mrAverage = withPicks
-      .map((t) => ({ team: t, avgPrice: t.spend / t.picks.length }))
-      .sort((a, b) => Math.abs(a.avgPrice - leagueAvgPrice) - Math.abs(b.avgPrice - leagueAvgPrice))[0];
-
-    const cards = [];
-    if (priciestBench) {
-      const team = teamById(priciestBench.teamId);
-      cards.push({ emoji: "💰", title: "Priciest Bench Warmer", name: priciestBench.name, sub: `$${priciestBench.price} · ${team ? team.name : ""} — riding the pine at a premium` });
-    }
-    if (bargainStarter) {
-      const team = teamById(bargainStarter.teamId);
-      cards.push({ emoji: "🪙", title: "Best Bargain Starter", name: bargainStarter.name, sub: `$${bargainStarter.price} · ${team ? team.name : ""} — starting lineup on a clearance budget` });
-    }
-    if (slowest) {
-      const team = teamById(slowest.after.teamId);
-      const mins = slowest.seconds / 60;
-      const label = mins >= 1 ? `${mins.toFixed(1)} min` : `${Math.round(slowest.seconds)} sec`;
-      cards.push({ emoji: "🐌", title: "Slowest On The Clock", name: slowest.after.name, sub: `${team ? team.name : ""} took ${label} to pull the trigger` });
-    }
-    if (consistency) {
-      cards.push({ emoji: "🧊", title: "Ice In The Veins", name: consistency.team.name, sub: `±$${consistency.stdDev.toFixed(0)} price swing — the same steady number every single pick` });
-    }
-    if (chaos && chaos !== consistency) {
-      cards.push({ emoji: "🌪️", title: "Chaos Agent", name: chaos.team.name, sub: `±$${chaos.stdDev.toFixed(0)} price swing — no two picks cost anywhere near the same` });
-    }
-    if (mrAverage) {
-      cards.push({ emoji: "🎯", title: "Mr. Average", name: mrAverage.team.name, sub: `$${mrAverage.avgPrice.toFixed(0)} avg. pick — almost exactly the league average of $${leagueAvgPrice.toFixed(0)}` });
-    }
-
-    container.innerHTML = cards
-      .map(
-        (c) => `<div class="superlative-card">
-          <div class="sl-emoji">${c.emoji}</div>
-          <div class="sl-body">
-            <div class="sl-title">${escapeHtml(c.title)}</div>
-            <div class="sl-name">${escapeHtml(c.name)}</div>
-            <div class="sl-sub">${escapeHtml(c.sub)}</div>
-          </div>
-        </div>`
-      )
-      .join("");
-  }
-
   /* ---------------- Steals & Reaches ----------------
      "Value" here is a proxy, not real market data: how well-regarded the
      player is (their spot in the same TOP_VALUE_ORDER/ROOKIE_ORDER
@@ -637,19 +484,21 @@
 
   /* ---------------- Roast ----------------
      Explicitly "R rated" / vulgar per request. The one hard line that
-     doesn't move: no slurs, no racial/ethnic/identity references of any
-     kind. Every line is aimed strictly at the draft decisions, never at
-     who someone is. Commissioner can turn this whole section off in
+     doesn't move: no slurs, no racial/ethnic/identity references, and no
+     claims about a real player's actual off-field/legal history (that's
+     asserting real facts about real identifiable people, which isn't
+     something to generate -- "most players arrested" specifically isn't
+     implemented for that reason). Everything else is fair game: this is
+     built entirely around fantasy-football trash talk archetypes (the
+     guy who's always "questionable," the aging veteran, the boom-or-bust
+     merchant, the system guy) attached to specific players a team
+     actually drafted, not stats and not percentages -- pure roasting of
+     the roster itself. Commissioner can turn this whole section off in
      league settings (ROAST_ENABLED, see setup.html).
 
-     Every condition has 5-6 phrasing variants (not 2-3) specifically
-     because with enough teams tripping the same condition, a small
-     variant pool ran out and started repeating verbatim. pickVariant()
-     also mixes in a per-category seed (not just team index) so two
-     different conditions for the same team don't land on the same
-     rotation offset, and it tracks every line already used on the page
-     so a repeat only happens if literally every variant everywhere is
-     exhausted. */
+     Each condition has 5-6 phrasing variants, and pickVariant() seeds on
+     team+category together and tracks every line already used on the
+     page, so the same joke doesn't show up twice. */
   const usedRoastLines = new Set();
   function pickVariant(variants, seed) {
     for (let i = 0; i < variants.length; i++) {
@@ -662,164 +511,176 @@
     return variants[seed % variants.length];
   }
 
+  // A stable, purely-for-laughs "archetype" per player name -- NOT a real
+  // claim about that real athlete's actual health, personality, or
+  // history. Same idea as any fantasy-football banter ("this guy's an
+  // injury magnet," "washed," "boom or bust") that every league already
+  // says about players regardless of the truth. Deterministic so the same
+  // player always gets the same bit within a given recap.
+  const ARCHETYPES = [
+    (n) => `${n}, a player who is "probable" more often than he's actually on the field`,
+    (n) => `${n}, who peaked in a preseason highlight video and has been chasing that high ever since`,
+    (n) => `${n}, allegedly a professional athlete, mostly famous for getting hurt tying his shoes`,
+    (n) => `${n}, who plays like a superstar for three quarters and like a stranger for the fourth`,
+    (n) => `${n}, who's one bad game from a very passionate podcast segment about him`,
+    (n) => `${n}, who's been "about to break out" for so many years it's basically his personality now`,
+    (n) => `${n}, who only shows up on the injury report, never the box score`,
+    (n) => `${n}, a walking boom-or-bust warning label`,
+    (n) => `${n}, who needs a perfect offensive line, perfect weather, and a full moon to have a good game`,
+    (n) => `${n}, whose ceiling is enormous and whose floor is a courtside seat on the bench`,
+  ];
+  function archetypeSeed(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+    return hash;
+  }
+  function roastPlayer(name, seedOffset) {
+    const idx = (archetypeSeed(name) + seedOffset) % ARCHETYPES.length;
+    return ARCHETYPES[idx](name);
+  }
+
   function generateRoastLines(t, teamIndex) {
     if (t.picks.length === 0) {
       const variants = [
         "Drafted jack shit. Sat in the room, took up a chair, contributed absolutely nothing — a bye week with a pulse.",
         "Zero picks. Zero effort. Showed up just to eat the snacks other people paid for and vanish.",
         "Didn't draft a single player. This isn't a roster, it's an empty chair with a name tag taped to it.",
-        "Ghosted the entire draft. Somewhere out there, 13 empty roster slots are still waiting by the phone.",
+        "Ghosted the entire draft. Somewhere out there, a bunch of empty roster slots are still waiting by the phone.",
       ];
       return [pickVariant(variants, teamIndex)];
     }
+
     const maxPick = t.picks.reduce((max, p) => (p.price > max.price ? p : max), t.picks[0]);
-    const maxShare = maxPick.price / BUDGET;
-    const avgPrice = t.spend / t.picks.length;
-    const dollarPicks = t.picks.filter((p) => p.price === 1).length;
+    const dollarPicks = t.picks.filter((p) => p.price === 1);
     const topPosEntry = Object.entries(t.positionSpend).sort((a, b) => b[1] - a[1])[0];
     const topPosShare = topPosEntry && t.spend > 0 ? topPosEntry[1] / t.spend : 0;
     const missingStarterPos = ["RB", "WR", "TE"].find((pos) => !t.positionSpend[pos] && t.picks.length >= 6);
-    const shareValues = Object.values(t.positionSpend);
-    const shareMean = shareValues.length ? shareValues.reduce((s, v) => s + v, 0) / shareValues.length : 0;
-    const shareVariance = shareValues.length ? shareValues.reduce((s, v) => s + (v - shareMean) ** 2, 0) / shareValues.length : 0;
-    const isWishyWashy = shareValues.length >= 4 && shareMean > 0 && Math.sqrt(shareVariance) / shareMean < 0.35;
+    const avgPrice = t.spend / t.picks.length;
+    const isBigSpender = avgPrice >= BUDGET * 0.12;
+    const isPennyPincher = avgPrice <= BUDGET * 0.04;
     const defPick = t.picks.find((p) => p.position === "DEF");
+    const cheapestPick = t.picks.reduce((min, p) => (p.price < min.price ? p : min), t.picks[0]);
 
-    const candidates = [];
-    if (maxShare >= 0.3) {
-      const pct = Math.round(maxShare * 100);
+    // Every team always gets at least one line built around a specific
+    // player they drafted and a made-up-but-familiar archetype, since
+    // that's the actual point -- roasting the roster, not the spreadsheet.
+    const flavorVariants = [
+      `Handed the keys to ${roastPlayer(maxPick.name, teamIndex)}. Hope that goes well.`,
+      `Building the whole season around ${roastPlayer(maxPick.name, teamIndex + 3)}. Brave.`,
+      `Went all in on ${roastPlayer(maxPick.name, teamIndex + 6)} and called it a plan.`,
+      `The face of this roster is ${roastPlayer(maxPick.name, teamIndex + 9)}. Good luck with that.`,
+      `This team's whole identity rides on ${roastPlayer(maxPick.name, teamIndex + 12)}.`,
+    ];
+
+    const candidates = [{ id: 0, severity: 0.5, variants: flavorVariants }];
+
+    if (topPosEntry && topPosShare >= 0.45) {
       candidates.push({
         id: 1,
-        severity: maxShare,
-        variants: [
-          `Pissed away ${pct}% of the whole budget on ${maxPick.name} in one swing, like a guy at the blackjack table who just knows the next card is a face card.`,
-          `${pct}% of the budget on ${maxPick.name} alone. That's not an auction strategy, that's a mid-life crisis with a bid paddle.`,
-          `Dropped ${pct}% of the budget on one guy, ${maxPick.name}, and is now $1-bidding on everyone else like a man buying groceries with couch change.`,
-          `Married the budget to ${maxPick.name} for ${pct}% of it. No prenup, no backup plan, just vibes and a credit limit.`,
-          `${pct}% of the team's entire budget went to ${maxPick.name}. Bold move putting all your eggs in a basket that can pull a hamstring.`,
-        ],
-      });
-    }
-    if (topPosEntry && topPosShare >= 0.45) {
-      const pct = Math.round(topPosShare * 100);
-      candidates.push({
-        id: 2,
         severity: topPosShare,
         variants: [
-          `${pct}% of the budget torched on ${topPosEntry[0]}s alone. Every other position got held at gunpoint and this genius still lost the ransom money.`,
-          `${pct}% dumped into ${topPosEntry[0]}s. Somebody's got a type, and the therapy bills are gonna cost more than the roster did.`,
-          `Bet the whole farm on ${topPosEntry[0]}s (${pct}% of the budget). Real "eggs, one basket, then dropped the basket down the stairs" energy.`,
-          `Drafted like ${topPosEntry[0]} was the only position in football. ${pct}% of the money says this guy forgot the sport has more than one job.`,
-          `${pct}% on ${topPosEntry[0]}s. Somewhere a bye week is circled in red and this whole team is about to feel it at once.`,
+          `Never met a ${topPosEntry[0]} they didn't want to marry. This roster is basically a ${topPosEntry[0]} fan club with a football team attached.`,
+          `Somebody's got a serious ${topPosEntry[0]} obsession, and the rest of the roster is paying for that therapy.`,
+          `Bet the whole farm on ${topPosEntry[0]}s. Real "eggs, one basket, dropped the basket down the stairs" energy.`,
+          `Drafted like ${topPosEntry[0]} was the only position in football and everyone else forgot to remind them otherwise.`,
+          `This roster loves ${topPosEntry[0]}s so much it's honestly a little concerning.`,
         ],
       });
     }
     if (missingStarterPos) {
       candidates.push({
+        id: 2,
+        severity: 0.55,
+        variants: [
+          `Somehow forgot ${missingStarterPos} was a position that exists. Bold way to find out the hard way that it matters.`,
+          `Zero ${missingStarterPos}s on this roster. Either a genius contrarian strategy or a total blackout during that part of the draft.`,
+          `No ${missingStarterPos}s anywhere. Someone's Week 1 lineup is going to look like a cry for help.`,
+          `Skipped ${missingStarterPos} entirely. That's not a strategy, that's a blind spot the size of a stadium.`,
+        ],
+      });
+    }
+    if (defPick) {
+      candidates.push({
         id: 3,
-        severity: 0.42,
+        severity: 0.4,
         variants: [
-          `Zero dollars spent on a single ${missingStarterPos}. Either forgot the position exists or is quietly planning to play with 10 men, which — respect the ambition, hate the roster.`,
-          `Didn't draft one ${missingStarterPos} all night. Bold way to find out the hard way that the position matters.`,
-          `Somehow built an entire roster with no ${missingStarterPos} on it. That's not a strategy, that's a blind spot the size of a stadium.`,
-          `No ${missingStarterPos}s anywhere on this roster. Someone's Week 1 lineup is going to look like a cry for help.`,
-        ],
-      });
-    }
-    if (isWishyWashy) {
-      candidates.push({
-        id: 4,
-        severity: 0.35,
-        variants: [
-          `Spread the budget so evenly across every position it looks like it was divided by a court-appointed mediator. Commit to something.`,
-          `Perfectly balanced spending across the board — the roster equivalent of ordering a plain side salad because you couldn't decide on dinner.`,
-          `Split the budget so cautiously evenly across positions that this roster has the personality of a Terms & Conditions page.`,
-          `Nobody spends this evenly by accident. This is what happens when you're too scared to have a favorite.`,
-        ],
-      });
-    }
-    if (defPick && defPick.price >= 8) {
-      candidates.push({
-        id: 5,
-        severity: 0.38,
-        variants: [
-          `Paid $${defPick.price} for a DEFENSE. A unit that changes every week based on who's hurt. Incredible use of money.`,
-          `$${defPick.price} on a team defense. That's not fantasy football, that's a charitable donation to the concept of bad decisions.`,
-          `Spent $${defPick.price} on ${defPick.name}. There are starting wide receivers that cost less than this defense did.`,
+          `Drafted ${defPick.name} like a defense is a sure thing and not eleven strangers who change every single week.`,
+          `Spent actual money on ${defPick.name}. A defense. The most randomized unit in the sport. Bold call.`,
+          `Trusted ${defPick.name} with real budget. There's a coin flip that's more predictable than a defense's weekly output.`,
         ],
       });
     }
     if (t.rookieCount >= 3) {
       candidates.push({
-        id: 6,
-        severity: 0.5 + t.rookieCount * 0.05,
+        id: 4,
+        severity: 0.5,
         variants: [
-          `${t.rookieCount} rookies drafted on nothing but vibes and a highlight reel. This roster is a science project due in September and it's already getting graded on a curve.`,
-          `${t.rookieCount} unproven rookies on one roster. Betting the whole season on guys who haven't taken a real hit yet — bold, dumb, or both.`,
-          `${t.rookieCount} rookies. Somebody watched one YouTube mixtape and called it "film study."`,
-          `Drafted ${t.rookieCount} rookies like this was a fantasy draft for a team that doesn't exist yet.`,
+          `Loaded up on rookies like this roster is a scouting report, not a team that has to win games this year.`,
+          `Went full nursery school with the rookies on this roster. Somebody watched one highlight reel and called it "film study."`,
+          `Betting the whole season on guys who haven't taken a real hit yet. Bold, dumb, or both.`,
+          `This roster is basically a preseason hype reel that somehow costs real money.`,
         ],
       });
     }
     if (t.rookieCount === 0 && t.picks.length >= 5) {
       candidates.push({
+        id: 5,
+        severity: 0.4,
+        variants: [
+          `Wouldn't touch a rookie with a ten-foot pole. Total distrust of anyone who hasn't already proven it to a stranger on TV first.`,
+          `The most cowardly, play-it-safe roster in the league, and somehow still not even good.`,
+          `Too scared to gamble on anyone who wasn't already famous before the season started.`,
+          `This roster has the risk tolerance of a substitute teacher on the last day before summer.`,
+        ],
+      });
+    }
+    if (dollarPicks.length >= Math.ceil(t.picks.length / 2)) {
+      const throwaway = dollarPicks[dollarPicks.length - 1] || cheapestPick;
+      candidates.push({
+        id: 6,
+        severity: 0.45,
+        variants: [
+          `Half this bench looks like it was drafted with a dartboard, blindfolded, at closing time — see ${throwaway.name}.`,
+          `Filled the roster with bargain-bin leftovers, capped off by ${throwaway.name}, and is somehow proud of it.`,
+          `Assembled this bench like a clearance rack nobody else wanted to dig through — exhibit A: ${throwaway.name}.`,
+          `Every roster needs depth. This roster needed a miracle, and got ${throwaway.name} instead.`,
+        ],
+      });
+    }
+    if (isBigSpender) {
+      candidates.push({
         id: 7,
         severity: 0.4,
         variants: [
-          `Zero rookies. Wouldn't touch a player unless some talking head on TV already vouched for him first — pure follow-the-herd energy dressed up as "discipline."`,
-          `Not one rookie. The most cowardly, play-it-safe roster in the league, and somehow still not even good.`,
-          `Zero rookies drafted — too scared to gamble on anyone who wasn't already famous before the season started.`,
-          `Refused every rookie in the pool. This roster runs on the emotional range of a Werther's Original commercial.`,
+          `Paid full retail on every single player all night. Never once heard the word "bargain" in his entire life.`,
+          `This guy tips 40% and still somehow overpaid for a punter's cousin.`,
+          `Drafted with a checkbook and zero self-control. Somebody take the paddle away.`,
+          `Spent this whole draft like the auction house was on fire and money didn't matter.`,
         ],
       });
-    }
-    if (dollarPicks >= Math.ceil(t.picks.length / 2)) {
+    } else if (isPennyPincher) {
       candidates.push({
         id: 8,
-        severity: 0.4 + dollarPicks * 0.02,
+        severity: 0.35,
         variants: [
-          `${dollarPicks} picks bought for a single dollar apiece. Half this roster got drafted with the enthusiasm of someone finishing a chore they hate.`,
-          `${dollarPicks} dollar-store picks on this roster. Assembled like a clearance bin nobody else wanted to dig through.`,
-          `${dollarPicks} picks at rock-bottom dollar prices. This roster is being held together with pocket lint.`,
-          `${dollarPicks} single-dollar picks. At some point that's not "value hunting," that's just not trying.`,
-        ],
-      });
-    }
-    if (avgPrice >= BUDGET * 0.12) {
-      candidates.push({
-        id: 9,
-        severity: avgPrice / BUDGET,
-        variants: [
-          `Average pick price of $${avgPrice.toFixed(0)} — paid full retail on every single player all night, like the idea of a discount personally offended this guy's whole family.`,
-          `$${avgPrice.toFixed(0)} average price. Never once heard the word "bargain" in his entire life.`,
-          `Averaged $${avgPrice.toFixed(0)} a player. This roster was drafted with a checkbook and zero self-control.`,
-          `$${avgPrice.toFixed(0)} average. This guy tips 40% and still overpays for the DoorDash fee.`,
-        ],
-      });
-    } else if (avgPrice <= BUDGET * 0.04) {
-      candidates.push({
-        id: 10,
-        severity: 0.3,
-        variants: [
-          `Average pick price of just $${avgPrice.toFixed(0)}. Built this whole roster out of the clearance bin and is somehow proud of it.`,
-          `$${avgPrice.toFixed(0)} average. Cheaper than a gas station hot dog and about as trustworthy.`,
-          `Averaged a measly $${avgPrice.toFixed(0)} a pick. Either a genius bargain hunter or flat broke by round three — no in between.`,
-          `$${avgPrice.toFixed(0)} average price. This roster was clearly drafted with one eye on the group chat asking for gas money.`,
+          `Built this whole roster out of the clearance bin and is somehow strutting around proud of it.`,
+          `Cheaper than a gas station hot dog and about as trustworthy come Sunday.`,
+          `Either a genius bargain hunter or flat broke by round three — no in between, and it shows.`,
+          `Drafted like every dollar personally owed this guy money.`,
         ],
       });
     }
 
     candidates.sort((a, b) => b.severity - a.severity);
     const picked = candidates.slice(0, 2).map((c) => pickVariant(c.variants, teamIndex * 7 + c.id * 13));
-    if (picked.length === 0) {
+    if (picked.length === 1) {
       const boringVariants = [
-        "Suspiciously balanced, aggressively boring — this roster has the personality of wet cardboard. Nobody's going to remember a single pick, including the guy who made them.",
+        "Suspiciously balanced, aggressively boring — this roster has the personality of wet cardboard.",
         "Perfectly average in every category. The fantasy football equivalent of beige — technically a color, forgettable as hell.",
         "Textbook, spreadsheet, zero personality. Drafted by someone who's never taken a real risk in his life.",
         "No overpays, no steals, no rookies gone wild, nothing. Just a well-behaved, thoroughly unremarkable pile of players.",
         "Middle of the pack on every metric. Impressive, in a deeply pathetic, play-it-safe kind of way.",
         "This roster is the human equivalent of a Tuesday. Nothing happened. Nothing will happen. Move along.",
-        "So balanced, so sane, so boring — the anti-roast. Congrats on being too responsible to make fun of.",
       ];
       picked.push(pickVariant(boringVariants, teamIndex));
     }
@@ -853,8 +714,6 @@
   renderSpendRace();
   renderPace();
   renderStealsReaches();
-  renderOddities();
-  renderSuperlatives();
   renderRoasts();
 
   window.addEventListener("resize", () => {
