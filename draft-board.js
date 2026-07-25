@@ -288,6 +288,65 @@
      Same full-board flash treatment as Nice, just red, whenever a pick
      lands on one of the league's randomly-designated shot pick numbers.
      Not part of the message ticker at all -- doesn't touch header layout. */
+  /* ---------------- Pick sound ----------------
+     A short synthesized two-tone chime (Web Audio API -- no audio file
+     to host, works offline) that plays whenever a new pick streams in,
+     similar to the alert sound ESPN's draft room plays on a selection.
+     Browsers block audio from playing before any user interaction with
+     the page, so the AudioContext is created lazily and resumed on the
+     first tap/click anywhere on the board. */
+  let pickAudioCtx = null;
+  function getPickAudioCtx() {
+    if (!pickAudioCtx) pickAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return pickAudioCtx;
+  }
+  window.addEventListener(
+    "pointerdown",
+    () => {
+      try {
+        getPickAudioCtx().resume();
+      } catch (e) {
+        /* AudioContext unsupported -- pick sound just won't play */
+      }
+    },
+    { once: true }
+  );
+  function playPickSound() {
+    try {
+      const ctx = getPickAudioCtx();
+      if (ctx.state === "suspended") ctx.resume();
+      const now = ctx.currentTime;
+      [660, 880].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        const start = now + i * 0.12;
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(0.28, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.28);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.3);
+      });
+    } catch (e) {
+      console.warn("Couldn't play pick sound:", e);
+    }
+  }
+
+  // Same pre-seed-then-diff pattern as the shot banner below -- picks
+  // that already existed when the board loaded shouldn't retroactively
+  // play the sound, only ones that arrive from here on.
+  const announcedPickIds = new Set();
+  function checkForNewPicks() {
+    MOCK_DRAFT.picks.forEach((p) => {
+      if (!announcedPickIds.has(p.id)) {
+        announcedPickIds.add(p.id);
+        playPickSound();
+      }
+    });
+  }
+
   const announcedShotPicks = new Set();
   let shotFlashTimer = null;
 
@@ -430,8 +489,9 @@
   fitBoardToScreen();
 
   // Picks that already existed when the board loaded shouldn't retroactively
-  // trigger the shot banner -- only ones that arrive from here on.
+  // trigger the shot banner or pick sound -- only ones that arrive from here on.
   MOCK_DRAFT.picks.forEach((p) => announcedShotPicks.add(p.pickNumber));
+  MOCK_DRAFT.picks.forEach((p) => announcedPickIds.add(p.id));
 
   window.addEventListener("resize", fitBoardToScreen);
   setInterval(renderElapsed, 30000);
@@ -461,6 +521,7 @@
     renderGrid();
     layoutGrid(); // re-measure in case header content width changed (defense in depth)
     fitBoardToScreen();
+    checkForNewPicks();
     checkForShotPicks();
   });
 })();
