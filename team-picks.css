@@ -159,6 +159,49 @@ body {
 .recap-banner-icon { display: flex; line-height: 0; flex: none; }
 .recap-banner-text { font-size: 13px; font-weight: 700; }
 
+/* ---------------- Poll voting (break mode) ---------------- */
+
+.poll-vote-section[hidden] { display: none; }
+.poll-vote-section {
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(155deg, rgba(212, 175, 55, 0.18) 0%, var(--panel-alt-grad) 60%);
+  border: 1px solid var(--gold-dim);
+  box-shadow: var(--panel-sheen);
+}
+.poll-vote-banner {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gold-bright);
+  margin-bottom: 8px;
+}
+.poll-vote-question { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+.poll-vote-options { display: flex; flex-direction: column; gap: 8px; }
+.poll-vote-option-btn {
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--panel-alt);
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.poll-vote-option-btn:active { transform: scale(0.98); }
+.poll-vote-results[hidden] { display: none; }
+.poll-vote-results { display: flex; flex-direction: column; gap: 8px; }
+.poll-vote-result-row { display: flex; align-items: center; gap: 8px; }
+.poll-vote-result-row.mine .pvr-label { color: var(--gold-bright); }
+.poll-vote-result-row .pvr-label { flex: none; width: 100px; font-size: 12.5px; font-weight: 600; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.poll-vote-result-row .pvr-track { flex: 1; height: 16px; border-radius: 999px; background: var(--panel-alt); overflow: hidden; }
+.poll-vote-result-row .pvr-fill { height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright)); border-radius: 999px; }
+.poll-vote-result-row .pvr-count { flex: none; width: 40px; text-align: right; font-size: 12px; font-weight: 800; color: var(--text); }
+
 .team-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

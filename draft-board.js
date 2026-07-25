@@ -25,6 +25,12 @@
   const exportBtn = document.getElementById("exportBtn");
   const snapshotBtn = document.getElementById("snapshotBtn");
   const recapLink = document.getElementById("recapLink");
+  const breakScreen = document.getElementById("breakScreen");
+  const breakCondensedGrid = document.getElementById("breakCondensedGrid");
+  const breakPollCard = document.getElementById("breakPollCard");
+  const breakPollQuestion = document.getElementById("breakPollQuestion");
+  const breakPollResults = document.getElementById("breakPollResults");
+  const breakFactText = document.getElementById("breakFactText");
 
   document.getElementById("fieldIcon").innerHTML = Icons.field(22, "var(--wr)");
   document.getElementById("titleFootballIcon").innerHTML = Icons.football(22, "var(--qb)");
@@ -383,6 +389,74 @@
     grid.innerHTML = cells.join("");
   }
 
+  /* ---------------- Break screen ----------------
+     Swaps the full roster grid for a condensed team summary + a live
+     poll (if the commissioner started one from Player Entry) + a
+     rotating NFL fact, whenever the league is on_break. */
+  function renderBreakCondensed() {
+    breakCondensedGrid.innerHTML = TEAMS.map((team) => {
+      const budget = computeTeamBudget(team.id);
+      return `<div class="break-team-card">
+        <span class="btc-dot" style="background:${team.color}"></span>
+        <div>
+          <div class="btc-name">${escapeHtml(team.name)}</div>
+          <div class="btc-sub">${budget.filled}/${ROSTER_SLOTS.length} drafted · $${budget.spent} spent</div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  let currentPoll = null;
+  async function refreshBreakPoll() {
+    const poll = await DraftStore.getActivePoll();
+    if (!poll) {
+      currentPoll = null;
+      breakPollCard.hidden = true;
+      return;
+    }
+    const votes = await DraftStore.getPollVotes(poll.id);
+    currentPoll = poll;
+    breakPollCard.hidden = false;
+    breakPollQuestion.textContent = poll.question;
+    const counts = poll.options.map((_, i) => votes.filter((v) => v.optionIndex === i).length);
+    const total = votes.length;
+    const maxCount = Math.max(...counts, 1);
+    breakPollResults.innerHTML = poll.options
+      .map(
+        (opt, i) => `<div class="break-poll-result-row">
+          <span class="bpr-label">${escapeHtml(opt)}</span>
+          <span class="bpr-track"><span class="bpr-fill" style="width:${((counts[i] / maxCount) * 100).toFixed(1)}%"></span></span>
+          <span class="bpr-count">${counts[i]}${total ? ` (${Math.round((counts[i] / total) * 100)}%)` : ""}</span>
+        </div>`
+      )
+      .join("");
+  }
+
+  let factRotateTimer = null;
+  function rotateBreakFact() {
+    breakFactText.textContent = NFL_FUN_FACTS[Math.floor(Math.random() * NFL_FUN_FACTS.length)];
+  }
+
+  function enterBreakMode() {
+    grid.hidden = true;
+    breakScreen.hidden = false;
+    boardContent.style.width = ""; // let the break screen's own fixed width drive natural sizing
+    renderBreakCondensed();
+    refreshBreakPoll();
+    rotateBreakFact();
+    clearInterval(factRotateTimer);
+    factRotateTimer = setInterval(rotateBreakFact, 12000);
+    fitBoardToScreen();
+  }
+
+  function exitBreakMode() {
+    breakScreen.hidden = true;
+    grid.hidden = false;
+    clearInterval(factRotateTimer);
+    layoutGrid();
+    fitBoardToScreen();
+  }
+
   // Sizes the grid's columns so the grid's total width always matches
   // whichever of the grid or the header actually needs more room. Without
   // this, when several optional header widgets are on, the header could
@@ -459,8 +533,12 @@
   renderRecent();
   renderNewsTicker();
   renderGrid();
-  layoutGrid();
-  fitBoardToScreen();
+  if (ON_BREAK) {
+    enterBreakMode();
+  } else {
+    layoutGrid();
+    fitBoardToScreen();
+  }
 
   // Picks that already existed when the board loaded shouldn't retroactively
   // trigger the shot banner or pick sound -- only ones that arrive from here on.
@@ -494,11 +572,34 @@
     renderPositionTotals();
     renderRecent();
     renderGrid();
-    layoutGrid(); // re-measure in case header content width changed (defense in depth)
-    fitBoardToScreen();
-    if (newPickIds.length) {
+    if (ON_BREAK) {
+      renderBreakCondensed();
+    } else {
+      layoutGrid(); // re-measure in case header content width changed (defense in depth)
+      fitBoardToScreen();
+    }
+    if (newPickIds.length && !ON_BREAK) {
       flashNewPickCells(newPickIds);
     }
     checkForShotPicks();
+  });
+
+  // The commissioner toggling break mode from Player Entry streams in
+  // here -- switch screens without needing a manual refresh.
+  DraftStore.onConfigChange((newConfig) => {
+    const nowOnBreak = Boolean(newConfig.on_break);
+    if (nowOnBreak === ON_BREAK) return;
+    ON_BREAK = nowOnBreak;
+    if (ON_BREAK) {
+      enterBreakMode();
+    } else {
+      exitBreakMode();
+    }
+  });
+
+  // While on break, a new poll starting, closing, or a vote coming in
+  // should update the results shown on the board live.
+  DraftStore.onPollChange(() => {
+    if (ON_BREAK) refreshBreakPoll();
   });
 })();
