@@ -246,9 +246,17 @@
   }
 
   async function refreshTicker() {
-    const live = await fetchNewsHeadlines();
-    if (live.length) {
-      tickerHeadlines = live;
+    // Odds are interleaved with headlines (not appended as a separate
+    // block) so they don't just sit bunched up at one end of the loop.
+    const [news, odds] = await Promise.all([fetchNewsHeadlines(), fetchBettingOdds()]);
+    const merged = [];
+    const maxLen = Math.max(news.length, odds.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (news[i]) merged.push(news[i]);
+      if (odds[i]) merged.push(odds[i]);
+    }
+    if (merged.length) {
+      tickerHeadlines = merged;
       renderNewsTicker();
     }
   }
