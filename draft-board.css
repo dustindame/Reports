@@ -369,6 +369,45 @@ body { overflow: hidden; height: 100vh; }
 .slot-cell.pos-TE .slot-price { color: var(--te-glow); }
 .slot-cell.pos-DEF .slot-price { color: var(--def-glow); }
 
+/* A newly-posted pick briefly traces a bright ring around its cell so
+   it's obvious at a glance where a pick just landed on the board, not
+   just that something changed somewhere in the grid. Two parts: a
+   pulsing glow (works everywhere) plus a rotating conic-gradient sweep
+   around the border via ::after (progressive enhancement -- browsers
+   without @property support just don't animate the angle, and the ring
+   sits static instead, which still reads fine). */
+@property --pick-trace-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.slot-cell.pick-flash {
+  position: relative;
+  animation: pick-flash-glow 1.6s ease-out 1;
+}
+.slot-cell.pick-flash::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  padding: 3px;
+  background: conic-gradient(from var(--pick-trace-angle), transparent 0deg, var(--gold-bright) 50deg, transparent 100deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: pick-trace-sweep 1.1s linear 1;
+  pointer-events: none;
+}
+@keyframes pick-flash-glow {
+  0% { box-shadow: 0 0 0 0 rgba(242, 193, 78, 0.95); }
+  55% { box-shadow: 0 0 24px 7px rgba(242, 193, 78, 0.55); }
+  100% { box-shadow: 0 0 0 0 rgba(242, 193, 78, 0); }
+}
+@keyframes pick-trace-sweep {
+  0% { --pick-trace-angle: 0deg; opacity: 1; }
+  100% { --pick-trace-angle: 360deg; opacity: 0; }
+}
+
 /* ---------------- Ticker ---------------- */
 
 .board-ticker {
