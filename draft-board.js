@@ -284,100 +284,12 @@
     niceFlashTimer = setTimeout(() => { niceFlash.hidden = true; }, 10000);
   }
 
-  /* ---------------- Pick sound ----------------
-     A short synthesized chime (Web Audio API -- no audio file to host,
-     works offline) that plays whenever a new pick streams in, similar to
-     the alert sound ESPN's draft room plays on a selection. Browsers
-     block audio from playing before any user interaction with the page,
-     so the AudioContext is created lazily and resumed on the first
-     tap/click anywhere on the board. */
-  let pickAudioCtx = null;
-  function getPickAudioCtx() {
-    if (!pickAudioCtx) pickAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    return pickAudioCtx;
-  }
-  window.addEventListener(
-    "pointerdown",
-    () => {
-      try {
-        getPickAudioCtx().resume();
-      } catch (e) {
-        /* AudioContext unsupported -- pick sound just won't play */
-      }
-    },
-    { once: true }
-  );
-  // A short percussive "thock" (a burst of filtered noise, like a mallet
-  // hit) followed by a bright three-note ascending chime -- closer to the
-  // hit-then-chime shape of ESPN's draft-room selection alert than a
-  // plain two-tone beep. Built from an in-memory noise buffer + a few
-  // oscillators, so there's still no audio file to host.
-  let pickNoiseBuffer = null;
-  function getPickNoiseBuffer(ctx) {
-    if (pickNoiseBuffer) return pickNoiseBuffer;
-    const length = Math.floor(ctx.sampleRate * 0.12);
-    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / length);
-    pickNoiseBuffer = buffer;
-    return buffer;
-  }
-  function playPickSound() {
-    try {
-      const ctx = getPickAudioCtx();
-      if (ctx.state === "suspended") ctx.resume();
-      const now = ctx.currentTime;
-
-      // The "thock": filtered noise burst + a short low thump underneath.
-      const noise = ctx.createBufferSource();
-      noise.buffer = getPickNoiseBuffer(ctx);
-      const noiseFilter = ctx.createBiquadFilter();
-      noiseFilter.type = "bandpass";
-      noiseFilter.frequency.value = 1800;
-      noiseFilter.Q.value = 0.8;
-      const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.5, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-      noise.connect(noiseFilter).connect(noiseGain).connect(ctx.destination);
-      noise.start(now);
-
-      const thump = ctx.createOscillator();
-      const thumpGain = ctx.createGain();
-      thump.type = "sine";
-      thump.frequency.setValueAtTime(160, now);
-      thump.frequency.exponentialRampToValueAtTime(60, now + 0.12);
-      thumpGain.gain.setValueAtTime(0.35, now);
-      thumpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
-      thump.connect(thumpGain).connect(ctx.destination);
-      thump.start(now);
-      thump.stop(now + 0.15);
-
-      // The bright ascending chime, starting just after the hit.
-      const chimeStart = now + 0.08;
-      [784, 988, 1319].forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "triangle";
-        osc.frequency.value = freq;
-        const start = chimeStart + i * 0.09;
-        gain.gain.setValueAtTime(0, start);
-        gain.gain.linearRampToValueAtTime(0.3, start + 0.015);
-        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(start);
-        osc.stop(start + 0.36);
-      });
-    } catch (e) {
-      console.warn("Couldn't play pick sound:", e);
-    }
-  }
-
   // Same pre-seed-then-diff pattern as the shot banner below -- picks
   // that already existed when the board loaded shouldn't retroactively
-  // play the sound or flash the border, only ones that arrive from here
-  // on. Returns the list of newly-seen pick ids so the caller can also
-  // trigger the border-trace animation on the right grid cells once
-  // they've been re-rendered.
+  // flash the border, only ones that arrive from here on. Returns the
+  // list of newly-seen pick ids so the caller can trigger the flash
+  // animation on the right grid cells once they've been re-rendered.
+  // (There was a pick sound here too; removed per request.)
   const announcedPickIds = new Set();
   function collectNewPickIds() {
     const newIds = [];
@@ -390,10 +302,10 @@
     return newIds;
   }
 
-  // Briefly traces a bright border around each newly-filled slot cell so
-  // it's obvious at a glance where a pick just landed, not just that the
-  // grid changed somewhere. Requires renderGrid() to have already run
-  // (so the cells exist) and each filled cell to carry data-pick-id.
+  // Briefly glows each newly-filled slot cell so it's obvious at a
+  // glance where a pick just landed, not just that the grid changed
+  // somewhere. Requires renderGrid() to have already run (so the cells
+  // exist) and each filled cell to carry data-pick-id.
   function flashNewPickCells(ids) {
     ids.forEach((id) => {
       const el = grid.querySelector(`[data-pick-id="${id}"]`);
@@ -585,7 +497,6 @@
     layoutGrid(); // re-measure in case header content width changed (defense in depth)
     fitBoardToScreen();
     if (newPickIds.length) {
-      playPickSound();
       flashNewPickCells(newPickIds);
     }
     checkForShotPicks();
