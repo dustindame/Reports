@@ -18,11 +18,18 @@
   function isRookie(name) {
     return ROOKIE_ORDER.includes(name);
   }
-  const MAX_RANK = TOP_VALUE_ORDER.length + ROOKIE_ORDER.length + 500;
-  // 0..1, higher = more highly regarded. A proxy (search-box ranking), not
-  // real market data -- see the note on renderStealsReaches below.
-  function qualityScore(name) {
-    return 1 - Math.min(playerRank(name), MAX_RANK) / MAX_RANK;
+  // Ranked only against other players at the same position
+  // (using their order within PLAYER_POOL[position], which is roughly
+  // best-to-worst) instead of the whole league. The global ranking above
+  // only meaningfully separates ~120 "name brand" players -- everyone else
+  // gets dumped at the same rock-bottom score, which is why the Value
+  // Quadrant used to just show two clumps at the extreme top/bottom. This
+  // spreads every drafted player out across the full 0..1 range.
+  function positionQuality(name, position) {
+    const pool = PLAYER_POOL[position] || [];
+    const idx = pool.indexOf(name);
+    if (idx === -1 || pool.length <= 1) return 0.5;
+    return 1 - idx / (pool.length - 1);
   }
 
   // Picks come back in draft order already (getPicks() orders by
@@ -119,8 +126,9 @@
         }
         const segs = POS_KEYS.filter((pos) => t.positionSpend[pos])
           .map((pos) => {
-            const pct = ((t.positionSpend[pos] / total) * 100).toFixed(1);
-            return `<span class="mix-seg" style="width:${pct}%; background:var(${POSITION_COLOR_VAR[pos]})" title="${pos}: $${t.positionSpend[pos]}"></span>`;
+            const pct = (t.positionSpend[pos] / total) * 100;
+            const label = pct >= 8 ? `<span class="mix-seg-label">${pos} ${pct.toFixed(0)}%</span>` : "";
+            return `<span class="mix-seg" style="width:${pct.toFixed(1)}%; background:var(${POSITION_COLOR_VAR[pos]})" title="${pos}: $${t.positionSpend[pos]} (${pct.toFixed(0)}%)">${label}</span>`;
           })
           .join("");
         return `<div class="mix-row"><span class="mix-label">${escapeHtml(t.name)}</span><span class="mix-track">${segs}</span></div>`;
@@ -310,17 +318,18 @@
     </svg>`;
   }
 
-  /* ---------------- Advanced: value quadrant scatter ----------------
-     x = price paid, y = our value ranking (see qualityScore above).
-     Quadrant lines sit at the league averages of each, splitting the
-     field into steal / reach / expected-good / expected-bad zones. */
+  /* ---------------- Value quadrant scatter ----------------
+     x = price paid, y = value relative to other players at the same
+     position (see positionQuality above). Quadrant lines sit at the
+     league averages of each, splitting the field into steal / reach /
+     expected-good / expected-bad zones. */
   function renderQuadrant() {
     const el = document.getElementById("chartQuadrant");
     if (picks.length === 0) {
       el.innerHTML = `<div class="chart-empty">No picks yet.</div>`;
       return;
     }
-    const scored = picks.map((p) => ({ ...p, quality: qualityScore(p.name) }));
+    const scored = picks.map((p) => ({ ...p, quality: positionQuality(p.name, p.position) }));
     const height = 280;
     const width = Math.max(320, el.clientWidth || 600);
     const pad = 40;
@@ -349,7 +358,7 @@
         <text class="quad-quadrant-label" x="${pad + 4}" y="${height - pad - 4}">Avoided</text>
         <text class="quad-quadrant-label" x="${width - pad - 4}" y="${height - pad - 4}" text-anchor="end">Reaches</text>
         <text class="quad-axis-label" x="${width / 2}" y="${height - 8}" text-anchor="middle">Price paid →</text>
-        <text class="quad-axis-label" x="14" y="${height / 2}" text-anchor="middle" transform="rotate(-90 14 ${height / 2})">Value ranking →</text>
+        <text class="quad-axis-label" x="14" y="${height / 2}" text-anchor="middle" transform="rotate(-90 14 ${height / 2})">Value vs. position →</text>
         ${dots}
       </svg>
       <div class="quad-tooltip" id="quadTooltip"></div>
@@ -404,85 +413,16 @@
       .join("");
   }
 
-  /* ---------------- Advanced: bullet chart (budget used per team) ---------------- */
-  function renderBullet() {
-    const el = document.getElementById("chartBullet");
-    if (teamStats.every((t) => t.picks.length === 0)) {
-      el.innerHTML = `<div class="chart-empty">No picks yet.</div>`;
-      return;
-    }
-    const sorted = teamStats.slice().sort((a, b) => b.spend - a.spend);
-    el.innerHTML = `<div class="bullet-list">${sorted
-      .map((t) => {
-        const pct = Math.min(100, (t.spend / BUDGET) * 100);
-        return `<div class="bullet-row-wrap">
-          <span class="bullet-label">${escapeHtml(t.name)}</span>
-          <div class="bullet-track">
-            <div class="bullet-fill" style="width:${pct.toFixed(1)}%; background:${t.color}"></div>
-            <div class="bullet-target" style="left:100%"></div>
-          </div>
-          <span class="bullet-value">$${t.spend} / $${BUDGET}</span>
-        </div>`;
-      })
-      .join("")}</div>`;
-  }
-
-  /* ---------------- Advanced: draft pace / pick timing (bubble + break strip) ---------------- */
-  function renderBubble() {
-    const el = document.getElementById("chartBubble");
-    if (picks.length === 0) {
-      el.innerHTML = `<div class="chart-empty">No picks yet.</div>`;
-      document.getElementById("paceStrip").innerHTML = "";
-      document.getElementById("longestBreaks").innerHTML = "";
-      return;
-    }
-    const scored = picks.map((p, i) => ({ ...p, seq: i, quality: qualityScore(p.name) }));
-    const height = 260;
-    const width = Math.max(320, el.clientWidth || 600);
-    const padL = 42;
-    const padR = 20;
-    const padT = 16;
-    const padB = 26;
-    const innerW = width - padL - padR;
-    const innerH = height - padT - padB;
-    const n = scored.length;
-    const maxPrice = Math.max(...scored.map((p) => p.price), 10);
-    const xFor = (i) => padL + (n <= 1 ? innerW / 2 : (i / (n - 1)) * innerW);
-    const yFor = (price) => padT + innerH - (price / maxPrice) * innerH;
-
-    const gridCount = 4;
-    let gridlines = "";
-    let yLabels = "";
-    for (let g = 0; g <= gridCount; g++) {
-      const val = Math.round((maxPrice * g) / gridCount);
-      const y = yFor(val);
-      gridlines += `<line class="bubble-gridline" x1="${padL}" y1="${y.toFixed(1)}" x2="${width - padR}" y2="${y.toFixed(1)}"/>`;
-      yLabels += `<text class="bubble-axis-label" x="${padL - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end">$${val}</text>`;
-    }
-
-    const dots = scored
-      .map((p) => {
-        const r = 4 + p.quality * 10;
-        return `<circle class="bubble-dot" cx="${xFor(p.seq).toFixed(1)}" cy="${yFor(p.price).toFixed(1)}" r="${r.toFixed(1)}" fill="var(${POSITION_COLOR_VAR[p.position]})" data-idx="${p.seq}"></circle>`;
-      })
-      .join("");
-
-    el.innerHTML = `<svg class="bubble-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-      ${gridlines}${yLabels}
-      <text class="bubble-axis-label" x="${width / 2}" y="${height - 6}" text-anchor="middle">Pick order → (bubble size = value ranking)</text>
-      ${dots}
-    </svg>`;
-
-    document.getElementById("bubbleLegend").innerHTML = POS_KEYS.filter((pos) => picks.some((p) => p.position === pos))
-      .map((pos) => `<span class="legend-item"><span class="legend-dot" style="background:var(${POSITION_COLOR_VAR[pos]})"></span>${pos}</span>`)
-      .join("");
-
-    /* ---- pace strip + longest breaks, from loggedAt gaps ---- */
-    const timed = scored.filter((p) => typeof p.loggedAt === "number").sort((a, b) => a.loggedAt - b.loggedAt);
-    const paceStrip = document.getElementById("paceStrip");
+  /* ---------------- Draft Pace ----------------
+     A bar per gap between consecutive picks (by timestamp), height = how
+     long that gap was. Long breaks (2.5min+) are called out in red and
+     listed below by name, so it's obvious who made everyone wait. */
+  function renderPace() {
+    const el = document.getElementById("chartPace");
     const longestBreaksEl = document.getElementById("longestBreaks");
+    const timed = picks.filter((p) => typeof p.loggedAt === "number").slice().sort((a, b) => a.loggedAt - b.loggedAt);
     if (timed.length < 2) {
-      paceStrip.innerHTML = "";
+      el.innerHTML = `<div class="chart-empty">Not enough timing data yet.</div>`;
       longestBreaksEl.innerHTML = "";
       return;
     }
@@ -490,15 +430,46 @@
     for (let i = 1; i < timed.length; i++) {
       gaps.push({ before: timed[i - 1], after: timed[i], seconds: (timed[i].loggedAt - timed[i - 1].loggedAt) / 1000 });
     }
-    const totalSpan = timed[timed.length - 1].loggedAt - timed[0].loggedAt || 1;
     const longBreakThreshold = 150; // 2.5 min+ counts as a "long break"
-    paceStrip.innerHTML = gaps
-      .map((g) => {
-        const left = ((g.before.loggedAt - timed[0].loggedAt) / totalSpan) * 100;
-        const w = Math.max(0.3, (g.seconds * 1000 / totalSpan) * 100);
-        return `<div class="pace-seg${g.seconds >= longBreakThreshold ? " long-break" : ""}" style="left:${left.toFixed(2)}%; width:${w.toFixed(2)}%" title="${g.seconds >= 60 ? `${(g.seconds / 60).toFixed(1)}m` : `${g.seconds.toFixed(0)}s`} between picks"></div>`;
+
+    const height = 200;
+    const width = Math.max(320, el.clientWidth || 600);
+    const padL = 40;
+    const padR = 16;
+    const padT = 14;
+    const padB = 22;
+    const innerW = width - padL - padR;
+    const innerH = height - padT - padB;
+    const maxSeconds = Math.max(...gaps.map((g) => g.seconds), 30);
+    const barGap = 2;
+    const barWidth = Math.max(1, innerW / gaps.length - barGap);
+    const yFor = (seconds) => (seconds / maxSeconds) * innerH;
+
+    const gridCount = 3;
+    let gridlines = "";
+    let yLabels = "";
+    for (let g = 0; g <= gridCount; g++) {
+      const val = (maxSeconds * g) / gridCount;
+      const y = padT + innerH - yFor(val);
+      gridlines += `<line class="pace-gridline" x1="${padL}" y1="${y.toFixed(1)}" x2="${width - padR}" y2="${y.toFixed(1)}"/>`;
+      yLabels += `<text class="pace-axis-label" x="${padL - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end">${val >= 60 ? `${(val / 60).toFixed(0)}m` : `${val.toFixed(0)}s`}</text>`;
+    }
+
+    const bars = gaps
+      .map((g, i) => {
+        const x = padL + i * (barWidth + barGap);
+        const h = Math.max(1, yFor(g.seconds));
+        const y = padT + innerH - h;
+        const label = g.seconds >= 60 ? `${(g.seconds / 60).toFixed(1)}m` : `${g.seconds.toFixed(0)}s`;
+        return `<rect class="pace-bar${g.seconds >= longBreakThreshold ? " long-break" : ""}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${h.toFixed(1)}"><title>${escapeHtml(g.before.name)} → ${escapeHtml(g.after.name)}: ${label}</title></rect>`;
       })
       .join("");
+
+    el.innerHTML = `<svg class="pace-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+      ${gridlines}${yLabels}
+      <text class="pace-axis-label" x="${width / 2}" y="${height - 4}" text-anchor="middle">Time between each pick, in draft order →</text>
+      ${bars}
+    </svg>`;
 
     const topBreaks = gaps.slice().sort((a, b) => b.seconds - a.seconds).slice(0, 5).filter((g) => g.seconds >= 60);
     if (topBreaks.length === 0) {
@@ -511,73 +482,6 @@
           return `<div class="lb-row"><span>${escapeHtml(g.before.name)} → ${escapeHtml(g.after.name)}</span><span class="lb-gap">${label}</span></div>`;
         })
         .join("")}`;
-    }
-  }
-
-  /* ---------------- Advanced: team draft profile (radar) ---------------- */
-  function renderRadar(selectedTeamId) {
-    const el = document.getElementById("chartRadar");
-    const present = POS_KEYS.filter((pos) => picks.some((p) => p.position === pos));
-    if (picks.length === 0 || present.length < 3) {
-      el.innerHTML = `<div class="chart-empty">Need at least 3 positions drafted to compare.</div>`;
-      return;
-    }
-    const totalSpend = picks.reduce((s, p) => s + p.price, 0);
-    const leagueAvgShare = {};
-    present.forEach((pos) => {
-      leagueAvgShare[pos] = picks.filter((p) => p.position === pos).reduce((s, p) => s + p.price, 0) / totalSpend;
-    });
-    const team = teamStatById.get(selectedTeamId) || teamStats[0];
-    const teamTotal = Object.values(team.positionSpend).reduce((s, v) => s + v, 0);
-    const teamShare = {};
-    present.forEach((pos) => { teamShare[pos] = teamTotal > 0 ? (team.positionSpend[pos] || 0) / teamTotal : 0; });
-
-    const size = 280;
-    const cx = size / 2;
-    const cy = size / 2 - 6;
-    const radius = size / 2 - 46;
-    const n = present.length;
-    const angleFor = (i) => -Math.PI / 2 + (i / n) * Math.PI * 2;
-    const maxShare = Math.max(0.01, ...present.map((pos) => Math.max(leagueAvgShare[pos], teamShare[pos])), 0.5);
-    const pointFor = (i, value) => {
-      const angle = angleFor(i);
-      const r = (value / maxShare) * radius;
-      return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
-    };
-
-    const rings = [0.25, 0.5, 0.75, 1].map((f) => {
-      const pts = present.map((_, i) => pointFor(i, maxShare * f).join(",")).join(" ");
-      return `<polygon class="radar-grid-ring" points="${pts}"/>`;
-    }).join("");
-    const axes = present.map((pos, i) => {
-      const [x, y] = pointFor(i, maxShare);
-      const [lx, ly] = pointFor(i, maxShare * 1.16);
-      return `<line class="radar-axis-line" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/><text class="radar-axis-label" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}">${pos}</text>`;
-    }).join("");
-    const avgPoly = present.map((pos, i) => pointFor(i, leagueAvgShare[pos]).join(",")).join(" ");
-    const teamPts = present.map((pos, i) => pointFor(i, teamShare[pos]));
-    const teamPoly = teamPts.map((p) => p.join(",")).join(" ");
-    const teamDots = teamPts.map(([x, y]) => `<circle class="radar-team-dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${team.color}"></circle>`).join("");
-
-    el.innerHTML = `<svg class="radar-svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-      ${rings}${axes}
-      <polygon class="radar-avg-poly" points="${avgPoly}"/>
-      <polygon class="radar-team-poly" points="${teamPoly}" fill="${team.color}" stroke="${team.color}"/>
-      ${teamDots}
-    </svg>
-    <div class="chart-legend">
-      <span class="legend-item"><span class="legend-dot" style="background:${team.color}"></span>${escapeHtml(team.name)}</span>
-      <span class="legend-item"><span class="legend-dot" style="background:var(--text-faint)"></span>League Average</span>
-    </div>`;
-  }
-
-  function initRadarSelector() {
-    const select = document.getElementById("radarTeamSelect");
-    select.innerHTML = teamStats.map((t) => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join("");
-    select.addEventListener("change", () => renderRadar(select.value));
-    if (teamStats.length > 0) {
-      select.value = teamStats[0].id;
-      renderRadar(teamStats[0].id);
     }
   }
 
@@ -619,15 +523,16 @@
   }
 
   /* ---------------- Roast ----------------
-     Deliberately savage/"R rated" tone per request, but with a hard line:
-     no slurs, no racial/ethnic references, nothing about anyone's
-     identity -- the harshness is aimed entirely at the draft decisions
-     themselves (overpays, hoarding, cowardice, general incompetence).
-     Commissioner can turn this whole section off in league settings
-     (ROAST_ENABLED, see setup.html). */
+     Explicitly "R rated" / vulgar per request -- real profanity is in
+     play here on purpose. The one hard line that doesn't move: no slurs,
+     no racial/ethnic/identity references of any kind. Every line is
+     aimed strictly at the draft decisions (overpays, hoarding, cowardice,
+     general incompetence), never at who someone is. Commissioner can turn
+     this whole section off in league settings (ROAST_ENABLED, see
+     setup.html) if the group doesn't want it. */
   function generateRoastLines(t) {
     if (t.picks.length === 0) {
-      return ["Drafted absolutely nothing. Sat in the room, breathed the air, contributed less than the mute guy who joined the Zoom by accident."];
+      return ["Drafted jack shit. Sat in the room, took up a chair, contributed absolutely nothing — a bye week with a pulse."];
     }
     const maxPick = t.picks.reduce((max, p) => (p.price > max.price ? p : max), t.picks[0]);
     const maxShare = maxPick.price / BUDGET;
@@ -638,30 +543,30 @@
 
     const candidates = [];
     if (maxShare >= 0.3) {
-      candidates.push({ severity: maxShare, text: `Torched ${Math.round(maxShare * 100)}% of the entire budget on ${maxPick.name} in one swing, like a gambler who thinks the machine is "due." Everyone else got table scraps so this one bet could feel important.` });
+      candidates.push({ severity: maxShare, text: `Blew ${Math.round(maxShare * 100)}% of the whole goddamn budget on ${maxPick.name} in one shot, like a degenerate who thinks the slot machine is "due." Everyone else on this roster is getting fed scraps so that one bet could feel like a big dick move.` });
     }
     if (topPosEntry && topPosShare >= 0.45) {
-      candidates.push({ severity: topPosShare, text: `${Math.round(topPosShare * 100)}% of the budget dumped into ${topPosEntry[0]}s alone. Not a strategy, a hostage situation — this roster held every other position at gunpoint and still lost.` });
+      candidates.push({ severity: topPosShare, text: `${Math.round(topPosShare * 100)}% of the budget torched on ${topPosEntry[0]}s alone. That's not a strategy, that's a hostage situation — every other position got held at gunpoint and this dipshit still lost the ransom money.` });
     }
     if (t.rookieCount >= 3) {
-      candidates.push({ severity: 0.5 + t.rookieCount * 0.05, text: `${t.rookieCount} rookies drafted on nothing but vibes and a highlight reel. This isn't a roster, it's a science fair project that's due in September.` });
+      candidates.push({ severity: 0.5 + t.rookieCount * 0.05, text: `${t.rookieCount} rookies drafted on nothing but vibes and a hype-reel boner. This isn't a roster, it's a fucking science project that's due in September and everyone already knows it's getting an F.` });
     }
     if (t.rookieCount === 0 && t.picks.length >= 5) {
-      candidates.push({ severity: 0.4, text: `Zero rookies, zero spine. Wouldn't draft a player unless a stranger on TV already vouched for him first — pure follow-the-crowd cowardice dressed up as "discipline."` });
+      candidates.push({ severity: 0.4, text: `Zero rookies, zero balls. Wouldn't touch a player unless some talking head on TV already sucked him off first — pure gutless, follow-the-herd bullshit dressed up as "discipline."` });
     }
     if (dollarPicks >= Math.ceil(t.picks.length / 2)) {
-      candidates.push({ severity: 0.4 + dollarPicks * 0.02, text: `${dollarPicks} picks bought for a single dollar apiece. Half this roster was assembled with the enthusiasm of someone finishing a grocery list they didn't want to write.` });
+      candidates.push({ severity: 0.4 + dollarPicks * 0.02, text: `${dollarPicks} picks bought for a single dollar apiece. Half this roster got drafted with the same energy as taking a shit — quick, joyless, and everyone in the room wishing it'd hurry up.` });
     }
     if (avgPrice >= BUDGET * 0.12) {
-      candidates.push({ severity: avgPrice / BUDGET, text: `Average pick price of $${avgPrice.toFixed(0)} — paid full retail on every single player, all night, like the concept of a bargain personally offended you.` });
+      candidates.push({ severity: avgPrice / BUDGET, text: `Average pick price of $${avgPrice.toFixed(0)} — paid full goddamn retail on every single player all night, like the idea of a discount personally pissed in this idiot's cereal.` });
     } else if (avgPrice <= BUDGET * 0.04) {
-      candidates.push({ severity: 0.3, text: `Average pick price of just $${avgPrice.toFixed(0)}. Built an entire roster out of clearance-rack leftovers and is somehow still proud of it.` });
+      candidates.push({ severity: 0.3, text: `Average pick price of just $${avgPrice.toFixed(0)}. Built this whole sorry-ass roster out of the clearance bin and is somehow strutting around proud of it.` });
     }
 
     candidates.sort((a, b) => b.severity - a.severity);
     const picked = candidates.slice(0, 2).map((c) => c.text);
     if (picked.length === 0) {
-      picked.push("Suspiciously balanced, aggressively forgettable — the human embodiment of a Tuesday. Nobody will remember this roster existed, least of all the person who drafted it.");
+      picked.push("Suspiciously balanced, aggressively boring as hell — this roster has the personality of wet cardboard. Nobody's going to remember a single pick, including the dumbass who made them.");
     }
     return picked;
   }
@@ -692,9 +597,7 @@
   renderBoxWhisker();
   renderQuadrant();
   renderWaffle();
-  renderBullet();
-  renderBubble();
-  initRadarSelector();
+  renderPace();
   renderStealsReaches();
   renderRoasts();
 
@@ -702,6 +605,6 @@
     renderTrend();
     renderBoxWhisker();
     renderQuadrant();
-    renderBubble();
+    renderPace();
   });
 })();
