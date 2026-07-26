@@ -36,9 +36,9 @@
   document.getElementById("titleFootballIcon").innerHTML = Icons.football(22, "var(--qb)");
   document.getElementById("goalPostLeft").innerHTML = Icons.goalPost(13, "#f2c14e");
   document.getElementById("goalPostRight").innerHTML = Icons.goalPost(13, "#f2c14e");
-  document.getElementById("exportIcon").innerHTML = Icons.download(16, "#59c2f0");
-  document.getElementById("snapshotIcon").innerHTML = Icons.camera(16, "#59c2f0");
-  document.getElementById("recapIcon").innerHTML = Icons.barChart(16, "#59c2f0");
+  document.getElementById("exportIcon").innerHTML = Icons.download(16, "#fff");
+  document.getElementById("snapshotIcon").innerHTML = Icons.camera(16, "#fff");
+  document.getElementById("recapIcon").innerHTML = Icons.barChart(16, "#fff");
 
   // Real scannable QR (not the earlier decorative placeholder) now that the
   // app has a stable hosted URL — points at Team Picks, with the current
@@ -173,7 +173,7 @@
         (p) => `<div class="recent-chip">
           <span class="rc-pos-dot" style="background: var(${POSITION_COLOR_VAR[p.position]})"></span>
           <span class="rc-name">${escapeHtml(shortPlayerName(p.name))}</span>
-          <span class="rc-price">$${p.price}</span>
+          <span class="rc-price" style="color: var(${POSITION_COLOR_VAR[p.position]})">$${p.price}</span>
         </div>`
       )
       .join("");
