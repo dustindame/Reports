@@ -27,7 +27,6 @@
   const recapLink = document.getElementById("recapLink");
   const breakScreen = document.getElementById("breakScreen");
   const breakTimer = document.getElementById("breakTimer");
-  const breakCondensedGrid = document.getElementById("breakCondensedGrid");
   const breakPollCard = document.getElementById("breakPollCard");
   const breakPollQuestion = document.getElementById("breakPollQuestion");
   const breakPollResults = document.getElementById("breakPollResults");
@@ -37,9 +36,9 @@
   document.getElementById("titleFootballIcon").innerHTML = Icons.football(22, "var(--qb)");
   document.getElementById("goalPostLeft").innerHTML = Icons.goalPost(13, "#f2c14e");
   document.getElementById("goalPostRight").innerHTML = Icons.goalPost(13, "#f2c14e");
-  document.getElementById("exportIcon").innerHTML = Icons.download(16);
-  document.getElementById("snapshotIcon").innerHTML = Icons.camera(16);
-  document.getElementById("recapIcon").innerHTML = Icons.barChart(16);
+  document.getElementById("exportIcon").innerHTML = Icons.download(16, "#59c2f0");
+  document.getElementById("snapshotIcon").innerHTML = Icons.camera(16, "#59c2f0");
+  document.getElementById("recapIcon").innerHTML = Icons.barChart(16, "#59c2f0");
 
   // Real scannable QR (not the earlier decorative placeholder) now that the
   // app has a stable hosted URL — points at Team Picks, with the current
@@ -391,19 +390,10 @@
   }
 
   /* ---------------- Break screen ----------------
-     Swaps the full roster grid for a condensed team list (just names --
-     no per-team spend/remaining, this screen is about the break, not
-     roster bookkeeping) + a live poll (if anyone's started one from
-     Team Picks) + a rotating set of NFL trivia, whenever the league is
-     on_break. */
-  function renderBreakCondensed() {
-    breakCondensedGrid.innerHTML = TEAMS.map(
-      (team) => `<div class="break-team-card">
-        <span class="btc-dot" style="background:${team.color}"></span>
-        <span class="btc-name">${escapeHtml(team.name)}</span>
-      </div>`
-    ).join("");
-  }
+     Swaps the full roster grid for a live poll (if anyone's started one
+     from Team Picks) + a rotating set of NFL trivia, whenever the league
+     is on_break. (An earlier version also showed a plain team-name
+     list, but it wasn't serving any purpose -- removed.) */
 
   let currentPoll = null;
   async function refreshBreakPoll() {
@@ -458,7 +448,6 @@
     grid.hidden = true;
     breakScreen.hidden = false;
     boardContent.style.width = ""; // let the break screen's own fixed width drive natural sizing
-    renderBreakCondensed();
     refreshBreakPoll();
     factPool = [];
     rotateBreakFacts();
@@ -594,9 +583,7 @@
     renderPositionTotals();
     renderRecent();
     renderGrid();
-    if (ON_BREAK) {
-      renderBreakCondensed();
-    } else {
+    if (!ON_BREAK) {
       layoutGrid(); // re-measure in case header content width changed (defense in depth)
       fitBoardToScreen();
     }
