@@ -186,7 +186,7 @@
       .map((opt, i) => {
         const mine = myVote && myVote.optionIndex === i;
         return `<div class="poll-vote-result-row${mine ? " mine" : ""}">
-          <span class="pvr-label">${escapeHtml(opt)}${mine ? " (you)" : ""}</span>
+          <span class="pvr-label">${mine ? "✓ " : ""}${escapeHtml(opt)}${mine ? " (you)" : ""}</span>
           <span class="pvr-track"><span class="pvr-fill" style="width:${((counts[i] / maxCount) * 100).toFixed(1)}%"></span></span>
           <span class="pvr-count">${counts[i]}${total ? ` · ${Math.round((counts[i] / total) * 100)}%` : ""}</span>
         </div>`;

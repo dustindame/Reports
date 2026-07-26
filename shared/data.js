@@ -46,6 +46,11 @@ let SHOTS_COUNT = 0;
 let SHOT_PICK_NUMBERS = [];
 let ROAST_ENABLED = true;
 let ON_BREAK = false;
+// Approximate break start time (ms epoch), for the Draft Board's break
+// timer -- taken from draft_config.updated_at at the moment on_break
+// flips true. Approximate because any other config write would also
+// bump updated_at, but nothing else writes to draft_config mid-break.
+let BREAK_STARTED_AT = null;
 
 const FLEX_ELIGIBLE = ["RB", "WR", "TE"];
 const POSITION_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te", DEF: "--def" };
@@ -338,6 +343,7 @@ function applyRealConfig(config, leagueCode) {
   SHOT_PICK_NUMBERS = Array.isArray(config.shot_pick_numbers) ? config.shot_pick_numbers : [];
   ROAST_ENABLED = config.roast_enabled !== false;
   ON_BREAK = Boolean(config.on_break);
+  BREAK_STARTED_AT = ON_BREAK && config.updated_at ? new Date(config.updated_at).getTime() : null;
 }
 
 function applyDemoConfig() {
@@ -360,6 +366,7 @@ function applyDemoConfig() {
   SHOT_PICK_NUMBERS = [];
   ROAST_ENABLED = true;
   ON_BREAK = false; // demo mode has no backend to toggle a break against
+  BREAK_STARTED_AT = null;
 }
 
 function getTeamRoster(teamId) {
@@ -739,6 +746,17 @@ const NFL_FUN_FACTS = [
   "NFL referees run an average of about 4 miles during a single game.",
   "The Cleveland Browns are named after their first head coach, Paul Brown, not a color scheme.",
   "Deion Sanders is the only athlete to play in both a Super Bowl and a World Series.",
+  "An NFL lineman's helmet-to-helmet collision can generate over 100 g-forces -- roughly what a fighter pilot experiences in a hard turn.",
+  "The average NFL game has only about 11 minutes of actual live-ball action out of a 3-hour broadcast.",
+  "An NFL kicker's foot can hit the ball at over 60 mph on a kickoff.",
+  "The Gatorade dunk on a winning coach started with the 1984 New York Giants, aimed (accidentally) at head coach Bill Parcells.",
+  "NFL players lose an average of 8-10 pounds of water weight during a single game from sweating.",
+  "A single NFL football game ball can travel through the hands of over a dozen different players before it's swapped out.",
+  "The fastest recorded ball-carrier speed in the NFL is over 22 mph, tracked via Next Gen Stats chips in shoulder pads.",
+  "An NFL offensive lineman can move backward faster than most people can run forward -- pass-set speed is measured in fractions of a second per yard.",
+  "The Super Bowl halftime show budget is effectively $0 in performer fees -- artists play for exposure, not a paycheck.",
+  "NFL teams can lose over 1,000 combined pounds of body weight (players' sweat) from both sidelines during a hot outdoor game.",
+  "A single NFL stadium's grass field can require over 500,000 gallons of water a week to maintain during the season.",
 ];
 
 /* Folds any picks logged on Player Entry (via DraftStore) into MOCK_DRAFT
