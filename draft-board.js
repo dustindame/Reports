@@ -26,11 +26,12 @@
   const snapshotBtn = document.getElementById("snapshotBtn");
   const recapLink = document.getElementById("recapLink");
   const breakScreen = document.getElementById("breakScreen");
+  const breakTimer = document.getElementById("breakTimer");
   const breakCondensedGrid = document.getElementById("breakCondensedGrid");
   const breakPollCard = document.getElementById("breakPollCard");
   const breakPollQuestion = document.getElementById("breakPollQuestion");
   const breakPollResults = document.getElementById("breakPollResults");
-  const breakFactText = document.getElementById("breakFactText");
+  const breakFactList = document.getElementById("breakFactList");
 
   document.getElementById("fieldIcon").innerHTML = Icons.field(22, "var(--wr)");
   document.getElementById("titleFootballIcon").innerHTML = Icons.football(22, "var(--qb)");
@@ -390,20 +391,18 @@
   }
 
   /* ---------------- Break screen ----------------
-     Swaps the full roster grid for a condensed team summary + a live
-     poll (if the commissioner started one from Player Entry) + a
-     rotating NFL fact, whenever the league is on_break. */
+     Swaps the full roster grid for a condensed team list (just names --
+     no per-team spend/remaining, this screen is about the break, not
+     roster bookkeeping) + a live poll (if anyone's started one from
+     Team Picks) + a rotating set of NFL trivia, whenever the league is
+     on_break. */
   function renderBreakCondensed() {
-    breakCondensedGrid.innerHTML = TEAMS.map((team) => {
-      const budget = computeTeamBudget(team.id);
-      return `<div class="break-team-card">
+    breakCondensedGrid.innerHTML = TEAMS.map(
+      (team) => `<div class="break-team-card">
         <span class="btc-dot" style="background:${team.color}"></span>
-        <div>
-          <div class="btc-name">${escapeHtml(team.name)}</div>
-          <div class="btc-sub">${budget.filled}/${ROSTER_SLOTS.length} drafted · $${budget.spent} spent</div>
-        </div>
-      </div>`;
-    }).join("");
+        <span class="btc-name">${escapeHtml(team.name)}</span>
+      </div>`
+    ).join("");
   }
 
   let currentPoll = null;
@@ -432,9 +431,27 @@
       .join("");
   }
 
+  // Shows 2-3 facts at once (not one at a time) and swaps to a fresh,
+  // non-repeating batch on each rotation -- once the pool runs low it
+  // reshuffles from the top.
+  let factPool = [];
+  function nextFactBatch(count) {
+    if (factPool.length < count) factPool = shuffle(NFL_FUN_FACTS, Math.random);
+    return factPool.splice(0, count);
+  }
   let factRotateTimer = null;
-  function rotateBreakFact() {
-    breakFactText.textContent = NFL_FUN_FACTS[Math.floor(Math.random() * NFL_FUN_FACTS.length)];
+  function rotateBreakFacts() {
+    const batch = nextFactBatch(3);
+    breakFactList.innerHTML = batch.map((fact) => `<div class="break-fact-item">${escapeHtml(fact)}</div>`).join("");
+  }
+
+  let breakTimerInterval = null;
+  function updateBreakTimer() {
+    const startedAt = BREAK_STARTED_AT || Date.now();
+    const elapsedSec = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+    const mins = Math.floor(elapsedSec / 60);
+    const secs = elapsedSec % 60;
+    breakTimer.textContent = `${mins}:${String(secs).padStart(2, "0")}`;
   }
 
   function enterBreakMode() {
@@ -443,9 +460,13 @@
     boardContent.style.width = ""; // let the break screen's own fixed width drive natural sizing
     renderBreakCondensed();
     refreshBreakPoll();
-    rotateBreakFact();
+    factPool = [];
+    rotateBreakFacts();
     clearInterval(factRotateTimer);
-    factRotateTimer = setInterval(rotateBreakFact, 12000);
+    factRotateTimer = setInterval(rotateBreakFacts, 15000);
+    updateBreakTimer();
+    clearInterval(breakTimerInterval);
+    breakTimerInterval = setInterval(updateBreakTimer, 1000);
     fitBoardToScreen();
   }
 
@@ -453,6 +474,7 @@
     breakScreen.hidden = true;
     grid.hidden = false;
     clearInterval(factRotateTimer);
+    clearInterval(breakTimerInterval);
     layoutGrid();
     fitBoardToScreen();
   }
@@ -590,6 +612,7 @@
     const nowOnBreak = Boolean(newConfig.on_break);
     if (nowOnBreak === ON_BREAK) return;
     ON_BREAK = nowOnBreak;
+    BREAK_STARTED_AT = ON_BREAK && newConfig.updated_at ? new Date(newConfig.updated_at).getTime() : null;
     if (ON_BREAK) {
       enterBreakMode();
     } else {

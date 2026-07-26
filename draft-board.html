@@ -68,19 +68,25 @@
       <main class="board-grid" id="boardGrid"></main>
 
       <main class="break-screen" id="breakScreen" hidden>
-        <div class="break-screen-left">
-          <div class="break-section-heading">🏈 On Break</div>
-          <div class="break-condensed-grid" id="breakCondensedGrid"></div>
+        <div class="break-banner">
+          <span class="break-banner-text">🏈 ON BREAK</span>
+          <span class="break-timer" id="breakTimer">0:00</span>
         </div>
-        <div class="break-screen-right">
-          <div class="break-poll-card" id="breakPollCard" hidden>
-            <div class="break-section-heading">🗳️ Live Poll</div>
-            <div class="break-poll-question" id="breakPollQuestion"></div>
-            <div class="break-poll-results" id="breakPollResults"></div>
+        <div class="break-screen-body">
+          <div class="break-screen-left">
+            <div class="break-section-heading">Teams</div>
+            <div class="break-condensed-grid" id="breakCondensedGrid"></div>
           </div>
-          <div class="break-fact-card">
-            <div class="break-section-heading">🏆 Did You Know?</div>
-            <div class="break-fact-text" id="breakFactText"></div>
+          <div class="break-screen-right">
+            <div class="break-poll-card" id="breakPollCard" hidden>
+              <div class="break-section-heading">🗳️ Live Poll</div>
+              <div class="break-poll-question" id="breakPollQuestion"></div>
+              <div class="break-poll-results" id="breakPollResults"></div>
+            </div>
+            <div class="break-fact-card">
+              <div class="break-section-heading">🏆 Did You Know?</div>
+              <div class="break-fact-list" id="breakFactList"></div>
+            </div>
           </div>
         </div>
       </main>
