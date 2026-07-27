@@ -125,12 +125,6 @@ body { overflow: hidden; height: 100vh; }
   letter-spacing: 0.5px;
   color: #fff;
   -webkit-text-stroke: 1px #0a2540;
-  /* Thin blue outline (the stroke above) plus a soft atmospheric blur --
-     a near-white micro lift right at the letters and a large soft grey
-     halo further out -- per the exact values requested. */
-  text-shadow:
-    0 2px 5px rgba(255, 255, 255, 0.05),
-    0 10px 30px rgba(60, 60, 60, 0.5);
 }
 
 /* Condensed, moved under the clock (in the clock-block column) instead
@@ -332,7 +326,7 @@ body { overflow: hidden; height: 100vh; }
   background: var(--panel);
 }
 .budget-cell .bc-value { font-size: 32px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
-.budget-cell.max-bid .bc-value { color: #59c2f0; text-shadow: 0 0 14px rgba(89, 194, 240, 0.35); }
+.budget-cell.max-bid .bc-value { color: #59c2f0; }
 .budget-cell.remaining .bc-value { color: var(--text); }
 .budget-cell.remaining.tight .bc-value { color: var(--qb-glow); }
 
