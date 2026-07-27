@@ -98,12 +98,12 @@ body { overflow: hidden; height: 100vh; }
 .board-header {
   display: flex;
   align-items: center;
-  gap: 28px;
-  padding: 8px 24px;
+  gap: 24px;
+  padding: 6px 24px;
   background: linear-gradient(180deg, rgba(6, 8, 12, 0.6) 0%, rgba(6, 8, 12, 0.8) 100%), url("shared/images/field-bg.jpg");
   background-size: cover;
   background-position: center 65%;
-  border-bottom: 2px solid #59c2f0;
+  border-bottom: 2px solid #fff;
   white-space: nowrap;
   flex: none;
 }
@@ -120,16 +120,17 @@ body { overflow: hidden; height: 100vh; }
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 28px;
+  font-size: 38px;
   font-weight: 900;
   letter-spacing: 0.5px;
   color: #fff;
   -webkit-text-stroke: 1px #0a2540;
+  /* Thin blue outline (the stroke above) plus a soft atmospheric blur --
+     a near-white micro lift right at the letters and a large soft grey
+     halo further out -- per the exact values requested. */
   text-shadow:
-    -1px -1px 0 #0a2540,
-    1px -1px 0 #0a2540,
-    -1px 1px 0 #0a2540,
-    1px 1px 0 #0a2540;
+    0 2px 5px rgba(255, 255, 255, 0.05),
+    0 10px 30px rgba(60, 60, 60, 0.5);
 }
 
 /* Condensed, moved under the clock (in the clock-block column) instead
@@ -275,13 +276,12 @@ body { overflow: hidden; height: 100vh; }
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.5px;
   color: #59c2f0;
-  text-shadow: 0 0 8px rgba(89, 194, 240, 0.75), 0 0 18px rgba(89, 194, 240, 0.4);
 }
 
 .qr-block { display: flex; flex-direction: column; align-items: center; margin-left: 14px; }
 .qr-code { line-height: 0; border-radius: 5px; overflow: hidden; box-shadow: 0 0 0 2px #0076b6; }
-.qr-code svg { display: block; width: 85px; height: 85px; }
-.qr-caption { margin-top: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: #59c2f0; }
+.qr-code svg { display: block; width: 68px; height: 68px; }
+.qr-caption { margin-top: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: #59c2f0; }
 
 /* ---------------- Grid ---------------- */
 
