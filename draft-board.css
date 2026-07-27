@@ -113,25 +113,34 @@ body { overflow: hidden; height: 100vh; }
 
 .title-block { min-width: 300px; }
 
-/* Plain text (the nameplate graphic was tried and dropped), but with a
-   layered text-shadow "stack" -- several offset dark passes plus a
-   subtle light rim -- so it reads with real depth against the busy
-   stadium photo background instead of flattening into it. */
+/* Plain text (the nameplate graphic was tried and dropped), pushed to a
+   proper embossed/beveled metal look instead of a flat drop shadow:
+   - a thin light rim on the top edge (the "bevel highlight")
+   - a stack of solid 1px-stepped dark passes beneath it (the "extruded
+     side" of the letters, the classic emboss trick)
+   - a soft blurred shadow further out for ambient depth/separation
+   - a faint gold outer glow to tie it to the theme
+   plus a hairline dark stroke around the letters so they stay crisp
+   against the busy stadium photo at any spot behind them. */
 .board-title {
   margin: 0;
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 26px;
-  font-weight: 800;
+  font-size: 28px;
+  font-weight: 900;
   letter-spacing: 0.5px;
-  color: var(--text);
+  color: #f4f1e8;
+  -webkit-text-stroke: 0.6px rgba(0, 0, 0, 0.55);
   text-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.5),
-    0 2px 0 rgba(0, 0, 0, 0.45),
-    0 3px 4px rgba(0, 0, 0, 0.6),
-    0 6px 14px rgba(0, 0, 0, 0.5),
-    0 0 22px rgba(212, 175, 55, 0.25);
+    0 -1px 0 rgba(255, 255, 255, 0.45),
+    0 1px 0 rgba(0, 0, 0, 0.7),
+    0 2px 0 rgba(0, 0, 0, 0.6),
+    0 3px 0 rgba(0, 0, 0, 0.5),
+    0 4px 0 rgba(0, 0, 0, 0.4),
+    0 6px 8px rgba(0, 0, 0, 0.65),
+    0 10px 20px rgba(0, 0, 0, 0.55),
+    0 0 26px rgba(212, 175, 55, 0.4);
 }
 
 /* Condensed, moved under the clock (in the clock-block column) instead
@@ -180,7 +189,9 @@ body { overflow: hidden; height: 100vh; }
   align-items: center;
   padding: 3px 9px;
   border-radius: var(--radius-sm);
-  background: var(--panel-alt);
+  background: rgba(28, 30, 40, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   border: 1px solid var(--border);
 }
 .pt-chip .pt-pos { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; }
@@ -228,7 +239,9 @@ body { overflow: hidden; height: 100vh; }
   gap: 6px;
   padding: 3px 10px;
   border-radius: var(--radius-sm);
-  background: var(--panel-alt);
+  background: rgba(28, 30, 40, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   border: 1px solid var(--border);
   font-size: 10px;
   overflow: hidden;
@@ -485,7 +498,8 @@ body { overflow: hidden; height: 100vh; }
 /* A distinct tint (not just the same look as the news ticker below it)
    so a fan message reads as its own separate lane, not more news. */
 .message-row {
-  background: linear-gradient(180deg, rgba(0, 118, 182, 0.14) 0%, rgba(0, 118, 182, 0.05) 100%);
+  background: linear-gradient(180deg, #0d2a3d 0%, #0a1f2e 100%);
+  box-shadow: inset 0 2px 6px -2px rgba(0, 0, 0, 0.5);
 }
 /* Message row keeps its space reserved at all times (visibility, not
    display/hidden) so a message appearing or disappearing never changes
