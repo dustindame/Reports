@@ -113,8 +113,11 @@ body { overflow: hidden; height: 100vh; }
 
 .title-block { min-width: 300px; }
 
-/* Plain white text with a thin dark blue outline -- the embossed/
-   beveled look was tried and dropped in favor of this simpler treatment. */
+/* Plain white text, thin blue outline, nothing else -- no drop shadow,
+   no glow, no blur. -webkit-text-stroke was tried first but renders
+   with soft/blurred anti-aliasing at this font size+weight in Chrome,
+   which read as an unwanted shadow. A hard-edged (0 blur radius),
+   8-direction text-shadow "traces" the outline instead and stays crisp. */
 .board-title {
   margin: 0;
   display: flex;
@@ -124,7 +127,15 @@ body { overflow: hidden; height: 100vh; }
   font-weight: 900;
   letter-spacing: 0.5px;
   color: #fff;
-  -webkit-text-stroke: 1px #0a2540;
+  text-shadow:
+    -1px 0 0 #0a2540,
+    1px 0 0 #0a2540,
+    0 -1px 0 #0a2540,
+    0 1px 0 #0a2540,
+    -1px -1px 0 #0a2540,
+    1px -1px 0 #0a2540,
+    -1px 1px 0 #0a2540,
+    1px 1px 0 #0a2540;
 }
 
 /* Condensed, moved under the clock (in the clock-block column) instead
