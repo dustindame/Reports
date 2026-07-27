@@ -99,7 +99,7 @@ body { overflow: hidden; height: 100vh; }
   display: flex;
   align-items: center;
   gap: 28px;
-  padding: 14px 24px;
+  padding: 8px 24px;
   background: linear-gradient(180deg, rgba(6, 8, 12, 0.6) 0%, rgba(6, 8, 12, 0.8) 100%), url("shared/images/field-bg.jpg");
   background-size: cover;
   background-position: center 65%;
@@ -113,37 +113,25 @@ body { overflow: hidden; height: 100vh; }
 
 .title-block { min-width: 300px; }
 
-/* Nameplate art (a football resting on a silver-bordered badge) supplied
-   by the user -- sized to its exact aspect ratio (1024x472) so
-   background-size:100% 100% never distorts it, with padding tuned to
-   keep the title text inside the navy panel and clear of the football
-   on top and the red notch at the bottom. */
-.board-title-badge {
-  width: 340px;
-  height: 157px;
-  background-image: url("shared/images/team-logo-frame.jpg");
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 58px 28px;
-  box-sizing: border-box;
-}
+/* Plain text (the nameplate graphic was tried and dropped), but with a
+   layered text-shadow "stack" -- several offset dark passes plus a
+   subtle light rim -- so it reads with real depth against the busy
+   stadium photo background instead of flattening into it. */
 .board-title {
   margin: 0;
-  font-size: 14px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  text-align: center;
-  line-height: 1.2;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.5),
+    0 2px 0 rgba(0, 0, 0, 0.45),
+    0 3px 4px rgba(0, 0, 0, 0.6),
+    0 6px 14px rgba(0, 0, 0, 0.5),
+    0 0 22px rgba(212, 175, 55, 0.25);
 }
 
 /* Condensed, moved under the clock (in the clock-block column) instead
@@ -231,18 +219,18 @@ body { overflow: hidden; height: 100vh; }
 .recent-strip {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(3, 30px);
-  gap: 6px 10px;
+  grid-template-rows: repeat(3, 22px);
+  gap: 4px 10px;
 }
 .recent-chip {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
+  padding: 3px 10px;
   border-radius: var(--radius-sm);
   background: var(--panel-alt);
   border: 1px solid var(--border);
-  font-size: 14px;
+  font-size: 10px;
   overflow: hidden;
 }
 .recent-chip .rc-pos-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
@@ -290,7 +278,7 @@ body { overflow: hidden; height: 100vh; }
 
 .qr-block { display: flex; flex-direction: column; align-items: center; margin-left: 14px; }
 .qr-code { line-height: 0; border-radius: 5px; overflow: hidden; box-shadow: 0 0 0 2px #0076b6; }
-.qr-code svg { display: block; width: 100px; height: 100px; }
+.qr-code svg { display: block; width: 85px; height: 85px; }
 .qr-caption { margin-top: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: #59c2f0; }
 
 /* ---------------- Grid ---------------- */
@@ -494,6 +482,11 @@ body { overflow: hidden; height: 100vh; }
   overflow: hidden;
 }
 .ticker-row[hidden] { display: none; }
+/* A distinct tint (not just the same look as the news ticker below it)
+   so a fan message reads as its own separate lane, not more news. */
+.message-row {
+  background: linear-gradient(180deg, rgba(0, 118, 182, 0.14) 0%, rgba(0, 118, 182, 0.05) 100%);
+}
 /* Message row keeps its space reserved at all times (visibility, not
    display/hidden) so a message appearing or disappearing never changes
    the board's total height and re-triggers the zoom-to-fit, which felt
