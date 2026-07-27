@@ -32,10 +32,6 @@
   const breakPollResults = document.getElementById("breakPollResults");
   const breakFactList = document.getElementById("breakFactList");
 
-  document.getElementById("fieldIcon").innerHTML = Icons.field(22, "var(--wr)");
-  document.getElementById("titleFootballIcon").innerHTML = Icons.football(22, "var(--qb)");
-  document.getElementById("goalPostLeft").innerHTML = Icons.goalPost(13, "#f2c14e");
-  document.getElementById("goalPostRight").innerHTML = Icons.goalPost(13, "#f2c14e");
   document.getElementById("exportIcon").innerHTML = Icons.download(16, "#fff");
   document.getElementById("snapshotIcon").innerHTML = Icons.camera(16, "#fff");
   document.getElementById("recapIcon").innerHTML = Icons.barChart(16, "#fff");
