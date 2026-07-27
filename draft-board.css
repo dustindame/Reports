@@ -114,10 +114,12 @@ body { overflow: hidden; height: 100vh; }
 .title-block { min-width: 300px; }
 
 /* Plain white text, thin blue outline, nothing else -- no drop shadow,
-   no glow, no blur. -webkit-text-stroke was tried first but renders
-   with soft/blurred anti-aliasing at this font size+weight in Chrome,
-   which read as an unwanted shadow. A hard-edged (0 blur radius),
-   8-direction text-shadow "traces" the outline instead and stays crisp. */
+   no glow, no blur. Two things had to change from the first attempt:
+   the offset (1px) was too small to read as an outline at this font
+   size and just blended into the anti-aliasing, and the color (a very
+   dark navy) had too little contrast against the dark photo background
+   to actually show. Bigger offset (2px) + a brighter, more saturated
+   blue fixes both -- still a hard 0-blur edge, just actually visible. */
 .board-title {
   margin: 0;
   display: flex;
@@ -128,14 +130,14 @@ body { overflow: hidden; height: 100vh; }
   letter-spacing: 0.5px;
   color: #fff;
   text-shadow:
-    -1px 0 0 #0a2540,
-    1px 0 0 #0a2540,
-    0 -1px 0 #0a2540,
-    0 1px 0 #0a2540,
-    -1px -1px 0 #0a2540,
-    1px -1px 0 #0a2540,
-    -1px 1px 0 #0a2540,
-    1px 1px 0 #0a2540;
+    -2px 0 0 #2f6fed,
+    2px 0 0 #2f6fed,
+    0 -2px 0 #2f6fed,
+    0 2px 0 #2f6fed,
+    -2px -2px 0 #2f6fed,
+    2px -2px 0 #2f6fed,
+    -2px 2px 0 #2f6fed,
+    2px 2px 0 #2f6fed;
 }
 
 /* Condensed, moved under the clock (in the clock-block column) instead
@@ -197,7 +199,7 @@ body { overflow: hidden; height: 100vh; }
   padding-left: 18px;
   min-width: 90px;
 }
-.elapsed-value { font-size: 18px; font-weight: 700; color: var(--gold-bright); font-variant-numeric: tabular-nums; }
+.elapsed-value { font-size: 18px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
 
 .recent-block {
   display: flex;
@@ -308,7 +310,7 @@ body { overflow: hidden; height: 100vh; }
   text-align: center;
   color: var(--text-dim);
 }
-.grid-header-cell.corner { text-align: left; color: var(--gold); }
+.grid-header-cell.corner { text-align: left; color: #59c2f0; }
 .grid-header-cell.pos-QB { color: var(--qb-glow); }
 .grid-header-cell.pos-RB { color: var(--rb-glow); }
 .grid-header-cell.pos-WR { color: var(--wr-glow); }
