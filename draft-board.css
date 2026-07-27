@@ -113,15 +113,8 @@ body { overflow: hidden; height: 100vh; }
 
 .title-block { min-width: 300px; }
 
-/* Plain text (the nameplate graphic was tried and dropped), pushed to a
-   proper embossed/beveled metal look instead of a flat drop shadow:
-   - a thin light rim on the top edge (the "bevel highlight")
-   - a stack of solid 1px-stepped dark passes beneath it (the "extruded
-     side" of the letters, the classic emboss trick)
-   - a soft blurred shadow further out for ambient depth/separation
-   - a faint gold outer glow to tie it to the theme
-   plus a hairline dark stroke around the letters so they stay crisp
-   against the busy stadium photo at any spot behind them. */
+/* Plain white text with a thin dark blue outline -- the embossed/
+   beveled look was tried and dropped in favor of this simpler treatment. */
 .board-title {
   margin: 0;
   display: flex;
@@ -130,17 +123,13 @@ body { overflow: hidden; height: 100vh; }
   font-size: 28px;
   font-weight: 900;
   letter-spacing: 0.5px;
-  color: #f4f1e8;
-  -webkit-text-stroke: 0.6px rgba(0, 0, 0, 0.55);
+  color: #fff;
+  -webkit-text-stroke: 1px #0a2540;
   text-shadow:
-    0 -1px 0 rgba(255, 255, 255, 0.45),
-    0 1px 0 rgba(0, 0, 0, 0.7),
-    0 2px 0 rgba(0, 0, 0, 0.6),
-    0 3px 0 rgba(0, 0, 0, 0.5),
-    0 4px 0 rgba(0, 0, 0, 0.4),
-    0 6px 8px rgba(0, 0, 0, 0.65),
-    0 10px 20px rgba(0, 0, 0, 0.55),
-    0 0 26px rgba(212, 175, 55, 0.4);
+    -1px -1px 0 #0a2540,
+    1px -1px 0 #0a2540,
+    -1px 1px 0 #0a2540,
+    1px 1px 0 #0a2540;
 }
 
 /* Condensed, moved under the clock (in the clock-block column) instead
@@ -189,7 +178,7 @@ body { overflow: hidden; height: 100vh; }
   align-items: center;
   padding: 3px 9px;
   border-radius: var(--radius-sm);
-  background: rgba(28, 30, 40, 0.55);
+  background: rgba(28, 30, 40, 0.28);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   border: 1px solid var(--border);
@@ -239,7 +228,7 @@ body { overflow: hidden; height: 100vh; }
   gap: 6px;
   padding: 3px 10px;
   border-radius: var(--radius-sm);
-  background: rgba(28, 30, 40, 0.55);
+  background: rgba(28, 30, 40, 0.28);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   border: 1px solid var(--border);
@@ -484,7 +473,7 @@ body { overflow: hidden; height: 100vh; }
   display: flex;
   flex-direction: column;
   background: var(--panel);
-  border-top: 2px solid var(--gold-dim);
+  border-top: 2px solid #fff;
 }
 
 .ticker-row {
@@ -506,6 +495,11 @@ body { overflow: hidden; height: 100vh; }
    the board's total height and re-triggers the zoom-to-fit, which felt
    like the whole board shifting up/down every time a message came in. */
 .message-row.empty { visibility: hidden; }
+
+/* A visible divider between the message lane and the news ticker below
+   it -- previously the only separation was the message row's own
+   background tint, with nothing marking the actual seam. */
+.news-row { border-top: 1px solid #59c2f0; }
 
 /* position:absolute (not just overflow:hidden on the row) so the track's
    content -- deliberately huge, since it needs a long scroll of headlines
