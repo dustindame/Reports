@@ -32,6 +32,16 @@
         </div>
       </div>
 
+      <div class="league-gate-overlay" id="settingsConfirmOverlay" hidden>
+        <div class="league-gate-card">
+          <div class="league-gate-icon">⚠️</div>
+          <div class="league-gate-title">Go to Settings?</div>
+          <p class="league-gate-hint">The draft has already started. Saving any change on the Settings page wipes every pick logged so far and starts the draft over from scratch.</p>
+          <button class="league-gate-continue" id="settingsConfirmYes">GO TO SETTINGS</button>
+          <button class="league-gate-secondary" id="settingsConfirmNo">Cancel</button>
+        </div>
+      </div>
+
       <main class="entry-main">
 
         <section class="search-section">
@@ -113,6 +123,6 @@
   <script src="shared/data.js?v=20260728"></script>
   <script src="shared/league-gate.js?v=20260728"></script>
   <script src="shared/icons.js?v=20260728b"></script>
-  <script src="player-entry.js?v=20260728d"></script>
+  <script src="player-entry.js?v=20260728e"></script>
 </body>
 </html>
