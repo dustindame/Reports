@@ -20,7 +20,7 @@
   const recentPicksList = document.getElementById("recentPicksList");
   const pickSearchInput = document.getElementById("pickSearchInput");
 
-  document.getElementById("setupGear").innerHTML = Icons.whistle(18);
+  document.getElementById("setupGear").innerHTML = Icons.gear(18);
   document.getElementById("searchIcon").innerHTML = Icons.search(18);
   document.getElementById("flagIcon").innerHTML = Icons.flag(20);
   document.getElementById("slideChevron").innerHTML = Icons.chevronRight(22, "#eaf1ff");

@@ -512,7 +512,7 @@ body { overflow: hidden; height: 100vh; }
   font-weight: 900;
   letter-spacing: 0.5px;
   color: var(--gold-bright);
-  margin: 14px 0 4px;
+  margin: 64px 0 4px;
 }
 .break-leaders-list { display: flex; flex-direction: row; gap: 10px; }
 .break-leaders-list .bo-category { flex: 1; min-width: 0; }
