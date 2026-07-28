@@ -85,6 +85,14 @@ const Icons = {
     </svg>`;
   },
 
+  megaphone(size = 20, color = "#d4af37") {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 10.2v3.6a1 1 0 0 0 1 1h1.6l4.6 3V6.2l-4.6 3H4a1 1 0 0 0-1 1Z" fill="${color}"/>
+      <path d="M14.4 8.1c1.6 1.1 1.6 6.7 0 7.8" stroke="${color}" stroke-width="1.7" stroke-linecap="round" fill="none"/>
+      <path d="M17.3 6c2.7 2.1 2.7 9.9 0 12" stroke="${color}" stroke-width="1.7" stroke-linecap="round" fill="none" opacity="0.6"/>
+    </svg>`;
+  },
+
   helmet(size = 22, color = "#d4af37") {
     return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M3.5 13.5C3.5 8.3 7.6 4.5 12.5 4.5S21 8.6 21 13c0 2.8-1.6 4.3-4.3 4.3h-3.9" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>

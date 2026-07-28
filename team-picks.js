@@ -15,6 +15,7 @@
   document.getElementById("recapBannerIcon").innerHTML = Icons.barChart(16, "#1a1305");
   document.getElementById("exportDraftIcon").innerHTML = Icons.download(20, "#fff");
   document.getElementById("viewBoardIcon").innerHTML = Icons.field(20, "#fff");
+  document.getElementById("messageIcon").innerHTML = Icons.megaphone(16, "#fff");
 
   function updateRecapBanner() {
     recapBanner.hidden = draftedCount() < TOTAL_SLOTS;

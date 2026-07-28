@@ -32,9 +32,6 @@ body {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  border: none;
-  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
-  color: #201703;
   font-size: 15px;
   cursor: pointer;
   flex: none;
@@ -50,10 +47,17 @@ body {
 /* Transparent circle + white-only icon (matches the Draft Board
    header's tool buttons) instead of a solid filled background --
    lets these sit over the field-photo background without a heavy
-   opaque disc competing with it. */
+   opaque disc competing with it. Message uses the same treatment but
+   with a blue outline (matching the title's blue outline) instead of
+   the neutral border, so it still reads as the "different" action. */
 .board-fab {
   background: rgba(8, 10, 14, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+.board-message-fab {
+  background: rgba(8, 10, 14, 0.35);
+  border: 1.5px solid #2f6fed;
   color: #fff;
 }
 
@@ -101,7 +105,26 @@ body {
   cursor: pointer;
   flex: none;
 }
-.picks-title { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: 0.5px; flex: 1; min-width: 0; }
+/* Same treatment as the Draft Entry / Draft Board titles: plain white
+   text with a hard (0-blur) blue outline, no glow/drop-shadow. */
+.picks-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #fff;
+  text-shadow:
+    -1px 0 0 #2f6fed,
+    1px 0 0 #2f6fed,
+    0 -1px 0 #2f6fed,
+    0 1px 0 #2f6fed,
+    -1px -1px 0 #2f6fed,
+    1px -1px 0 #2f6fed,
+    -1px 1px 0 #2f6fed,
+    1px 1px 0 #2f6fed;
+  flex: 1;
+  min-width: 0;
+}
 .header-actions {
   display: flex;
   align-items: center;
