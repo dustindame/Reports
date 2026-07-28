@@ -327,7 +327,11 @@ body {
   text-align: center;
 }
 .budget-chip .bc-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); }
-.budget-chip .bc-value { font-size: 17px; font-weight: 800; color: var(--gold-bright); margin-top: 2px; }
+/* Spent/Remaining stay neutral white; Max Bid gets the same blue used
+   for "Max Bid" on the real Draft Board grid (.budget-cell.max-bid),
+   so the two pages read consistently. */
+.budget-chip .bc-value { font-size: 17px; font-weight: 800; color: var(--text); margin-top: 2px; }
+.budget-chip.max .bc-value { color: #59c2f0; }
 
 .roster-list {
   margin-top: 16px;
@@ -364,5 +368,5 @@ body {
 .roster-player { flex: 1; }
 .roster-player .rp-name { font-size: 14.5px; font-weight: 700; color: var(--text); }
 .roster-player .rp-pos { font-size: 11px; color: var(--text-faint); margin-top: 1px; }
-.roster-price { font-size: 15px; font-weight: 800; color: var(--gold-bright); }
+.roster-price { font-size: 15px; font-weight: 800; color: var(--text); }
 .roster-row.empty .roster-price { color: var(--text-faint); font-weight: 600; font-size: 12px; text-transform: uppercase; }

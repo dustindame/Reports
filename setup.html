@@ -4,24 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
   <title>Draft Setup</title>
-  <link rel="stylesheet" href="shared/theme.css" />
-  <link rel="stylesheet" href="shared/league-gate.css" />
-  <link rel="stylesheet" href="setup.css" />
+  <link rel="stylesheet" href="shared/theme.css?v=20260728" />
+  <link rel="stylesheet" href="shared/league-gate.css?v=20260728" />
+  <link rel="stylesheet" href="setup.css?v=20260728" />
 </head>
 <body>
   <div class="phone-frame">
     <div class="phone-screen turf-bg">
 
       <header class="setup-header">
-        <a class="back-btn" href="player-entry.html" aria-label="Back to Draft Entry"><span id="backIcon"></span></a>
         <div class="header-row">
-          <span class="pylon-icon" id="pylonLeft"></span>
-          <span class="header-gear" id="headerGear"></span>
-          <h1 class="setup-title">DRAFT <span class="gold-text">SETUP</span></h1>
-          <span class="pylon-icon" id="pylonRight"></span>
-        </div>
-        <div class="first-down-line">
-          <span class="first-down-text">COMMISSIONER TOOLS</span>
+          <a class="back-btn" href="player-entry.html" aria-label="Back to Draft Entry"><span id="backIcon"></span></a>
+          <h1 class="setup-title">DRAFT SETUP</h1>
+          <div class="header-actions">
+            <span class="header-gear" id="headerGear"></span>
+          </div>
         </div>
       </header>
 
@@ -64,7 +61,7 @@
         <section class="setup-section">
           <div class="section-label">Roster / Lineup</div>
           <div class="slot-rows" id="slotRows"></div>
-          <div class="total-slots-row">Total slots per team: <span class="gold-text" id="totalSlotsValue">13</span></div>
+          <div class="total-slots-row">Total slots per team: <span class="total-slots-value" id="totalSlotsValue">13</span></div>
         </section>
 
         <section class="setup-section">
@@ -123,9 +120,9 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="shared/supabase-config.js"></script>
-  <script src="shared/data.js"></script>
-  <script src="shared/icons.js"></script>
-  <script src="setup.js"></script>
+  <script src="shared/supabase-config.js?v=20260728"></script>
+  <script src="shared/data.js?v=20260728"></script>
+  <script src="shared/icons.js?v=20260728"></script>
+  <script src="setup.js?v=20260728"></script>
 </body>
 </html>
