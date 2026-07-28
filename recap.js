@@ -6,7 +6,7 @@
   document.getElementById("footballIcon").innerHTML = Icons.football(22, "var(--qb)");
   document.getElementById("recapBoardName").textContent = BOARD_NAME || "Auction Draft Board";
 
-  const POS_KEYS = ["QB", "RB", "WR", "TE", "DEF"];
+  const POS_KEYS = ["QB", "RB", "WR", "TE", "DEF", "K"];
 
   function playerRank(name) {
     const topIdx = TOP_VALUE_ORDER.indexOf(name);

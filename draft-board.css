@@ -317,6 +317,7 @@ body { overflow: hidden; height: 100vh; }
 .grid-header-cell.pos-WR { color: var(--wr-glow); }
 .grid-header-cell.pos-TE { color: var(--te-glow); }
 .grid-header-cell.pos-DEF { color: var(--def-glow); }
+.grid-header-cell.pos-K { color: var(--k-glow); }
 
 .team-cell {
   padding: 10px 14px;
@@ -379,11 +380,13 @@ body { overflow: hidden; height: 100vh; }
 .slot-cell.pos-WR { border-color: var(--wr); box-shadow: 0 0 10px -2px var(--wr-glow); }
 .slot-cell.pos-TE { border-color: var(--te); box-shadow: 0 0 10px -2px var(--te-glow); }
 .slot-cell.pos-DEF { border-color: var(--def); box-shadow: 0 0 10px -2px var(--def-glow); }
+.slot-cell.pos-K { border-color: var(--k); box-shadow: 0 0 10px -2px var(--k-glow); }
 .slot-cell.pos-QB .slot-price { color: var(--qb-glow); }
 .slot-cell.pos-RB .slot-price { color: var(--rb-glow); }
 .slot-cell.pos-WR .slot-price { color: var(--wr-glow); }
 .slot-cell.pos-TE .slot-price { color: var(--te-glow); }
 .slot-cell.pos-DEF .slot-price { color: var(--def-glow); }
+.slot-cell.pos-K .slot-price { color: var(--k-glow); }
 
 /* A newly-posted pick briefly glows so it's obvious at a glance where a
    pick just landed on the board, not just that something changed

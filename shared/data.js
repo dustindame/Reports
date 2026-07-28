@@ -53,7 +53,10 @@ let ON_BREAK = false;
 let BREAK_STARTED_AT = null;
 
 const FLEX_ELIGIBLE = ["RB", "WR", "TE"];
-const POSITION_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te", DEF: "--def" };
+// Superflex opens the flex spot to QBs too (kickers still aren't
+// flex-eligible in either slot, matching standard league convention).
+const SUPERFLEX_ELIGIBLE = ["QB", "RB", "WR", "TE"];
+const POSITION_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te", DEF: "--def", K: "--k" };
 
 /* Kept to <=12 characters each (no abbreviations) so they fit the Draft
    Board's Team column without wrapping or needing to be shortened. */
@@ -139,6 +142,7 @@ const PLAYER_POOL = {
   WR: ["Justin Jefferson", "Ja'Marr Chase", "Tyreek Hill", "CeeDee Lamb", "Amon-Ra St. Brown", "A.J. Brown", "Stefon Diggs", "Puka Nacua", "Garrett Wilson", "Chris Olave", "DK Metcalf", "Davante Adams", "Mike Evans", "DeVonta Smith", "Deebo Samuel", "Jaylen Waddle", "Drake London", "Terry McLaurin", "Amari Cooper", "Calvin Ridley", "Tank Dell", "Nico Collins", "Brandon Aiyuk", "Christian Kirk", "Michael Pittman Jr.", "Keenan Allen", "Jordan Addison", "Zay Flowers", "Rashee Rice", "Marquise Brown", "Diontae Johnson", "Courtland Sutton", "Jerry Jeudy", "Tyler Lockett", "Adam Thielen", "George Pickens", "Chris Godwin", "Curtis Samuel", "Gabe Davis", "Jakobi Meyers", "DJ Moore", "Xavier Worthy", "Rome Odunze", "Malik Nabers", "Marvin Harrison Jr.", "Tee Higgins", "Ladd McConkey", "Josh Downs", "Wan'Dale Robinson", "Rashid Shaheed", "Khalil Shakir", "Jameson Williams", "Elijah Moore", "Romeo Doubs", "Christian Watson", "Josh Palmer", "Jalen Tolbert", "Darnell Mooney", "Jauan Jennings", "Ricky Pearsall", "Xavier Legette", "Keon Coleman", "Brian Thomas Jr.", "Troy Franklin", "Adonai Mitchell", "Ja'Lynn Polk", "Quentin Johnston", "Carnell Tate", "Jordyn Tyson", "Makai Lemon", "KC Concepcion", "Omar Cooper Jr.", "Denzel Boston", "Germie Bernard", "Chris Bell", "Chris Brazzell II", "De'Zhaun Stribling", "Malachi Fields", "Ja'Kobi Lane", "Elijah Sarratt", "Zachariah Branch", "Antonio Williams", "Skyler Bell", "Caleb Douglas", "Ted Hurst", "Bryce Lance", "Zavion Thomas", "Kevin Coleman Jr.", "Reggie Virgil", "Colbie Young", "Brenen Thompson", "Josh Cameron", "CJ Daniels", "Kendrick Law", "Kaden Wetjen", "Malik Benson", "Barion Brown", "Emmanuel Henderson Jr.", "Cyrus Allen", "CJ Williams", "Lewis Bond", "Deion Burks", "Anthony Smith"],
   TE: ["Travis Kelce", "Sam LaPorta", "Mark Andrews", "T.J. Hockenson", "Trey McBride", "Kyle Pitts", "George Kittle", "Dallas Goedert", "Evan Engram", "David Njoku", "Dalton Kincaid", "Cole Kmet", "Pat Freiermuth", "Jake Ferguson", "Tyler Higbee", "Hunter Henry", "Brock Bowers", "Zach Ertz", "Noah Fant", "Isaiah Likely", "Cade Otton", "Juwan Johnson", "Tucker Kraft", "Luke Musgrave", "Michael Mayer", "Darnell Washington", "Chigoziem Okonkwo", "Theo Johnson", "Brenton Strange", "Kenyon Sadiq", "Eli Stowers", "Max Klare", "Marlin Klein", "Oscar Delp", "Nate Boerkircher", "Eli Raridon", "Will Kacmarek", "Sam Roush", "Justin Joly", "Josh Cuevas", "Joe Royer", "Tanner Koziol", "Matthew Hibner", "Riley Nowakowski", "Seydou Traore", "Jack Endries", "Bauer Sharp", "Jaren Kanak", "Dallen Bentley", "Carsen Ryan"],
   DEF: ["49ers D/ST", "Ravens D/ST", "Cowboys D/ST", "Eagles D/ST", "Bills D/ST", "Jets D/ST", "Steelers D/ST", "Dolphins D/ST", "Browns D/ST", "Broncos D/ST", "Patriots D/ST", "Saints D/ST", "Colts D/ST", "Bears D/ST", "Chiefs D/ST", "Texans D/ST", "Buccaneers D/ST", "Packers D/ST", "Chargers D/ST", "Lions D/ST"],
+  K: ["Justin Tucker", "Harrison Butker", "Brandon Aubrey", "Younghoe Koo", "Evan McPherson", "Daniel Carlson", "Jake Elliott", "Cameron Dicker", "Chris Boswell", "Jason Sanders", "Matt Gay", "Ka'imi Fairbairn", "Wil Lutz", "Graham Gano", "Tyler Bass", "Jake Bates", "Chad Ryland", "Joshua Karty", "Cairo Santos", "Nick Folk"],
 };
 
 /* Approximate overall fantasy-value order (not grouped by position) for
@@ -264,7 +268,14 @@ function buildMockDraft() {
     .sort((a, b) => a.ti - b.ti || a.si - b.si)
     .forEach(({ ti, si }) => {
       const slotType = ROSTER_SLOTS[si];
-      const required = slotType === "FLEX" ? FLEX_ELIGIBLE : slotType === "BENCH" ? ["RB", "WR", "WR", "QB", "TE"] : [slotType];
+      const required =
+        slotType === "FLEX"
+          ? FLEX_ELIGIBLE
+          : slotType === "SFLEX"
+          ? SUPERFLEX_ELIGIBLE
+          : slotType === "BENCH"
+          ? ["RB", "WR", "WR", "QB", "TE"]
+          : [slotType];
       const player = nextPlayerFor(required);
       if (!player) return;
       teamPicks[TEAMS.findIndex((t) => t.id === TEAMS[ti].id)].push({ teamId: TEAMS[ti].id, slotIndex: si, name: player.name, position: player.position });
@@ -860,6 +871,9 @@ function findOpenSlotIndex(roster, position) {
   });
   ROSTER_SLOTS.forEach((slot, i) => {
     if (slot === "FLEX" && FLEX_ELIGIBLE.includes(position)) candidates.push({ i, priority: 1 });
+  });
+  ROSTER_SLOTS.forEach((slot, i) => {
+    if (slot === "SFLEX" && SUPERFLEX_ELIGIBLE.includes(position)) candidates.push({ i, priority: 1 });
   });
   ROSTER_SLOTS.forEach((slot, i) => {
     if (slot === "BENCH") candidates.push({ i, priority: 2 });
