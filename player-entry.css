@@ -137,36 +137,6 @@ body {
   color: #fff;
 }
 .break-hint { font-size: 12px; color: var(--text-faint); margin: 8px 0 0; line-height: 1.4; }
-.poll-admin-heading { font-size: 12px; font-weight: 800; color: var(--text-faint); text-transform: uppercase; letter-spacing: 1px; }
-.poll-close-btn {
-  padding: 10px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--panel-alt);
-  color: #f28b82;
-  font-size: 12.5px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.poll-active-card[hidden] { display: none; }
-.poll-active-card {
-  margin-top: 6px;
-  padding: 12px;
-  border-radius: var(--radius-md);
-  background: var(--panel-alt);
-  border: 1px solid var(--gold-dim);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.poll-active-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--gold-bright); font-weight: 800; }
-.poll-active-question { font-size: 13.5px; font-weight: 700; color: var(--text); }
-.poll-active-results { display: flex; flex-direction: column; gap: 6px; }
-.poll-result-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-.poll-result-row .pr-label { flex: none; width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-dim); }
-.poll-result-row .pr-track { flex: 1; height: 12px; border-radius: 999px; background: var(--panel); overflow: hidden; }
-.poll-result-row .pr-fill { height: 100%; background: var(--gold-bright); border-radius: 999px; }
-.poll-result-row .pr-count { flex: none; width: 34px; text-align: right; font-weight: 700; color: var(--text); }
 
 /* ---------------- Search ---------------- */
 

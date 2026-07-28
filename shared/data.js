@@ -131,17 +131,6 @@ const LeagueSession = {
   clearPinHash(leagueCode) {
     sessionStorage.removeItem(this.pinStorageKey(leagueCode));
   },
-  // A random per-device id (not tied to any real identity) so a poll
-  // vote can be "one per device" and changeable, without any login.
-  VOTER_KEY: "auctionDraft.voterToken",
-  getVoterToken() {
-    let token = localStorage.getItem(this.VOTER_KEY);
-    if (!token) {
-      token = crypto.randomUUID();
-      localStorage.setItem(this.VOTER_KEY, token);
-    }
-    return token;
-  },
 };
 
 const PLAYER_POOL = {
@@ -604,13 +593,12 @@ const DraftStore = {
       .subscribe();
   },
 
-  /* ---------------- Break mode + polls ----------------
+  /* ---------------- Break mode ----------------
      A break is just a flag on draft_config (see set_draft_break) --
-     switching Draft Board over to the break screen and letting Team
-     Picks show the poll. Polls themselves are separate rows (one league
-     can only have one *active* poll at a time; starting a new one
-     retires the last). Voting has no PIN -- it's public and anonymous,
-     see LeagueSession.getVoterToken(). */
+     switching Draft Board over to the break screen. (This used to also
+     gate a poll feature; polls were removed, but the underlying
+     polls/poll_votes tables and RPCs are still there in Supabase,
+     just unused.) */
   async setBreak(onBreak, pinHash) {
     if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
     const { data, error } = await supabaseClient.rpc("set_draft_break", {
@@ -620,73 +608,6 @@ const DraftStore = {
     });
     if (error) return { error: error.message };
     if (data === false) return { error: "Incorrect commissioner PIN." };
-    return { error: null };
-  },
-
-  // No PIN -- anyone with the league code can start a poll (same trust
-  // level as voting), not just the commissioner. Server-side still
-  // requires the league to actually be on break (see the migration).
-  async createPoll(question, options) {
-    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
-    const { data, error } = await supabaseClient.rpc("create_poll", {
-      p_league_code: CURRENT_LEAGUE_CODE,
-      p_question: question,
-      p_options: options,
-    });
-    if (error) return { error: error.message };
-    if (!data) return { error: "The draft isn't on break right now." };
-    return { error: null, id: data };
-  },
-
-  async closePoll(pollId, pinHash) {
-    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
-    const { data, error } = await supabaseClient.rpc("close_poll", {
-      p_league_code: CURRENT_LEAGUE_CODE,
-      p_pin_hash: pinHash,
-      p_poll_id: pollId,
-    });
-    if (error) return { error: error.message };
-    if (data === false) return { error: "Incorrect commissioner PIN." };
-    return { error: null };
-  },
-
-  async getActivePoll() {
-    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return null;
-    const { data, error } = await supabaseClient
-      .from("polls")
-      .select("*")
-      .eq("league_code", CURRENT_LEAGUE_CODE)
-      .eq("active", true)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (error) {
-      console.error("Failed to load active poll:", error);
-      return null;
-    }
-    if (!data) return null;
-    return { id: data.id, question: data.question, options: data.options, createdAt: new Date(data.created_at).getTime() };
-  },
-
-  async getPollVotes(pollId) {
-    if (!supabaseClient || !pollId) return [];
-    const { data, error } = await supabaseClient.from("poll_votes").select("option_index, voter_token").eq("poll_id", pollId);
-    if (error) {
-      console.error("Failed to load poll votes:", error);
-      return [];
-    }
-    return data.map((row) => ({ optionIndex: row.option_index, voterToken: row.voter_token }));
-  },
-
-  async submitPollVote(pollId, optionIndex) {
-    if (!supabaseClient) return { error: "Supabase isn't configured yet." };
-    const { data, error } = await supabaseClient.rpc("submit_poll_vote", {
-      p_poll_id: pollId,
-      p_option_index: optionIndex,
-      p_voter_token: LeagueSession.getVoterToken(),
-    });
-    if (error) return { error: error.message };
-    if (data === false) return { error: "This poll isn't active anymore." };
     return { error: null };
   },
 
@@ -701,18 +622,6 @@ const DraftStore = {
         { event: "UPDATE", schema: "public", table: "draft_config", filter: `league_code=eq.${CURRENT_LEAGUE_CODE}` },
         (payload) => cb(payload.new)
       )
-      .subscribe();
-  },
-
-  // Fires on any poll or poll_votes change for this league -- covers a
-  // new poll starting, the active poll closing, and vote counts ticking
-  // up live.
-  onPollChange(cb) {
-    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return;
-    supabaseClient
-      .channel(`poll-changes-${CURRENT_LEAGUE_CODE}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "polls", filter: `league_code=eq.${CURRENT_LEAGUE_CODE}` }, () => cb())
-      .on("postgres_changes", { event: "*", schema: "public", table: "poll_votes" }, () => cb())
       .subscribe();
   },
 };
@@ -869,11 +778,10 @@ async function fetchNewsHeadlines() {
    ESPN's public scoreboard endpoint (the same one their own site uses)
    sends Access-Control-Allow-Origin: * and includes a game's spread/
    over-under once a sportsbook has posted odds for it -- no API key,
-   no backend, no scraping. There's no free, keyless, CORS-friendly
-   endpoint for full-season futures odds (win totals, Super Bowl odds,
-   etc.) from ESPN or DraftKings, so this covers upcoming-week game
-   lines only; it naturally returns nothing in the deep offseason before
-   books have posted lines for the next slate. */
+   no backend, no scraping. This covers upcoming-week game lines only;
+   it naturally returns nothing in the deep offseason before books have
+   posted lines for the next slate. (Season futures -- Super Bowl,
+   MVP, etc. -- use a different endpoint, see fetchSeasonFutures below.) */
 const ODDS_FEED_URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
 
 async function fetchBettingOdds() {
@@ -900,4 +808,96 @@ async function fetchBettingOdds() {
     console.warn("Failed to fetch betting odds:", e);
   }
   return headlines;
+}
+
+/* ---------- season futures odds for the Draft Board's break screen ----------
+   A different, CORS-open ESPN endpoint (also DraftKings-sourced) that
+   does carry season-long futures -- Super Bowl winner, division
+   winners, MVP, Rookie of the Year, etc. Each market's favorite is
+   referenced only as a $ref link to a separate team/athlete resource
+   (no name inline), so resolving each favorite's display name costs one
+   extra small fetch -- kept to just the single favorite per market (11
+   total: Super Bowl + 8 divisions + MVP + Offensive Rookie of the Year)
+   rather than whole leaderboards, and the combined result is cached for
+   the page session since futures don't move fast enough to need
+   refetching every time someone re-enters a break. */
+const FUTURES_URL = `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/${new Date().getFullYear()}/futures?limit=50`;
+const DIVISION_LABELS = {
+  "AFC East": /\(A\).*East/i,
+  "AFC North": /\(A\).*North/i,
+  "AFC South": /\(A\).*South/i,
+  "AFC West": /\(A\).*West/i,
+  "NFC East": /\(N\).*East/i,
+  "NFC North": /\(N\).*North/i,
+  "NFC South": /\(N\).*South/i,
+  "NFC West": /\(N\).*West/i,
+};
+
+let seasonFuturesCache = null;
+const refNameCache = new Map();
+
+async function resolveRefName(ref) {
+  if (!ref || !ref.$ref) return null;
+  if (refNameCache.has(ref.$ref)) return refNameCache.get(ref.$ref);
+  try {
+    const res = await fetch(ref.$ref);
+    if (!res.ok) return null;
+    const data = await res.json();
+    refNameCache.set(ref.$ref, data.displayName || null);
+    return data.displayName || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function favoritePick(market) {
+  const book = market && market.futures && market.futures[0] && market.futures[0].books && market.futures[0].books[0];
+  if (!book) return null;
+  return { ref: book.team || book.athlete, value: book.value };
+}
+
+async function fetchSeasonFutures() {
+  if (seasonFuturesCache) return seasonFuturesCache;
+  try {
+    const res = await fetch(FUTURES_URL);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const items = data.items || [];
+    const findMarket = (matcher) => items.find((m) => (typeof matcher === "string" ? m.name === matcher : matcher.test(m.name)));
+
+    const superBowlMarket = findMarket("NFL - Super Bowl Winner");
+    const mvpMarket = findMarket("Regular Season MVP");
+    const royMarket = findMarket("Offensive Rookie of the Year");
+
+    const superBowlPick = favoritePick(superBowlMarket);
+    const mvpPick = favoritePick(mvpMarket);
+    const royPick = favoritePick(royMarket);
+
+    const divisionEntries = await Promise.all(
+      Object.entries(DIVISION_LABELS).map(async ([label, matcher]) => {
+        const market = items.find((m) => matcher.test(m.name));
+        const pick = favoritePick(market);
+        if (!pick) return null;
+        const name = await resolveRefName(pick.ref);
+        return name ? { label, name, value: pick.value } : null;
+      })
+    );
+
+    const [superBowlName, mvpName, royName] = await Promise.all([
+      resolveRefName(superBowlPick && superBowlPick.ref),
+      resolveRefName(mvpPick && mvpPick.ref),
+      resolveRefName(royPick && royPick.ref),
+    ]);
+
+    seasonFuturesCache = {
+      superBowl: superBowlName ? { name: superBowlName, value: superBowlPick.value } : null,
+      mvp: mvpName ? { name: mvpName, value: mvpPick.value } : null,
+      rookieOfYear: royName ? { name: royName, value: royPick.value } : null,
+      divisions: divisionEntries.filter(Boolean),
+    };
+    return seasonFuturesCache;
+  } catch (e) {
+    console.warn("Failed to fetch season futures odds:", e);
+    return null;
+  }
 }

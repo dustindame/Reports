@@ -333,63 +333,14 @@
 
   /* ---------------- Break mode ----------------
      Not available in demo mode (no backend to toggle a break against).
-     The commissioner is the only one who can start/end a break -- but
-     once on break, ANYONE who scanned the Draft Board's QR code can
-     start a poll for everyone to vote on (see team-picks.js). This
-     panel just shows whatever poll is currently live and lets the
-     commissioner cut it short if needed. */
+     While on break, the Draft Board switches to a screen with season
+     betting odds and NFL trivia (see draft-board.js). */
   const breakSection = document.getElementById("breakSection");
   const breakToggleBtn = document.getElementById("breakToggleBtn");
-  const pollActiveCard = document.getElementById("pollActiveCard");
-  const pollActiveQuestion = document.getElementById("pollActiveQuestion");
-  const pollActiveResults = document.getElementById("pollActiveResults");
-  const pollCloseBtn = document.getElementById("pollCloseBtn");
-
-  let activePoll = null;
-
-  function renderActivePoll() {
-    if (!activePoll) {
-      pollActiveCard.hidden = true;
-      return;
-    }
-    pollActiveCard.hidden = false;
-    pollActiveQuestion.textContent = activePoll.question;
-    const votes = activePoll.votes || [];
-    const total = votes.length;
-    const counts = activePoll.options.map((_, i) => votes.filter((v) => v.optionIndex === i).length);
-    const maxCount = Math.max(...counts, 1);
-    pollActiveResults.innerHTML = activePoll.options
-      .map(
-        (opt, i) => `<div class="poll-result-row">
-          <span class="pr-label">${escapeHtml(opt)}</span>
-          <span class="pr-track"><span class="pr-fill" style="width:${((counts[i] / maxCount) * 100).toFixed(1)}%"></span></span>
-          <span class="pr-count">${counts[i]}</span>
-        </div>`
-      )
-      .join("") + `<div class="poll-admin-heading">${total} vote${total === 1 ? "" : "s"} total</div>`;
-  }
-
-  async function refreshActivePoll() {
-    const poll = await DraftStore.getActivePoll();
-    if (!poll) {
-      activePoll = null;
-      renderActivePoll();
-      return;
-    }
-    const votes = await DraftStore.getPollVotes(poll.id);
-    activePoll = { ...poll, votes };
-    renderActivePoll();
-  }
 
   function updateBreakUi() {
     breakToggleBtn.textContent = ON_BREAK ? "END BREAK" : "START BREAK";
     breakToggleBtn.classList.toggle("active", ON_BREAK);
-    if (ON_BREAK) {
-      refreshActivePoll();
-    } else {
-      activePoll = null;
-      renderActivePoll();
-    }
   }
 
   breakToggleBtn.addEventListener("click", async () => {
@@ -410,21 +361,6 @@
     ON_BREAK = !ON_BREAK;
     updateBreakUi();
     showToast(ON_BREAK ? "Break started" : "Break ended");
-  });
-
-  pollCloseBtn.addEventListener("click", async () => {
-    if (!activePoll) return;
-    pollCloseBtn.disabled = true;
-    const pinHash = LeagueSession.getPinHash(CURRENT_LEAGUE_CODE);
-    const { error } = await DraftStore.closePoll(activePoll.id, pinHash);
-    pollCloseBtn.disabled = false;
-    if (error) {
-      showToast(`Couldn't close poll: ${error}`);
-      return;
-    }
-    activePoll = null;
-    renderActivePoll();
-    showToast("Poll closed");
   });
 
   async function confirmPick() {
@@ -593,8 +529,5 @@
   setHandle(0);
 
   breakSection.hidden = !CURRENT_LEAGUE_CODE; // demo mode has no league to toggle a break for
-  if (CURRENT_LEAGUE_CODE) {
-    updateBreakUi();
-    DraftStore.onPollChange(refreshActivePoll);
-  }
+  if (CURRENT_LEAGUE_CODE) updateBreakUi();
 })();
