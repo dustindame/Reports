@@ -30,7 +30,7 @@
   const breakOddsNote = document.getElementById("breakOddsNote");
   const breakOddsList = document.getElementById("breakOddsList");
   const breakFactList = document.getElementById("breakFactList");
-  const breakMiniGrid = document.getElementById("breakMiniGrid");
+  const breakRosterList = document.getElementById("breakRosterList");
 
   document.getElementById("exportIcon").innerHTML = Icons.download(16, "#fff");
   document.getElementById("snapshotIcon").innerHTML = Icons.camera(16, "#fff");
@@ -395,12 +395,23 @@
      screen's measured height between renders and made fitBoardToScreen's
      scale flicker. Everything here is always present so that can't
      happen anymore.) */
-  function renderBreakMiniBoard() {
-    breakMiniGrid.innerHTML = TEAMS.map((team) => {
+  function renderBreakRosterBoard() {
+    breakRosterList.innerHTML = TEAMS.map((team) => {
       const budget = computeTeamBudget(team.id);
-      return `<div class="break-mini-cell">
-        <span class="bmc-dot" style="background:${team.color}"></span>
-        <span class="bmc-text"><b>${escapeHtml(team.name)}</b> · $${budget.maxBid} max / $${budget.remaining} left</span>
+      const roster = getTeamRoster(team.id);
+      const picks = roster.slots.filter(Boolean);
+      const picksHtml = picks.length
+        ? picks.map((pick) => `<span class="brr-pick-chip">${escapeHtml(pick.name)}<span class="brc-price">$${pick.price}</span></span>`).join("")
+        : `<span class="brr-empty-note">No picks yet</span>`;
+      return `<div class="break-roster-row">
+        <div class="brr-team">
+          <span class="brr-dot" style="background:${team.color}"></span>
+          <div>
+            <div class="brr-name">${escapeHtml(team.name)}</div>
+            <div class="brr-budget">$${budget.maxBid} max · $${budget.remaining} left</div>
+          </div>
+        </div>
+        <div class="brr-picks">${picksHtml}</div>
       </div>`;
     }).join("");
   }
@@ -464,7 +475,7 @@
     breakScreen.hidden = false;
     boardContent.style.width = ""; // let the break screen's own fixed width drive natural sizing
     renderBreakOdds();
-    renderBreakMiniBoard();
+    renderBreakRosterBoard();
     factPool = [];
     rotateBreakFacts();
     clearInterval(factRotateTimer);
@@ -600,7 +611,7 @@
     renderRecent();
     renderGrid();
     if (ON_BREAK) {
-      renderBreakMiniBoard();
+      renderBreakRosterBoard();
     } else {
       layoutGrid(); // re-measure in case header content width changed (defense in depth)
       fitBoardToScreen();
