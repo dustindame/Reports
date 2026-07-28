@@ -21,32 +21,23 @@ body {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.18), 0 0 70px -18px rgba(212, 175, 55, 0.35);
 }
 
-/* Export/view-board/message live in one row, top-right -- used to sit
-   bottom-right in a vertical stack, but that covered the bottom of the
-   Recent Picks list once the draft-wide stats were added below the
-   team grid. Top-right + horizontal keeps them out of the way of any
-   scrollable content. */
-.fab-stack {
-  position: absolute;
-  top: 18px;
-  right: 16px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-  z-index: 5;
-}
+/* Export/view-board/message now live inline in the header row (see
+   .header-actions below) instead of an absolutely-positioned stack --
+   that floated over the screen and covered the bottom of the Recent
+   Picks list, and separately overlapped the title once the header
+   became left-aligned like Draft Entry's. Sized down to fit
+   comfortably in a header row instead of as floating FABs. */
 .board-message-fab,
 .board-fab {
-  width: 54px;
-  height: 54px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   border: none;
   background: linear-gradient(180deg, var(--gold-bright), var(--gold));
   color: #201703;
-  font-size: 22px;
+  font-size: 15px;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(212, 175, 55, 0.2);
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -61,11 +52,8 @@ body {
    lets these sit over the field-photo background without a heavy
    opaque disc competing with it. */
 .board-fab {
-  width: 46px;
-  height: 46px;
   background: rgba(8, 10, 14, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: none;
   color: #fff;
 }
 
@@ -86,14 +74,22 @@ body {
 
 .picks-header {
   flex: none;
-  padding: 24px 16px 18px;
-  position: relative;
+  padding: 16px 16px 14px;
+}
+/* Same layout as the Draft Entry header: title left, actions grouped
+   on the right (space-between), instead of a centered title with an
+   absolutely-positioned back button and a separate floating FAB stack
+   that could overlap it. The back button is a normal flex child now
+   (collapses out of flow via [hidden] instead of just being invisible
+   in place), so it never overlaps the title either. */
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 .back-btn[hidden] { display: none; }
 .back-btn {
-  position: absolute;
-  left: 16px;
-  top: 22px;
   background: var(--panel-alt);
   border: 1px solid var(--border);
   border-radius: 50%;
@@ -103,14 +99,15 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  flex: none;
 }
-.header-row {
+.picks-title { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: 0.5px; flex: 1; min-width: 0; }
+.header-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
+  gap: 8px;
+  flex: none;
 }
-.picks-title { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: 0.5px; }
 
 /* ---------------- Main ---------------- */
 
