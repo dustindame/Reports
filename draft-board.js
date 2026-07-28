@@ -30,6 +30,7 @@
   const breakOddsNote = document.getElementById("breakOddsNote");
   const breakOddsList = document.getElementById("breakOddsList");
   const breakFactList = document.getElementById("breakFactList");
+  const breakLeadersList = document.getElementById("breakLeadersList");
   const breakRosterList = document.getElementById("breakRosterList");
 
   document.getElementById("exportIcon").innerHTML = Icons.download(16, "#fff");
@@ -489,7 +490,7 @@
     oddsRotateTimer = setInterval(rotateBreakOdds, 6000);
   }
 
-  // Shows 2-3 facts at once (not one at a time) and swaps to a fresh,
+  // Shows 4 facts at once (not one at a time) and swaps to a fresh,
   // non-repeating batch on each rotation -- once the pool runs low it
   // reshuffles from the top.
   let factPool = [];
@@ -499,8 +500,41 @@
   }
   let factRotateTimer = null;
   function rotateBreakFacts() {
-    const batch = nextFactBatch(3);
+    const batch = nextFactBatch(4);
     breakFactList.innerHTML = batch.map((fact) => `<div class="break-fact-item">${escapeHtml(fact)}</div>`).join("");
+  }
+
+  // Below the facts, a static top-10 all-time leaderboard rotates 2
+  // categories at a time through ALL_TIME_LEADERS (rushing, passing,
+  // receiving, etc.) -- same rotation pattern as the season odds slides.
+  let leaderSlides = [];
+  let leaderSlideIndex = 0;
+  let leaderRotateTimer = null;
+  function buildLeaderSlides() {
+    leaderSlides = [];
+    for (let i = 0; i < ALL_TIME_LEADERS.length; i += 2) {
+      leaderSlides.push(ALL_TIME_LEADERS.slice(i, i + 2));
+    }
+  }
+  function rotateBreakLeaders() {
+    if (!leaderSlides.length) return;
+    const slide = leaderSlides[leaderSlideIndex % leaderSlides.length];
+    leaderSlideIndex += 1;
+    breakLeadersList.innerHTML = slide
+      .map(
+        (cat) => `<div class="bo-category">
+          <div class="bo-cat-heading">${escapeHtml(cat.category)}</div>
+          ${cat.entries
+            .map(
+              (e, i) => `<div class="break-odds-row">
+                <span class="bor-pick">${i + 1}. ${escapeHtml(e.name)}</span>
+                <span class="bor-value">${escapeHtml(e.value)}</span>
+              </div>`
+            )
+            .join("")}
+        </div>`
+      )
+      .join("");
   }
 
   let breakTimerInterval = null;
@@ -526,6 +560,11 @@
     rotateBreakFacts();
     clearInterval(factRotateTimer);
     factRotateTimer = setInterval(rotateBreakFacts, 15000);
+    buildLeaderSlides();
+    leaderSlideIndex = 0;
+    rotateBreakLeaders();
+    clearInterval(leaderRotateTimer);
+    leaderRotateTimer = setInterval(rotateBreakLeaders, 6000);
     updateBreakTimer();
     clearInterval(breakTimerInterval);
     breakTimerInterval = setInterval(updateBreakTimer, 1000);
@@ -536,6 +575,7 @@
     breakScreen.hidden = true;
     grid.hidden = false;
     clearInterval(factRotateTimer);
+    clearInterval(leaderRotateTimer);
     clearInterval(oddsRotateTimer);
     clearInterval(breakTimerInterval);
     layoutGrid();
