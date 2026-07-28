@@ -68,8 +68,6 @@ body {
   flex: 1;
   min-width: 0;
 }
-.header-actions { display: flex; align-items: center; gap: 8px; flex: none; }
-.header-gear { line-height: 0; }
 
 /* ---------------- Main ---------------- */
 
@@ -209,7 +207,7 @@ body {
    stepper. */
 .slot-row .budget-input-wrap .budget-input {
   flex: none;
-  width: 46px;
+  width: 64px;
 }
 .budget-input {
   flex: 1;

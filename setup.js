@@ -32,7 +32,6 @@
   const saveBtn = document.getElementById("saveBtn");
   const switchToCreateBtn = document.getElementById("switchToCreateBtn");
 
-  document.getElementById("headerGear").innerHTML = Icons.whistle(22, "#fff");
 
   const SLOT_TYPES = ["QB", "RB", "WR", "TE", "DEF", "FLEX", "BENCH"];
   const SLOT_LABELS = { QB: "Quarterback", RB: "Running Back", WR: "Wide Receiver", TE: "Tight End", DEF: "Defense/Special Teams", FLEX: "Flex", BENCH: "Bench" };
@@ -365,11 +364,12 @@
     renderTeamNames();
   });
   const BUDGET_STEP = 5;
-  const BUDGET_MAX = 999;
+  const BUDGET_MAX = 10000;
   budgetInput.addEventListener("input", () => {
     const digitsOnly = budgetInput.value.replace(/[^0-9]/g, "");
     if (digitsOnly !== budgetInput.value) budgetInput.value = digitsOnly;
-    budget = Math.max(1, Number(digitsOnly) || 0);
+    budget = Math.min(BUDGET_MAX, Math.max(1, Number(digitsOnly) || 0));
+    if (Number(digitsOnly) > BUDGET_MAX) budgetInput.value = budget;
   });
   budgetMinus.addEventListener("click", () => {
     budget = Math.max(1, budget - BUDGET_STEP);
