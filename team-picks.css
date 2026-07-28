@@ -355,6 +355,7 @@ body {
 .roster-row.filled.pos-WR { border-color: var(--wr); }
 .roster-row.filled.pos-TE { border-color: var(--te); }
 .roster-row.filled.pos-DEF { border-color: var(--def); }
+.roster-row.filled.pos-K { border-color: var(--k); }
 
 .roster-slot-tag {
   flex: none;

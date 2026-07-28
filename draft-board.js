@@ -123,8 +123,9 @@
   }
 
   function renderPositionTotals() {
-    const hasDef = ROSTER_SLOTS.includes("DEF");
-    const positions = hasDef ? ["QB", "RB", "WR", "TE", "DEF"] : ["QB", "RB", "WR", "TE"];
+    const positions = ["QB", "RB", "WR", "TE"];
+    if (ROSTER_SLOTS.includes("DEF")) positions.push("DEF");
+    if (ROSTER_SLOTS.includes("K")) positions.push("K");
     const counts = {};
     positions.forEach((p) => { counts[p] = 0; });
     MOCK_DRAFT.picks.forEach((p) => {

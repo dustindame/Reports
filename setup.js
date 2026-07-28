@@ -33,10 +33,13 @@
   const switchToCreateBtn = document.getElementById("switchToCreateBtn");
 
 
-  const SLOT_TYPES = ["QB", "RB", "WR", "TE", "DEF", "FLEX", "BENCH"];
-  const SLOT_LABELS = { QB: "Quarterback", RB: "Running Back", WR: "Wide Receiver", TE: "Tight End", DEF: "Defense/Special Teams", FLEX: "Flex", BENCH: "Bench" };
-  const SLOT_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te", DEF: "--def", FLEX: "--gold", BENCH: "--text-faint" };
-  const DEFAULT_SLOT_COUNTS = { QB: 1, RB: 2, WR: 2, TE: 1, DEF: 0, FLEX: 2, BENCH: 5 };
+  const SLOT_TYPES = ["QB", "RB", "WR", "TE", "DEF", "K", "FLEX", "SFLEX", "BENCH"];
+  const SLOT_LABELS = { QB: "Quarterback", RB: "Running Back", WR: "Wide Receiver", TE: "Tight End", DEF: "Defense/Special Teams", K: "Kicker", FLEX: "Flex", SFLEX: "Superflex", BENCH: "Bench" };
+  const SLOT_COLOR_VAR = { QB: "--qb", RB: "--rb", WR: "--wr", TE: "--te", DEF: "--def", K: "--k", FLEX: "--gold", SFLEX: "--gold-bright", BENCH: "--text-faint" };
+  const DEFAULT_SLOT_COUNTS = { QB: 1, RB: 2, WR: 2, TE: 1, DEF: 0, K: 0, FLEX: 2, SFLEX: 0, BENCH: 5 };
+  // How high each real position's lineup count can go -- unlisted slot
+  // types (FLEX/SFLEX/BENCH) keep the generic 10-slot ceiling below.
+  const SLOT_MAX = { QB: 4, RB: 6, WR: 6, TE: 4, DEF: 3, K: 3 };
 
   let mode = "create"; // or "edit"
   let leagueCode = generateLeagueCode();
@@ -168,7 +171,7 @@
     numTeams = config.num_teams;
     budget = config.budget;
     teamNames = config.team_names.slice();
-    const counts = { QB: 0, RB: 0, WR: 0, TE: 0, DEF: 0, FLEX: 0, BENCH: 0 };
+    const counts = { QB: 0, RB: 0, WR: 0, TE: 0, DEF: 0, K: 0, FLEX: 0, SFLEX: 0, BENCH: 0 };
     config.roster_slots.forEach((s) => {
       if (counts[s] !== undefined) counts[s] += 1;
     });
@@ -268,7 +271,8 @@
         const type = btn.dataset.slot;
         const dir = Number(btn.dataset.dir);
         const next = slotCounts[type] + dir;
-        if (next < 0 || next > 10) return;
+        const max = SLOT_MAX[type] ?? 10;
+        if (next < 0 || next > max) return;
         slotCounts[type] = next;
         document.getElementById(`slot${type}Value`).textContent = next;
         renderTotalSlots();

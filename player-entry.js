@@ -160,7 +160,7 @@
     return MOCK_DRAFT.picks.some((p) => p.name === name && p.position === position);
   }
 
-  const CUSTOM_ENTRY_POSITIONS = ["QB", "RB", "WR", "TE", "DEF"];
+  const CUSTOM_ENTRY_POSITIONS = ["QB", "RB", "WR", "TE", "DEF", "K"];
 
   function renderResults(query) {
     if (!query) {
