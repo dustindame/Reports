@@ -476,27 +476,31 @@ body { overflow: hidden; height: 100vh; }
    needs to scroll -- hidden instead of auto so no scrollbar can ever
    flash even for a brief oversized render. */
 .break-odds-card { overflow-y: hidden; }
-.break-odds-note { font-size: 10px; color: var(--text-faint); margin: -2px 0 6px; line-height: 1.3; }
-.break-odds-list { display: flex; flex-direction: column; gap: 10px; }
+.break-odds-note { font-size: 11px; color: var(--text-faint); margin: -2px 0 6px; line-height: 1.3; }
+.break-odds-list { display: flex; flex-direction: column; gap: 9px; }
 /* Season odds now lists every entry in every market (not just the
    favorite), so results are grouped under a heading per market instead
-   of one flat list of favorites. */
-.bo-category { display: flex; flex-direction: column; gap: 1px; }
+   of one flat list of favorites. Font sizes here (and in the fact/
+   roster cards below) are deliberately larger than a first pass -- the
+   whole board is scaled up via a CSS transform to fill the screen
+   (fitBoardToScreen), and very small source font sizes turn visibly
+   blurry once magnified; bigger source text holds up much better. */
+.bo-category { display: flex; flex-direction: column; gap: 2px; }
 .bo-cat-heading {
-  font-size: 9.5px;
+  font-size: 11.5px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-faint);
-  padding-bottom: 2px;
+  padding-bottom: 3px;
   margin-bottom: 2px;
   border-bottom: 1px solid var(--border-soft);
 }
-.break-odds-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 1.5px 0; }
-.break-odds-row .bor-pick { font-size: 10.5px; font-weight: 700; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.break-odds-row .bor-value { font-size: 10.5px; font-weight: 800; color: var(--gold-bright); flex: none; }
-.break-fact-list { display: flex; flex-direction: column; gap: 6px; }
-.break-fact-item { font-size: 11.5px; line-height: 1.35; color: var(--text-dim); font-style: italic; padding-bottom: 6px; border-bottom: 1px solid var(--border-soft); }
+.break-odds-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 0; }
+.break-odds-row .bor-pick { font-size: 13px; font-weight: 700; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.break-odds-row .bor-value { font-size: 13px; font-weight: 800; color: var(--gold-bright); flex: none; }
+.break-fact-list { display: flex; flex-direction: column; gap: 8px; }
+.break-fact-item { font-size: 14px; line-height: 1.4; color: var(--text-dim); font-style: italic; padding-bottom: 8px; border-bottom: 1px solid var(--border-soft); }
 .break-fact-item:last-child { border-bottom: none; padding-bottom: 0; }
 
 /* A genuinely different presentation of the same draft data as the
@@ -541,20 +545,20 @@ body { overflow: hidden; height: 100vh; }
   gap: 6px;
 }
 .break-roster-row .brr-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-.break-roster-row .brr-name { font-size: 11px; font-weight: 800; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.break-roster-row .brr-budget { font-size: 9.5px; color: var(--text-faint); white-space: nowrap; }
-.break-roster-row .brr-picks { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 3px; align-content: flex-start; }
+.break-roster-row .brr-name { font-size: 13px; font-weight: 800; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.break-roster-row .brr-budget { font-size: 11px; color: var(--text-faint); white-space: nowrap; }
+.break-roster-row .brr-picks { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 4px; align-content: flex-start; }
 .brr-pick-chip {
-  font-size: 9.5px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 1px 5px;
+  padding: 2px 6px;
   border-radius: 999px;
   background: var(--panel);
   border: 1px solid var(--border-soft);
   white-space: nowrap;
 }
 .brr-pick-chip .brc-price { font-weight: 800; margin-left: 3px; }
-.brr-empty-note { font-size: 9.5px; color: var(--text-faint); font-style: italic; padding-top: 2px; }
+.brr-empty-note { font-size: 11px; color: var(--text-faint); font-style: italic; padding-top: 2px; }
 
 /* ---------------- Ticker ---------------- */
 
