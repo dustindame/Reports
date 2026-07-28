@@ -25,19 +25,30 @@ body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  /* Same field photo + dark overlay gradient as Draft Board/Draft
+     Entry/Team Picks, instead of the plain turf pattern. */
+  background-image: linear-gradient(180deg, rgba(6, 8, 12, 0.72) 0%, rgba(6, 8, 12, 0.88) 100%), url("shared/images/field-bg.jpg");
+  background-size: cover;
+  background-position: center 65%;
 }
 
 /* ---------------- Header ---------------- */
 
 .setup-header {
   flex: none;
-  padding: 22px 16px 0;
-  position: relative;
+  padding: 16px 16px 14px;
+}
+/* Same layout as Draft Entry/Team Picks: title left, actions grouped
+   on the right (space-between) -- back button and gear are normal
+   flex children now instead of an absolutely-positioned back button
+   plus decorative pylon icons flanking a centered title. */
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 .back-btn {
-  position: absolute;
-  left: 16px;
-  top: 20px;
   background: var(--panel-alt);
   border: 1px solid var(--border);
   border-radius: 50%;
@@ -47,33 +58,30 @@ body {
   align-items: center;
   justify-content: center;
   text-decoration: none;
+  flex: none;
 }
-.header-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+/* Same treatment as the other pages' titles: plain white text with a
+   hard (0-blur) blue outline, no glow/drop-shadow. */
+.setup-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #fff;
+  text-shadow:
+    -1px 0 0 #2f6fed,
+    1px 0 0 #2f6fed,
+    0 -1px 0 #2f6fed,
+    0 1px 0 #2f6fed,
+    -1px -1px 0 #2f6fed,
+    1px -1px 0 #2f6fed,
+    -1px 1px 0 #2f6fed,
+    1px 1px 0 #2f6fed;
+  flex: 1;
+  min-width: 0;
 }
-.setup-title { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 0.5px; }
+.header-actions { display: flex; align-items: center; gap: 8px; flex: none; }
 .header-gear { line-height: 0; }
-.pylon-icon { display: flex; line-height: 0; }
-
-.first-down-line {
-  margin-top: 14px;
-  height: 26px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, var(--gold-bright) 20%, var(--gold-bright) 80%, transparent);
-  box-shadow: 0 0 18px 2px rgba(242, 193, 78, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.first-down-text {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 3px;
-  color: #241a03;
-}
 
 /* ---------------- Main ---------------- */
 
@@ -242,6 +250,9 @@ body {
   font-size: 13px;
   color: var(--text-dim);
 }
+/* Neutral white instead of gold -- same reasoning as the Team Picks
+   budget chips: a plain count reads as a value, not a highlight. */
+.total-slots-value { color: var(--text); font-weight: 700; }
 
 /* ---------------- Board name + display toggles ---------------- */
 

@@ -109,7 +109,7 @@
     budgetRow.innerHTML = `
       <div class="budget-chip"><div class="bc-label">Spent</div><div class="bc-value">$${budget.spent}</div></div>
       <div class="budget-chip"><div class="bc-label">Remaining</div><div class="bc-value">$${budget.remaining}</div></div>
-      <div class="budget-chip"><div class="bc-label">Max Bid</div><div class="bc-value">$${budget.maxBid}</div></div>
+      <div class="budget-chip max"><div class="bc-label">Max Bid</div><div class="bc-value">$${budget.maxBid}</div></div>
     `;
 
     rosterList.innerHTML = roster.slots
