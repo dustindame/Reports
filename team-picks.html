@@ -6,18 +6,23 @@
   <title>Team Picks</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260728" />
-  <link rel="stylesheet" href="team-picks.css?v=20260728c" />
+  <link rel="stylesheet" href="team-picks.css?v=20260728d" />
 </head>
 <body>
   <div class="phone-frame">
     <div class="phone-screen turf-bg">
 
       <header class="picks-header">
-        <button class="back-btn" id="backBtn" hidden>
-          <span id="backIcon"></span>
-        </button>
         <div class="header-row">
+          <button class="back-btn" id="backBtn" hidden>
+            <span id="backIcon"></span>
+          </button>
           <h1 class="picks-title">TEAM <span class="gold-text">PICKS</span></h1>
+          <div class="header-actions">
+            <button class="board-fab" id="exportDraftBtn" aria-label="Export the full draft (CSV)" title="Export the full draft (CSV)"><span id="exportDraftIcon"></span></button>
+            <a class="board-fab" id="viewBoardBtn" aria-label="View the full Draft Board" title="View the full Draft Board"><span id="viewBoardIcon"></span></a>
+            <button class="board-message-fab" id="messageFab" aria-label="Send a message to the Draft Board">📣</button>
+          </div>
         </div>
       </header>
 
@@ -64,12 +69,6 @@
 
       </main>
 
-    </div>
-
-    <div class="fab-stack">
-      <button class="board-fab" id="exportDraftBtn" aria-label="Export the full draft (CSV)" title="Export the full draft (CSV)"><span id="exportDraftIcon"></span></button>
-      <a class="board-fab" id="viewBoardBtn" aria-label="View the full Draft Board" title="View the full Draft Board"><span id="viewBoardIcon"></span></a>
-      <button class="board-message-fab" id="messageFab" aria-label="Send a message to the Draft Board">📣</button>
     </div>
   </div>
 
