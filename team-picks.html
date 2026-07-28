@@ -6,7 +6,7 @@
   <title>Team Picks</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260728" />
-  <link rel="stylesheet" href="team-picks.css?v=20260728" />
+  <link rel="stylesheet" href="team-picks.css?v=20260728b" />
 </head>
 <body>
   <div class="phone-frame">
@@ -30,7 +30,28 @@
 
         <section class="team-picker" id="teamPicker">
           <div class="section-label">Select a Team</div>
+          <p class="picker-hint">Pick a team to view its drafted roster and remaining budget.</p>
           <div class="team-grid" id="teamGrid"></div>
+
+          <div class="picks-stats">
+            <div class="stats-tracker">
+              <div class="tracker-numbers">
+                <span class="tracker-value" id="picksDraftedValue">0 / 156</span>
+                <span class="tracker-label">drafted · <span id="picksRemainingValue">156</span> left</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" id="picksProgressFill"></div></div>
+            </div>
+
+            <div class="stats-block">
+              <div class="recent-label">Drafted by Position</div>
+              <div class="position-totals-row" id="picksPositionTotalsRow"></div>
+            </div>
+
+            <div class="stats-block">
+              <div class="recent-label">Recent Picks</div>
+              <div class="recent-strip" id="picksRecentStrip"></div>
+            </div>
+          </div>
         </section>
 
         <section class="roster-view" id="rosterView" hidden>
@@ -57,6 +78,6 @@
   <script src="shared/data.js?v=20260728"></script>
   <script src="shared/league-gate.js?v=20260728"></script>
   <script src="shared/icons.js?v=20260728"></script>
-  <script src="team-picks.js?v=20260728"></script>
+  <script src="team-picks.js?v=20260728b"></script>
 </body>
 </html>

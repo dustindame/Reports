@@ -133,6 +133,8 @@ body {
   flex: none;
 }
 
+.picker-hint { font-size: 12.5px; color: var(--text-dim); line-height: 1.4; margin: -4px 0 14px; }
+
 .recap-banner {
   display: flex;
   align-items: center;
@@ -192,6 +194,77 @@ body {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
   line-height: 1.25;
 }
+
+/* ---------------- Draft-wide stats ----------------
+   Same look and feel as the Draft Board header's own stat widgets
+   (frosted chips, position colors, gold labels) -- stacked vertically
+   here instead of side by side, since the header row there is wide and
+   this is a narrow phone screen. */
+.picks-stats {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.stats-tracker { display: flex; flex-direction: column; align-items: center; }
+.tracker-numbers { display: flex; align-items: baseline; gap: 6px; }
+.tracker-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-faint); }
+.tracker-value { font-size: 16px; font-weight: 700; color: #59c2f0; }
+.progress-bar {
+  margin-top: 5px;
+  width: 100%;
+  max-width: 220px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--panel-alt);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #005a8a, #0076b6);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.stats-block { display: flex; flex-direction: column; gap: 8px; }
+.recent-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-faint); }
+
+.position-totals-row { display: flex; gap: 8px; justify-content: space-between; }
+.pt-chip {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+  background: rgba(28, 30, 40, 0.28);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border: 1px solid var(--border);
+}
+.pt-chip .pt-pos { font-size: 10px; font-weight: 800; letter-spacing: 0.5px; }
+.pt-chip .pt-count { font-size: 15px; font-weight: 700; color: var(--text); }
+
+.recent-strip { display: flex; flex-direction: column; gap: 6px; }
+.recent-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(28, 30, 40, 0.28);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  overflow: hidden;
+}
+.rc-pos-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.rc-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 600; }
+.rc-price { font-weight: 800; flex: none; }
 
 /* ---------------- Roster view ---------------- */
 
