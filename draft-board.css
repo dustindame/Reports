@@ -442,12 +442,13 @@ body { overflow: hidden; height: 100vh; }
   font-variant-numeric: tabular-nums;
   color: var(--text);
 }
-/* Fixed two-column layout (not conditionally hidden/shown like the old
-   poll card was) -- both cards are always present once on break, so the
-   board's measured height never jumps around between renders, which is
-   what made fitBoardToScreen's scale flicker/resize unpredictably with
-   the old poll-or-nothing card. */
-.break-screen-body { flex: none; height: 150px; display: flex; gap: 10px; }
+/* Fixed three-column layout (not conditionally hidden/shown like the old
+   poll card was) -- all three cards are always present once on break, so
+   the board's measured height never jumps around between renders, which
+   is what made fitBoardToScreen's scale flicker/resize unpredictably with
+   the old poll-or-nothing card. Fills all remaining height below the
+   timer banner instead of a fixed row. */
+.break-screen-body { flex: 1; min-height: 0; display: flex; gap: 10px; }
 .break-section-heading {
   font-size: 11px;
   font-weight: 900;
@@ -487,6 +488,7 @@ body { overflow: hidden; height: 100vh; }
    which doesn't compress well at this scale. */
 .break-roster-board {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -506,8 +508,8 @@ body { overflow: hidden; height: 100vh; }
 }
 .break-roster-row {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  flex-direction: column;
+  gap: 3px;
   padding: 5px 8px;
   border-radius: var(--radius-sm);
   background: var(--panel-alt);
@@ -515,11 +517,9 @@ body { overflow: hidden; height: 100vh; }
 }
 .break-roster-row .brr-team {
   flex: none;
-  width: 190px;
   display: flex;
   align-items: center;
   gap: 6px;
-  padding-top: 1px;
 }
 .break-roster-row .brr-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .break-roster-row .brr-name { font-size: 11px; font-weight: 800; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
