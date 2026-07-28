@@ -813,14 +813,14 @@ async function fetchBettingOdds() {
 /* ---------- season futures odds for the Draft Board's break screen ----------
    A different, CORS-open ESPN endpoint (also DraftKings-sourced) that
    does carry season-long futures -- Super Bowl winner, division
-   winners, MVP, Rookie of the Year, etc. Each market's favorite is
-   referenced only as a $ref link to a separate team/athlete resource
-   (no name inline), so resolving each favorite's display name costs one
-   extra small fetch -- kept to just the single favorite per market (11
-   total: Super Bowl + 8 divisions + MVP + Offensive Rookie of the Year)
-   rather than whole leaderboards, and the combined result is cached for
-   the page session since futures don't move fast enough to need
-   refetching every time someone re-enters a break. */
+   winners, MVP, Rookie of the Year, Defensive Player of the Year, etc.
+   Every entry in a market is referenced only as a $ref link to a
+   separate team/athlete resource (no name inline), so resolving a full
+   leaderboard costs one small fetch per entry -- there are ~150 across
+   all markets combined, deduped/cached by URL since teams repeat across
+   the Super Bowl and division markets, and the combined result is
+   cached for the page session since futures don't move fast enough to
+   need refetching every time someone re-enters a break. */
 const FUTURES_URL = `https://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/${new Date().getFullYear()}/futures?limit=50`;
 const DIVISION_LABELS = {
   "AFC East": /\(A\).*East/i,
@@ -857,10 +857,16 @@ async function resolveRefName(ref) {
   }
 }
 
-function favoritePick(market) {
-  const book = market && market.futures && market.futures[0] && market.futures[0].books && market.futures[0].books[0];
-  if (!book) return null;
-  return { ref: book.team || book.athlete, value: book.value };
+async function allPicks(market) {
+  const books = (market && market.futures && market.futures[0] && market.futures[0].books) || [];
+  const entries = await Promise.all(
+    books.map(async (book) => {
+      const ref = book.team || book.athlete;
+      const name = await resolveRefName(ref);
+      return name ? { name, value: book.value } : null;
+    })
+  );
+  return entries.filter(Boolean);
 }
 
 async function fetchSeasonFutures() {
@@ -875,32 +881,28 @@ async function fetchSeasonFutures() {
     const superBowlMarket = findMarket("NFL - Super Bowl Winner");
     const mvpMarket = findMarket("Regular Season MVP");
     const royMarket = findMarket("Offensive Rookie of the Year");
+    const dpoyMarket = findMarket("Defensive Player of the Year");
 
-    const superBowlPick = favoritePick(superBowlMarket);
-    const mvpPick = favoritePick(mvpMarket);
-    const royPick = favoritePick(royMarket);
-
-    const divisionEntries = await Promise.all(
-      Object.entries(DIVISION_LABELS).map(async ([label, matcher]) => {
-        const market = items.find((m) => matcher.test(m.name));
-        const pick = favoritePick(market);
-        if (!pick) return null;
-        const name = await resolveRefName(pick.ref);
-        return name ? { label, name, value: pick.value } : null;
-      })
-    );
-
-    const [superBowlName, mvpName, royName] = await Promise.all([
-      resolveRefName(superBowlPick && superBowlPick.ref),
-      resolveRefName(mvpPick && mvpPick.ref),
-      resolveRefName(royPick && royPick.ref),
+    const [superBowl, mvp, rookieOfYear, defensivePlayerOfYear, divisions] = await Promise.all([
+      allPicks(superBowlMarket),
+      allPicks(mvpMarket),
+      allPicks(royMarket),
+      allPicks(dpoyMarket),
+      Promise.all(
+        Object.entries(DIVISION_LABELS).map(async ([label, matcher]) => {
+          const market = items.find((m) => matcher.test(m.name));
+          const picks = await allPicks(market);
+          return picks.length ? { label, picks } : null;
+        })
+      ),
     ]);
 
     seasonFuturesCache = {
-      superBowl: superBowlName ? { name: superBowlName, value: superBowlPick.value } : null,
-      mvp: mvpName ? { name: mvpName, value: mvpPick.value } : null,
-      rookieOfYear: royName ? { name: royName, value: royPick.value } : null,
-      divisions: divisionEntries.filter(Boolean),
+      superBowl,
+      mvp,
+      rookieOfYear,
+      defensivePlayerOfYear,
+      divisions: divisions.filter(Boolean),
     };
     return seasonFuturesCache;
   } catch (e) {
