@@ -3,6 +3,14 @@
    Used by draft-board.html, player-entry.html, team-picks.html
    =========================================================== */
 
+/* This class was previously only ever attached to elements created and
+   later .remove()'d from the DOM (see league-gate.js), never toggled
+   via the hidden attribute -- so the missing [hidden] override never
+   surfaced. The break-confirm overlay in player-entry.html toggles
+   hidden instead, and without this rule "display: flex" below beats
+   the browser's default [hidden] { display: none }, so the overlay
+   never actually disappears. */
+.league-gate-overlay[hidden] { display: none; }
 .league-gate-overlay {
   position: fixed;
   inset: 0;
