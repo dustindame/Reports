@@ -21,17 +21,19 @@ body {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.18), 0 0 70px -18px rgba(212, 175, 55, 0.35);
 }
 
-/* Export/view-board/message all live in one stack, bottom-right, so
-   they're reachable from the team-selection screen (not buried behind a
-   team pick) -- this is the "next to the send-a-message button" spot. */
+/* Export/view-board/message live in one row, top-right -- used to sit
+   bottom-right in a vertical stack, but that covered the bottom of the
+   Recent Picks list once the draft-wide stats were added below the
+   team grid. Top-right + horizontal keeps them out of the way of any
+   scrollable content. */
 .fab-stack {
   position: absolute;
-  bottom: 20px;
-  right: 20px;
+  top: 18px;
+  right: 16px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   z-index: 5;
 }
 .board-message-fab,
