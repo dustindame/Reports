@@ -416,39 +416,20 @@
     }).join("");
   }
 
+  // Season odds rotate one board at a time (Super Bowl, then NFC
+  // divisions, AFC divisions, MVP, ROY, DPOY) instead of one long
+  // scrollable list -- each slide fits without scrolling.
+  let oddsSlides = [];
+  let oddsSlideIndex = 0;
+  let oddsRotateTimer = null;
   let breakOddsLoaded = false;
-  async function renderBreakOdds() {
-    if (breakOddsLoaded) return; // futures don't change fast enough to refetch every break
-    const odds = await fetchSeasonFutures();
-    if (!odds) {
-      breakOddsNote.textContent = "Couldn't load season odds right now.";
-      return;
-    }
-    breakOddsLoaded = true;
-    breakOddsNote.textContent = "Full odds boards, via DraftKings.";
 
-    const nfcOrder = ["NFC East", "NFC North", "NFC South", "NFC West"];
-    const afcOrder = ["AFC East", "AFC North", "AFC South", "AFC West"];
-    const byLabel = (label) => (odds.divisions.find((d) => d.label === label) || {}).picks || [];
-
-    const categories = [
-      { heading: "Super Bowl", picks: odds.superBowl },
-      ...nfcOrder.map((label) => ({ heading: label, picks: byLabel(label) })),
-      ...afcOrder.map((label) => ({ heading: label, picks: byLabel(label) })),
-      { heading: "MVP", picks: odds.mvp },
-      { heading: "Rookie of the Year", picks: odds.rookieOfYear },
-      { heading: "Defensive Player of the Year", picks: odds.defensivePlayerOfYear },
-    ].filter((c) => c.picks && c.picks.length);
-
-    if (categories.length === 0) {
-      breakOddsNote.textContent = "No season odds posted yet.";
-      return;
-    }
-    breakOddsList.innerHTML = categories
+  function renderOddsSlide(groups) {
+    breakOddsList.innerHTML = groups
       .map(
-        (c) => `<div class="bo-category">
-          <div class="bo-cat-heading">${escapeHtml(c.heading)}</div>
-          ${c.picks
+        (g) => `<div class="bo-category">
+          ${g.subheading ? `<div class="bo-cat-heading">${escapeHtml(g.subheading)}</div>` : ""}
+          ${g.picks
             .map(
               (p) => `<div class="break-odds-row">
                 <span class="bor-pick">${escapeHtml(p.name)}</span>
@@ -459,6 +440,46 @@
         </div>`
       )
       .join("");
+  }
+
+  function rotateBreakOdds() {
+    if (!oddsSlides.length) return;
+    const slide = oddsSlides[oddsSlideIndex % oddsSlides.length];
+    oddsSlideIndex += 1;
+    breakOddsNote.textContent = `${slide.heading} — via DraftKings.`;
+    renderOddsSlide(slide.groups);
+  }
+
+  async function renderBreakOdds() {
+    if (breakOddsLoaded) return; // futures don't change fast enough to refetch every break
+    const odds = await fetchSeasonFutures();
+    if (!odds) {
+      breakOddsNote.textContent = "Couldn't load season odds right now.";
+      return;
+    }
+
+    const nfcOrder = ["NFC East", "NFC North", "NFC South", "NFC West"];
+    const afcOrder = ["AFC East", "AFC North", "AFC South", "AFC West"];
+    const byLabel = (label) => (odds.divisions.find((d) => d.label === label) || {}).picks || [];
+
+    oddsSlides = [
+      { heading: "Super Bowl", groups: [{ picks: odds.superBowl }] },
+      { heading: "NFC Divisional Odds", groups: nfcOrder.map((label) => ({ subheading: label, picks: byLabel(label) })) },
+      { heading: "AFC Divisional Odds", groups: afcOrder.map((label) => ({ subheading: label, picks: byLabel(label) })) },
+      { heading: "MVP", groups: [{ picks: odds.mvp }] },
+      { heading: "Rookie of the Year", groups: [{ picks: odds.rookieOfYear }] },
+      { heading: "Defensive Player of the Year", groups: [{ picks: odds.defensivePlayerOfYear }] },
+    ].filter((s) => s.groups.some((g) => g.picks && g.picks.length));
+
+    if (oddsSlides.length === 0) {
+      breakOddsNote.textContent = "No season odds posted yet.";
+      return;
+    }
+    breakOddsLoaded = true;
+    oddsSlideIndex = 0;
+    rotateBreakOdds();
+    clearInterval(oddsRotateTimer);
+    oddsRotateTimer = setInterval(rotateBreakOdds, 6000);
   }
 
   // Shows 2-3 facts at once (not one at a time) and swaps to a fresh,
@@ -508,6 +529,7 @@
     breakScreen.hidden = true;
     grid.hidden = false;
     clearInterval(factRotateTimer);
+    clearInterval(oddsRotateTimer);
     clearInterval(breakTimerInterval);
     layoutGrid();
     fitBoardToScreen();

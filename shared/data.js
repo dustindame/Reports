@@ -666,6 +666,19 @@ const NFL_FUN_FACTS = [
   "The Super Bowl halftime show budget is effectively $0 in performer fees -- artists play for exposure, not a paycheck.",
   "NFL teams can lose over 1,000 combined pounds of body weight (players' sweat) from both sidelines during a hot outdoor game.",
   "A single NFL stadium's grass field can require over 500,000 gallons of water a week to maintain during the season.",
+  "Tom Brady holds the all-time record for passing yards (89,214) and passing touchdowns (649).",
+  "Emmitt Smith is the NFL's all-time leading rusher with 18,355 career yards.",
+  "Jerry Rice holds the all-time receiving yards record (22,895) and receiving touchdowns record (197) -- both by wide margins.",
+  "Adam Vinatieri is the NFL's all-time leading scorer with 2,673 career points, almost all as a kicker.",
+  "Bruce Smith holds the official all-time sack record with 200, a mark that's stood since 2003.",
+  "Morten Andersen made the most career field goals of any kicker, with 565.",
+  "Jerry Rice also holds the all-time record for receptions with 1,549 career catches.",
+  "Peyton Manning's 5,477 passing yards in the 2013 season is the single-season passing yards record.",
+  "LaDainian Tomlinson's 31 rushing touchdowns in 2006 is still the single-season rushing TD record.",
+  "Devin Hester retired as the NFL's all-time leader in combined kick/punt return touchdowns with 20.",
+  "The Pittsburgh Steelers have won six Super Bowls, tied with the New England Patriots for the most of any franchise.",
+  "Don Shula won more regular-season games as a head coach (328) than anyone else in NFL history.",
+  "Brett Favre played 297 consecutive starts at quarterback, an NFL ironman record that still stands.",
 ];
 
 /* Folds any picks logged on Player Entry (via DraftStore) into MOCK_DRAFT
