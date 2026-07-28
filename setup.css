@@ -200,6 +200,17 @@ body {
   padding: 0;
   flex: none;
 }
+/* .budget-input's flex: 1 is meant for its standalone, full-width use
+   (Draft Board Name) -- nested here next to a fixed-width label, that
+   made this control group balloon to fill all the row's remaining
+   space, squeezing "Budget per Team" down to a sliver and pushing the
+   + button out of view. A fixed width (room for 3-digit dollar
+   amounts) keeps it the same compact size as the Number of Teams
+   stepper. */
+.slot-row .budget-input-wrap .budget-input {
+  flex: none;
+  width: 46px;
+}
 .budget-input {
   flex: 1;
   min-width: 0;
@@ -232,9 +243,9 @@ body {
   border-radius: var(--radius-md);
   padding: 10px 12px;
 }
-.slot-row-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text); }
+.slot-row-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text); flex: none; }
 .slot-row-pos-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: 0 0 6px currentColor; }
-.slot-row-stepper { display: flex; align-items: center; gap: 10px; }
+.slot-row-stepper { display: flex; align-items: center; gap: 10px; flex: none; }
 .slot-row-stepper .stepper-btn { width: 30px; height: 30px; font-size: 16px; }
 .slot-row-stepper .stepper-value { min-width: 22px; font-size: 15px; }
 
