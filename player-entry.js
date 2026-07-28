@@ -20,10 +20,6 @@
   const recentPicksList = document.getElementById("recentPicksList");
   const pickSearchInput = document.getElementById("pickSearchInput");
 
-  document.getElementById("footballIcon").innerHTML = Icons.football(26, "var(--qb)");
-  document.getElementById("footballIcon2").innerHTML = Icons.football(26, "var(--qb)");
-  document.getElementById("pylonLeft").innerHTML = Icons.pylon(20);
-  document.getElementById("pylonRight").innerHTML = Icons.pylon(20);
   document.getElementById("setupGear").innerHTML = Icons.whistle(18);
   document.getElementById("searchIcon").innerHTML = Icons.search(18);
   document.getElementById("flagIcon").innerHTML = Icons.flag(20);
@@ -335,15 +331,17 @@
      Not available in demo mode (no backend to toggle a break against).
      While on break, the Draft Board switches to a screen with season
      betting odds and NFL trivia (see draft-board.js). */
-  const breakSection = document.getElementById("breakSection");
   const breakToggleBtn = document.getElementById("breakToggleBtn");
+  const breakConfirmOverlay = document.getElementById("breakConfirmOverlay");
+  const breakConfirmYes = document.getElementById("breakConfirmYes");
+  const breakConfirmNo = document.getElementById("breakConfirmNo");
 
   function updateBreakUi() {
     breakToggleBtn.textContent = ON_BREAK ? "END BREAK" : "START BREAK";
     breakToggleBtn.classList.toggle("active", ON_BREAK);
   }
 
-  breakToggleBtn.addEventListener("click", async () => {
+  async function doBreakToggle() {
     breakToggleBtn.disabled = true;
     const pinHash = LeagueSession.getPinHash(CURRENT_LEAGUE_CODE);
     const { error } = await DraftStore.setBreak(!ON_BREAK, pinHash);
@@ -361,6 +359,25 @@
     ON_BREAK = !ON_BREAK;
     updateBreakUi();
     showToast(ON_BREAK ? "Break started" : "Break ended");
+  }
+
+  // Starting a break is a one-tap, wide-blast-radius action (it flips
+  // the Draft Board for everyone watching) -- confirm it explicitly so
+  // a stray tap can't trigger it. Ending a break doesn't need the same
+  // guard, so it stays a direct toggle.
+  breakToggleBtn.addEventListener("click", () => {
+    if (ON_BREAK) {
+      doBreakToggle();
+      return;
+    }
+    breakConfirmOverlay.hidden = false;
+  });
+  breakConfirmYes.addEventListener("click", () => {
+    breakConfirmOverlay.hidden = true;
+    doBreakToggle();
+  });
+  breakConfirmNo.addEventListener("click", () => {
+    breakConfirmOverlay.hidden = true;
   });
 
   async function confirmPick() {
@@ -528,6 +545,6 @@
   updateConfirmState();
   setHandle(0);
 
-  breakSection.hidden = !CURRENT_LEAGUE_CODE; // demo mode has no league to toggle a break for
+  breakToggleBtn.hidden = !CURRENT_LEAGUE_CODE; // demo mode has no league to toggle a break for
   if (CURRENT_LEAGUE_CODE) updateBreakUi();
 })();

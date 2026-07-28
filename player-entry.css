@@ -25,20 +25,29 @@ body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  /* Same field photo as the Draft Board header, with the same dark
+     overlay gradient for text contrast, instead of just the plain turf
+     pattern (.turf-bg) every other screen uses. */
+  background-image: linear-gradient(180deg, rgba(6, 8, 12, 0.72) 0%, rgba(6, 8, 12, 0.88) 100%), url("shared/images/field-bg.jpg");
+  background-size: cover;
+  background-position: center 65%;
 }
 
 /* ---------------- Header ---------------- */
 
 .entry-header {
-  padding: 22px 16px 0;
+  padding: 16px 16px 0;
   flex: none;
-  position: relative;
+}
+
+.header-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .setup-link {
-  position: absolute;
-  top: 20px;
-  right: 16px;
   background: var(--panel-alt);
   border: 1px solid var(--border);
   border-radius: 50%;
@@ -48,6 +57,7 @@ body {
   align-items: center;
   justify-content: center;
   text-decoration: none;
+  flex: none;
 }
 .setup-link:hover { border-color: var(--gold-dim); }
 
@@ -56,19 +66,27 @@ body {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  margin-top: 6px;
 }
 
+/* Same treatment as the Draft Board title: plain white text with a
+   hard (0-blur) blue outline, no glow/drop-shadow. */
 .entry-title {
   margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  color: var(--text);
-  text-shadow: 0 0 16px rgba(212, 175, 55, 0.3);
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  color: #fff;
+  text-shadow:
+    -1px 0 0 #2f6fed,
+    1px 0 0 #2f6fed,
+    0 -1px 0 #2f6fed,
+    0 1px 0 #2f6fed,
+    -1px -1px 0 #2f6fed,
+    1px -1px 0 #2f6fed,
+    -1px 1px 0 #2f6fed,
+    1px 1px 0 #2f6fed;
 }
-
-.football-icon, .pylon-icon { display: flex; line-height: 0; }
-.football-icon svg { filter: drop-shadow(0 0 6px rgba(139, 30, 30, 0.5)); }
 
 .first-down-line {
   margin-top: 14px;
@@ -118,25 +136,27 @@ body {
 
 /* ---------------- Break mode ---------------- */
 
-.break-section[hidden] { display: none; }
+/* Now lives in the header's top row next to the settings gear (not its
+   own full-width section below the slide-to-confirm) -- compact pill
+   sized to sit comfortably beside the 34px gear button. */
 .break-toggle-btn {
-  width: 100%;
-  padding: 12px;
-  border-radius: var(--radius-md);
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--panel-alt-grad);
   color: var(--text);
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 800;
   letter-spacing: 0.5px;
   cursor: pointer;
 }
+.break-toggle-btn[hidden] { display: none; }
 .break-toggle-btn.active {
   background: linear-gradient(180deg, #e8544a, #c53d3d);
   border-color: #c53d3d;
   color: #fff;
 }
-.break-hint { font-size: 12px; color: var(--text-faint); margin: 8px 0 0; line-height: 1.4; }
 
 /* ---------------- Search ---------------- */
 
