@@ -20,6 +20,68 @@
     recapBanner.hidden = draftedCount() < TOTAL_SLOTS;
   }
 
+  /* ---------------- Draft-wide stats (shown on the team-picker screen) ----------------
+     Same widgets as the Draft Board header -- total drafted/progress,
+     drafted-by-position counts, and the most recent picks -- so anyone
+     on Team Picks can see where the draft stands without needing the
+     board itself. */
+  const picksDraftedValue = document.getElementById("picksDraftedValue");
+  const picksRemainingValue = document.getElementById("picksRemainingValue");
+  const picksProgressFill = document.getElementById("picksProgressFill");
+  const picksPositionTotalsRow = document.getElementById("picksPositionTotalsRow");
+  const picksRecentStrip = document.getElementById("picksRecentStrip");
+
+  function renderPicksTracker() {
+    const drafted = draftedCount();
+    picksDraftedValue.textContent = `${drafted} / ${TOTAL_SLOTS}`;
+    picksRemainingValue.textContent = TOTAL_SLOTS - drafted;
+    picksProgressFill.style.width = `${(drafted / TOTAL_SLOTS) * 100}%`;
+  }
+
+  function renderPicksPositionTotals() {
+    const hasDef = ROSTER_SLOTS.includes("DEF");
+    const positions = hasDef ? ["QB", "RB", "WR", "TE", "DEF"] : ["QB", "RB", "WR", "TE"];
+    const counts = {};
+    positions.forEach((p) => { counts[p] = 0; });
+    MOCK_DRAFT.picks.forEach((p) => {
+      if (counts[p.position] !== undefined) counts[p.position] += 1;
+    });
+    picksPositionTotalsRow.innerHTML = positions
+      .map(
+        (pos) => `<div class="pt-chip">
+          <span class="pt-pos" style="color:var(${POSITION_COLOR_VAR[pos]})">${pos}</span>
+          <span class="pt-count">${counts[pos]}</span>
+        </div>`
+      )
+      .join("");
+  }
+
+  function shortPlayerName(name) {
+    const idx = name.indexOf(" ");
+    return idx === -1 ? name : `${name[0]}. ${name.slice(idx + 1)}`;
+  }
+
+  function renderPicksRecent() {
+    const recent = recentPicks(4);
+    picksRecentStrip.innerHTML = recent.length
+      ? recent
+          .map(
+            (p) => `<div class="recent-chip">
+              <span class="rc-pos-dot" style="background: var(${POSITION_COLOR_VAR[p.position]})"></span>
+              <span class="rc-name">${escapeHtml(shortPlayerName(p.name))}</span>
+              <span class="rc-price" style="color: var(${POSITION_COLOR_VAR[p.position]})">$${p.price}</span>
+            </div>`
+          )
+          .join("")
+      : `<div class="recent-chip"><span class="rc-name">No picks yet</span></div>`;
+  }
+
+  function renderDraftStats() {
+    renderPicksTracker();
+    renderPicksPositionTotals();
+    renderPicksRecent();
+  }
+
   let currentTeamId = null;
 
   function renderTeamGrid() {
@@ -182,9 +244,11 @@
   viewBoardBtn.href = `draft-board.html${CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : ""}`;
   await applyLivePicks();
   updateRecapBanner();
+  renderDraftStats();
   DraftStore.onChange(async () => {
     await applyLivePicks();
     updateRecapBanner();
+    renderDraftStats();
     if (!rosterView.hidden && currentTeamId) showRoster(currentTeamId);
   });
 
