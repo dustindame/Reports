@@ -408,8 +408,8 @@ body { overflow: hidden; height: 100vh; }
    made the whole screen feel oversized once scaled to fill a display. */
 .break-screen[hidden] { display: none; }
 .break-screen {
-  width: 1000px;
-  height: 480px;
+  width: 1200px;
+  height: 620px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -445,7 +445,7 @@ body { overflow: hidden; height: 100vh; }
    board's measured height never jumps around between renders, which is
    what made fitBoardToScreen's scale flicker/resize unpredictably with
    the old poll-or-nothing card. */
-.break-screen-body { flex: 1.3; min-height: 0; display: flex; gap: 10px; }
+.break-screen-body { flex: none; height: 150px; display: flex; gap: 10px; }
 .break-section-heading {
   font-size: 11px;
   font-weight: 900;
@@ -477,10 +477,13 @@ body { overflow: hidden; height: 100vh; }
 .break-fact-item { font-size: 11.5px; line-height: 1.35; color: var(--text-dim); font-style: italic; padding-bottom: 6px; border-bottom: 1px solid var(--border-soft); }
 .break-fact-item:last-child { border-bottom: none; padding-bottom: 0; }
 
-/* Condensed team board -- Team/Max Bid/Remaining merged into a single
-   cell per team (instead of three separate grid columns like the real
-   board) so the whole league fits in a couple of compact rows. */
-.break-mini-board {
+/* A genuinely different presentation of the same draft data as the
+   normal grid, not a shrunk copy of it: one row per team (colored dot +
+   name + a merged max/remaining budget chip), followed by every player
+   they've drafted so far as small position-colored chips wrapped inline
+   -- instead of the normal grid's fixed columns-per-roster-slot layout,
+   which doesn't compress well at this scale. */
+.break-roster-board {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -491,27 +494,46 @@ body { overflow: hidden; height: 100vh; }
   border-radius: var(--radius-md);
   padding: 10px 12px;
 }
-.break-mini-grid {
+.break-roster-list {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
-}
-.break-mini-cell {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 6px;
-  padding: 4px 8px;
+}
+.break-roster-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 8px;
   border-radius: var(--radius-sm);
   background: var(--panel-alt);
   border: 1px solid var(--border-soft);
-  overflow: hidden;
 }
-.break-mini-cell .bmc-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-.break-mini-cell .bmc-text { font-size: 10.5px; font-weight: 600; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.break-mini-cell .bmc-text b { color: var(--text); font-weight: 800; }
+.break-roster-row .brr-team {
+  flex: none;
+  width: 190px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 1px;
+}
+.break-roster-row .brr-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.break-roster-row .brr-name { font-size: 11px; font-weight: 800; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.break-roster-row .brr-budget { font-size: 9.5px; color: var(--text-faint); white-space: nowrap; }
+.break-roster-row .brr-picks { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 3px; align-content: flex-start; }
+.brr-pick-chip {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--border-soft);
+  white-space: nowrap;
+}
+.brr-pick-chip .brc-price { font-weight: 800; margin-left: 3px; }
+.brr-empty-note { font-size: 9.5px; color: var(--text-faint); font-style: italic; padding-top: 2px; }
 
 /* ---------------- Ticker ---------------- */
 
