@@ -27,9 +27,8 @@
   const recapLink = document.getElementById("recapLink");
   const breakScreen = document.getElementById("breakScreen");
   const breakTimer = document.getElementById("breakTimer");
-  const breakPollCard = document.getElementById("breakPollCard");
-  const breakPollQuestion = document.getElementById("breakPollQuestion");
-  const breakPollResults = document.getElementById("breakPollResults");
+  const breakOddsNote = document.getElementById("breakOddsNote");
+  const breakOddsList = document.getElementById("breakOddsList");
   const breakFactList = document.getElementById("breakFactList");
 
   document.getElementById("exportIcon").innerHTML = Icons.download(16, "#fff");
@@ -386,32 +385,40 @@
   }
 
   /* ---------------- Break screen ----------------
-     Swaps the full roster grid for a live poll (if anyone's started one
-     from Team Picks) + a rotating set of NFL trivia, whenever the league
-     is on_break. (An earlier version also showed a plain team-name
-     list, but it wasn't serving any purpose -- removed.) */
-
-  let currentPoll = null;
-  async function refreshBreakPoll() {
-    const poll = await DraftStore.getActivePoll();
-    if (!poll) {
-      currentPoll = null;
-      breakPollCard.hidden = true;
+     Swaps the full roster grid for season betting odds (Super Bowl,
+     division winners, MVP, Rookie of the Year) + a rotating set of NFL
+     trivia, whenever the league is on_break. (Earlier versions of this
+     screen showed a plain team-name list, then a live fan poll -- both
+     removed; the poll in particular was rendered conditionally
+     hidden/shown, which changed the break screen's measured height
+     between renders and made fitBoardToScreen's scale flicker. Both
+     cards here are always present so that can't happen anymore.) */
+  let breakOddsLoaded = false;
+  async function renderBreakOdds() {
+    if (breakOddsLoaded) return; // futures don't change fast enough to refetch every break
+    const odds = await fetchSeasonFutures();
+    if (!odds) {
+      breakOddsNote.textContent = "Couldn't load season odds right now.";
       return;
     }
-    const votes = await DraftStore.getPollVotes(poll.id);
-    currentPoll = poll;
-    breakPollCard.hidden = false;
-    breakPollQuestion.textContent = poll.question;
-    const counts = poll.options.map((_, i) => votes.filter((v) => v.optionIndex === i).length);
-    const total = votes.length;
-    const maxCount = Math.max(...counts, 1);
-    breakPollResults.innerHTML = poll.options
+    breakOddsLoaded = true;
+    breakOddsNote.textContent = "Current favorites, via DraftKings.";
+    const rows = [];
+    if (odds.superBowl) rows.push({ label: "Super Bowl", pick: odds.superBowl.name, value: odds.superBowl.value });
+    odds.divisions.forEach((d) => rows.push({ label: d.label, pick: d.name, value: d.value }));
+    if (odds.mvp) rows.push({ label: "MVP", pick: odds.mvp.name, value: odds.mvp.value });
+    if (odds.rookieOfYear) rows.push({ label: "Rookie of the Year", pick: odds.rookieOfYear.name, value: odds.rookieOfYear.value });
+
+    if (rows.length === 0) {
+      breakOddsNote.textContent = "No season odds posted yet.";
+      return;
+    }
+    breakOddsList.innerHTML = rows
       .map(
-        (opt, i) => `<div class="break-poll-result-row">
-          <span class="bpr-label">${escapeHtml(opt)}</span>
-          <span class="bpr-track"><span class="bpr-fill" style="width:${((counts[i] / maxCount) * 100).toFixed(1)}%"></span></span>
-          <span class="bpr-count">${counts[i]}${total ? ` (${Math.round((counts[i] / total) * 100)}%)` : ""}</span>
+        (r) => `<div class="break-odds-row">
+          <span class="bor-label">${escapeHtml(r.label)}</span>
+          <span class="bor-pick">${escapeHtml(r.pick)}</span>
+          <span class="bor-value">${escapeHtml(r.value)}</span>
         </div>`
       )
       .join("");
@@ -444,7 +451,7 @@
     grid.hidden = true;
     breakScreen.hidden = false;
     boardContent.style.width = ""; // let the break screen's own fixed width drive natural sizing
-    refreshBreakPoll();
+    renderBreakOdds();
     factPool = [];
     rotateBreakFacts();
     clearInterval(factRotateTimer);
@@ -601,11 +608,5 @@
     } else {
       exitBreakMode();
     }
-  });
-
-  // While on break, a new poll starting, closing, or a vote coming in
-  // should update the results shown on the board live.
-  DraftStore.onPollChange(() => {
-    if (ON_BREAK) refreshBreakPoll();
   });
 })();
