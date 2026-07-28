@@ -693,6 +693,163 @@ const NFL_FUN_FACTS = [
   "Peyton Manning holds the record for most career MVP awards, with 5.",
 ];
 
+/* Static top-10 all-time career leaderboards for the Draft Board's break
+   screen -- same rationale as NFL_FUN_FACTS (local, no network
+   dependency, doesn't need to be exact-to-the-yard to be fun trivia).
+   Rendered two categories at a time, rotating through the rest. */
+const ALL_TIME_LEADERS = [
+  {
+    category: "Passing Yards",
+    entries: [
+      { name: "Tom Brady", value: "89,214" },
+      { name: "Drew Brees", value: "80,358" },
+      { name: "Peyton Manning", value: "71,940" },
+      { name: "Brett Favre", value: "71,838" },
+      { name: "Philip Rivers", value: "63,440" },
+      { name: "Ben Roethlisberger", value: "64,088" },
+      { name: "Matt Ryan", value: "62,792" },
+      { name: "Eli Manning", value: "57,023" },
+      { name: "Aaron Rodgers", value: "62,343" },
+      { name: "Matthew Stafford", value: "56,921" },
+    ],
+  },
+  {
+    category: "Passing Touchdowns",
+    entries: [
+      { name: "Tom Brady", value: "649" },
+      { name: "Drew Brees", value: "571" },
+      { name: "Peyton Manning", value: "539" },
+      { name: "Brett Favre", value: "508" },
+      { name: "Aaron Rodgers", value: "500" },
+      { name: "Philip Rivers", value: "421" },
+      { name: "Ben Roethlisberger", value: "418" },
+      { name: "Matt Ryan", value: "381" },
+      { name: "Eli Manning", value: "366" },
+      { name: "Fran Tarkenton", value: "342" },
+    ],
+  },
+  {
+    category: "Rushing Yards",
+    entries: [
+      { name: "Emmitt Smith", value: "18,355" },
+      { name: "Walter Payton", value: "16,726" },
+      { name: "Frank Gore", value: "16,000" },
+      { name: "Barry Sanders", value: "15,269" },
+      { name: "Adrian Peterson", value: "14,918" },
+      { name: "Curtis Martin", value: "14,101" },
+      { name: "LaDainian Tomlinson", value: "13,684" },
+      { name: "Jerome Bettis", value: "13,662" },
+      { name: "Eric Dickerson", value: "13,259" },
+      { name: "Tony Dorsett", value: "12,739" },
+    ],
+  },
+  {
+    category: "Rushing Touchdowns",
+    entries: [
+      { name: "Emmitt Smith", value: "164" },
+      { name: "LaDainian Tomlinson", value: "145" },
+      { name: "Marcus Allen", value: "123" },
+      { name: "Adrian Peterson", value: "120" },
+      { name: "Jim Brown", value: "106" },
+      { name: "Walter Payton", value: "110" },
+      { name: "John Riggins", value: "104" },
+      { name: "Shaun Alexander", value: "100" },
+      { name: "Barry Sanders", value: "99" },
+      { name: "Marshall Faulk", value: "100" },
+    ],
+  },
+  {
+    category: "Receptions",
+    entries: [
+      { name: "Jerry Rice", value: "1,549" },
+      { name: "Larry Fitzgerald", value: "1,432" },
+      { name: "Tony Gonzalez", value: "1,325" },
+      { name: "Jason Witten", value: "1,228" },
+      { name: "Marvin Harrison", value: "1,102" },
+      { name: "Tim Brown", value: "1,094" },
+      { name: "Terrell Owens", value: "1,078" },
+      { name: "Reggie Wayne", value: "1,070" },
+      { name: "Andre Johnson", value: "1,062" },
+      { name: "Antonio Gates", value: "955" },
+    ],
+  },
+  {
+    category: "Receiving Yards",
+    entries: [
+      { name: "Jerry Rice", value: "22,895" },
+      { name: "Larry Fitzgerald", value: "17,492" },
+      { name: "Terrell Owens", value: "15,934" },
+      { name: "Randy Moss", value: "15,292" },
+      { name: "Isaac Bruce", value: "15,208" },
+      { name: "Marvin Harrison", value: "14,580" },
+      { name: "Tony Gonzalez", value: "15,127" },
+      { name: "Tim Brown", value: "14,934" },
+      { name: "Steve Smith Sr.", value: "14,731" },
+      { name: "Reggie Wayne", value: "14,345" },
+    ],
+  },
+  {
+    category: "Receiving Touchdowns",
+    entries: [
+      { name: "Jerry Rice", value: "197" },
+      { name: "Randy Moss", value: "156" },
+      { name: "Terrell Owens", value: "153" },
+      { name: "Cris Carter", value: "130" },
+      { name: "Marvin Harrison", value: "128" },
+      { name: "Antonio Gates", value: "116" },
+      { name: "Tony Gonzalez", value: "111" },
+      { name: "Don Hutson", value: "99" },
+      { name: "Steve Largent", value: "100" },
+      { name: "Tim Brown", value: "100" },
+    ],
+  },
+  {
+    category: "Career Sacks",
+    entries: [
+      { name: "Bruce Smith", value: "200" },
+      { name: "Reggie White", value: "198" },
+      { name: "Kevin Greene", value: "160" },
+      { name: "Chris Doleman", value: "150.5" },
+      { name: "Michael Strahan", value: "141.5" },
+      { name: "Jason Taylor", value: "139.5" },
+      { name: "DeMarcus Ware", value: "138.5" },
+      { name: "Richard Dent", value: "137.5" },
+      { name: "John Randle", value: "137.5" },
+      { name: "Leslie O'Neal", value: "132.5" },
+    ],
+  },
+  {
+    category: "Career Interceptions",
+    entries: [
+      { name: "Paul Krause", value: "81" },
+      { name: "Emlen Tunnell", value: "79" },
+      { name: "Rod Woodson", value: "71" },
+      { name: "Dick \"Night Train\" Lane", value: "68" },
+      { name: "Ken Riley", value: "65" },
+      { name: "Ronnie Lott", value: "63" },
+      { name: "Dave Brown", value: "62" },
+      { name: "Dick LeBeau", value: "62" },
+      { name: "Emmitt Thomas", value: "58" },
+      { name: "Aeneas Williams", value: "55" },
+    ],
+  },
+  {
+    category: "Field Goals Made",
+    entries: [
+      { name: "Adam Vinatieri", value: "599" },
+      { name: "Morten Andersen", value: "565" },
+      { name: "Gary Anderson", value: "538" },
+      { name: "Jason Hanson", value: "495" },
+      { name: "John Carney", value: "478" },
+      { name: "Matt Stover", value: "471" },
+      { name: "Jason Elam", value: "436" },
+      { name: "Robbie Gould", value: "440" },
+      { name: "Phil Dawson", value: "441" },
+      { name: "Stephen Gostkowski", value: "436" },
+    ],
+  },
+];
+
 /* Folds any picks logged on Player Entry (via DraftStore) into MOCK_DRAFT
    so the Draft Board / Team Picks views reflect them. Call once on load
    (after configReady) and again whenever DraftStore.onChange fires. */
