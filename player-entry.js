@@ -383,6 +383,27 @@
     breakConfirmOverlay.hidden = true;
   });
 
+  // Editing Settings after the draft has already started wipes every
+  // pick logged so far (see setup.js's "SAVE CHANGES" flow) -- warn
+  // right at the point of clicking the gear, before the commissioner
+  // even lands on that page, not just once they're already there.
+  const setupLink = document.querySelector(".setup-link");
+  const settingsConfirmOverlay = document.getElementById("settingsConfirmOverlay");
+  const settingsConfirmYes = document.getElementById("settingsConfirmYes");
+  const settingsConfirmNo = document.getElementById("settingsConfirmNo");
+
+  setupLink.addEventListener("click", (e) => {
+    if (draftedCount() === 0) return; // nothing to lose yet -- go straight through
+    e.preventDefault();
+    settingsConfirmOverlay.hidden = false;
+  });
+  settingsConfirmYes.addEventListener("click", () => {
+    window.location.href = setupLink.href;
+  });
+  settingsConfirmNo.addEventListener("click", () => {
+    settingsConfirmOverlay.hidden = true;
+  });
+
   async function confirmPick() {
     if (!isReady()) return;
     const team = teamById(selectedTeamId);
