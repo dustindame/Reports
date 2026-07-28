@@ -54,13 +54,17 @@ body {
 .board-fab:active { transform: scale(0.95); }
 .board-message-fab[hidden],
 .board-fab[hidden] { display: none; }
+/* Transparent circle + white-only icon (matches the Draft Board
+   header's tool buttons) instead of a solid filled background --
+   lets these sit over the field-photo background without a heavy
+   opaque disc competing with it. */
 .board-fab {
   width: 46px;
   height: 46px;
-  background: var(--panel-alt);
-  border: 1px solid var(--border);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
-  color: var(--text);
+  background: rgba(8, 10, 14, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: none;
+  color: #fff;
 }
 
 .phone-screen {
@@ -68,13 +72,19 @@ body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  /* Same field photo + dark overlay gradient as the Draft Board header
+     and the Enter Pick screen, instead of just the plain turf pattern
+     (.turf-bg). */
+  background-image: linear-gradient(180deg, rgba(6, 8, 12, 0.72) 0%, rgba(6, 8, 12, 0.88) 100%), url("shared/images/field-bg.jpg");
+  background-size: cover;
+  background-position: center 65%;
 }
 
 /* ---------------- Header ---------------- */
 
 .picks-header {
   flex: none;
-  padding: 24px 16px 0;
+  padding: 24px 16px 18px;
   position: relative;
 }
 .back-btn[hidden] { display: none; }
@@ -99,25 +109,6 @@ body {
   gap: 10px;
 }
 .picks-title { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: 0.5px; }
-.header-football { line-height: 0; }
-.pylon-icon { display: flex; line-height: 0; }
-
-.first-down-line {
-  margin-top: 14px;
-  height: 26px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, var(--gold-bright) 20%, var(--gold-bright) 80%, transparent);
-  box-shadow: 0 0 18px 2px rgba(242, 193, 78, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.first-down-text {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 3px;
-  color: #241a03;
-}
 
 /* ---------------- Main ---------------- */
 

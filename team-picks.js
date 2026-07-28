@@ -11,13 +11,10 @@
   const exportDraftBtn = document.getElementById("exportDraftBtn");
   const viewBoardBtn = document.getElementById("viewBoardBtn");
 
-  document.getElementById("headerFootball").innerHTML = Icons.helmet(24);
   document.getElementById("backIcon").innerHTML = Icons.chevronLeft(16);
-  document.getElementById("pylonLeft").innerHTML = Icons.pylon(18);
-  document.getElementById("pylonRight").innerHTML = Icons.pylon(18);
   document.getElementById("recapBannerIcon").innerHTML = Icons.barChart(16, "#1a1305");
   document.getElementById("exportDraftIcon").innerHTML = Icons.download(20, "#fff");
-  document.getElementById("viewBoardIcon").innerHTML = Icons.field(20, "#1a1305");
+  document.getElementById("viewBoardIcon").innerHTML = Icons.field(20, "#fff");
 
   function updateRecapBanner() {
     recapBanner.hidden = draftedCount() < TOTAL_SLOTS;
