@@ -136,17 +136,17 @@ body {
 
 /* ---------------- Break mode ---------------- */
 
-/* Now lives in the header's top row next to the settings gear (not its
-   own full-width section below the slide-to-confirm) -- compact pill
-   sized to sit comfortably beside the 34px gear button. */
+/* Small pill next to the title (not its own full-width section below
+   the slide-to-confirm) -- on/off state is conveyed by color, so the
+   label just reads "Break" rather than "START BREAK"/"END BREAK". */
 .break-toggle-btn {
-  flex: 1;
-  padding: 8px 4px;
+  flex: none;
+  padding: 4px 12px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--panel-alt-grad);
   color: var(--text);
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.5px;
   cursor: pointer;
