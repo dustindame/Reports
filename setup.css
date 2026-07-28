@@ -48,18 +48,6 @@ body {
   justify-content: space-between;
   gap: 8px;
 }
-.back-btn {
-  background: var(--panel-alt);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  flex: none;
-}
 /* Same treatment as the other pages' titles: plain white text with a
    hard (0-blur) blue outline, no glow/drop-shadow. */
 .setup-title {
@@ -103,41 +91,35 @@ body {
   color: var(--text-faint);
   margin-bottom: 10px;
 }
+/* Blue (same hue as the title outline) replaces gold as this screen's
+   primary interactive accent -- section markers, stepper buttons,
+   focus rings, toggles, and the league code all pick it up below, so
+   it reads as one consistent accent instead of gold used for
+   everything indiscriminately. */
 .section-label::before {
   content: "";
   width: 3px;
   height: 11px;
   border-radius: 2px;
-  background: linear-gradient(180deg, var(--gold-bright), var(--gold-dim));
+  background: linear-gradient(180deg, #59a6f2, #2f6fed);
   flex: none;
 }
 
 /* ---------------- Steppers ---------------- */
 
-.stepper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  background: var(--panel-grad);
-  box-shadow: var(--panel-sheen);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 10px;
-}
 .stepper-btn {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid var(--gold-dim);
+  border: 1px solid #3f5f9e;
   background: var(--panel-alt);
-  color: var(--gold-bright);
+  color: #59a6f2;
   font-size: 22px;
   font-weight: 800;
   cursor: pointer;
   line-height: 1;
 }
-.stepper-btn:hover { border-color: var(--gold); }
+.stepper-btn:hover { border-color: #2f6fed; }
 .stepper-btn:active { transform: scale(0.95); }
 .stepper-value {
   min-width: 40px;
@@ -161,10 +143,10 @@ body {
   font-size: 30px;
   font-weight: 800;
   letter-spacing: 6px;
-  color: var(--gold-bright);
+  color: #59a6f2;
   background: var(--panel-grad);
-  box-shadow: var(--panel-sheen), 0 0 20px -8px rgba(212, 175, 55, 0.35);
-  border: 1px solid var(--gold-dim);
+  box-shadow: var(--panel-sheen), 0 0 20px -8px rgba(47, 111, 237, 0.4);
+  border: 1px solid #3f5f9e;
   border-radius: var(--radius-lg);
   padding: 16px;
   font-variant-numeric: tabular-nums;
@@ -188,10 +170,15 @@ body {
   font-family: inherit;
   transition: border-color 0.15s ease;
 }
-.pin-input:focus { border-color: var(--gold-dim); }
+.pin-input:focus { border-color: #2f6fed; }
 
 /* ---------------- Budget ---------------- */
 
+/* Nested inside a .slot-row (see Number of Teams below), the panel
+   chrome (background/border/padding) would double up with the row's
+   own -- so it's stripped there and this becomes a plain control
+   group, matching how .slot-row-stepper looks. Standalone uses (the
+   Draft Board Name input) keep the full boxed treatment. */
 .budget-input-wrap {
   display: flex;
   align-items: center;
@@ -203,9 +190,16 @@ body {
   padding: 12px 16px;
   transition: border-color 0.15s ease;
 }
-.budget-input-wrap:focus-within { border-color: var(--gold-dim); }
+.budget-input-wrap:focus-within { border-color: #2f6fed; }
 .budget-input-wrap .stepper-btn { width: 32px; height: 32px; font-size: 18px; flex: none; }
-.budget-dollar { font-size: 20px; font-weight: 800; color: var(--gold-bright); }
+.budget-dollar { font-size: 20px; font-weight: 800; color: var(--text); }
+.slot-row .budget-input-wrap {
+  background: none;
+  box-shadow: none;
+  border: none;
+  padding: 0;
+  flex: none;
+}
 .budget-input {
   flex: 1;
   min-width: 0;
@@ -305,12 +299,12 @@ body {
   transition: transform 0.15s ease, background 0.15s ease;
 }
 .toggle-switch:checked {
-  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
-  border-color: var(--gold-dim);
+  background: linear-gradient(180deg, #59a6f2, #2f6fed);
+  border-color: #3f5f9e;
 }
 .toggle-switch:checked::before {
   transform: translateX(18px);
-  background: #201703;
+  background: #0c1830;
 }
 
 /* ---------------- Team names ---------------- */
@@ -334,7 +328,7 @@ body {
   padding: 8px 12px;
   transition: border-color 0.15s ease;
 }
-.team-name-row:focus-within { border-color: var(--gold-dim); }
+.team-name-row:focus-within { border-color: #2f6fed; }
 .tn-dot { width: 12px; height: 12px; border-radius: 50%; flex: none; box-shadow: 0 0 6px currentColor; }
 .tn-input {
   flex: 1;
@@ -348,13 +342,16 @@ body {
 
 /* ---------------- Warning + save ---------------- */
 
+/* Warnings keep a warm caution color (reusing the TE position's
+   orange), distinct from the blue used everywhere else on this
+   screen -- a warning shouldn't blend in as just another accent. */
 .warning-box {
-  background: linear-gradient(155deg, rgba(212, 175, 55, 0.11) 0%, rgba(212, 175, 55, 0.05) 100%);
-  border: 1px solid var(--gold-dim);
+  background: linear-gradient(155deg, rgba(217, 130, 43, 0.14) 0%, rgba(217, 130, 43, 0.05) 100%);
+  border: 1px solid #a5651f;
   border-radius: var(--radius-md);
   padding: 12px 14px;
   font-size: 12.5px;
-  color: var(--gold-bright);
+  color: #f2a541;
   line-height: 1.5;
 }
 
@@ -365,18 +362,21 @@ body {
   padding: 4px 8px;
 }
 
+/* Green for the primary create/save action -- a distinct "go" color
+   from the blue used for the screen's general interactive chrome, so
+   the one button that actually commits changes still stands out. */
 .save-btn {
   width: 100%;
   padding: 16px;
   border-radius: 999px;
   border: none;
-  background: linear-gradient(180deg, var(--gold-bright), var(--gold));
-  color: #201703;
+  background: linear-gradient(180deg, #4caf50, #2e7d32);
+  color: #0d1f0e;
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 1px;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(212, 175, 55, 0.3);
+  box-shadow: 0 6px 18px rgba(46, 125, 50, 0.35);
 }
 .save-btn:disabled {
   background: var(--panel-alt);

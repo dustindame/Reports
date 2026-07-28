@@ -33,7 +33,6 @@
   const switchToCreateBtn = document.getElementById("switchToCreateBtn");
 
   document.getElementById("headerGear").innerHTML = Icons.whistle(22);
-  document.getElementById("backIcon").innerHTML = Icons.chevronLeft(16);
 
   const SLOT_TYPES = ["QB", "RB", "WR", "TE", "DEF", "FLEX", "BENCH"];
   const SLOT_LABELS = { QB: "Quarterback", RB: "Running Back", WR: "Wide Receiver", TE: "Tight End", DEF: "Defense/Special Teams", FLEX: "Flex", BENCH: "Bench" };
