@@ -473,7 +473,11 @@
   function enterBreakMode() {
     grid.hidden = true;
     breakScreen.hidden = false;
-    boardContent.style.width = ""; // let the break screen's own fixed width drive natural sizing
+    // With the grid hidden, boardContent's only remaining wide child is
+    // the header -- match its natural width so the break screen (100%
+    // width) fills the same footprint the grid used to instead of
+    // leaving blank space where the grid's columns used to be.
+    boardContent.style.width = `${boardHeader.scrollWidth}px`;
     renderBreakOdds();
     renderBreakRosterBoard();
     factPool = [];
@@ -611,6 +615,7 @@
     renderRecent();
     renderGrid();
     if (ON_BREAK) {
+      boardContent.style.width = `${boardHeader.scrollWidth}px`;
       renderBreakRosterBoard();
     } else {
       layoutGrid(); // re-measure in case header content width changed (defense in depth)
