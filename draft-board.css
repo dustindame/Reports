@@ -457,6 +457,9 @@ body { overflow: hidden; height: 100vh; }
   text-shadow: 0 0 14px rgba(242, 193, 78, 0.35);
   margin-bottom: 6px;
 }
+/* Fun facts and season odds are each 25% narrower than an equal third,
+   with the condensed draft board taking all the width they give up
+   (0.75 : 0.75 : 1.5 grow ratio == 25% / 25% / 50% of the row). */
 .break-odds-card,
 .break-fact-card {
   background: var(--panel-grad);
@@ -464,18 +467,30 @@ body { overflow: hidden; height: 100vh; }
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 10px 12px;
-  flex: 1;
+  flex: 0.75;
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
 }
 .break-odds-note { font-size: 10px; color: var(--text-faint); margin: -2px 0 6px; line-height: 1.3; }
-.break-odds-list { display: flex; flex-direction: column; gap: 3px; }
-.break-odds-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 3px 0; border-bottom: 1px solid var(--border-soft); }
-.break-odds-row:last-child { border-bottom: none; }
-.break-odds-row .bor-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-faint); flex: none; width: 100px; }
-.break-odds-row .bor-pick { font-size: 11.5px; font-weight: 700; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.break-odds-row .bor-value { font-size: 11.5px; font-weight: 800; color: var(--gold-bright); flex: none; }
+.break-odds-list { display: flex; flex-direction: column; gap: 10px; }
+/* Season odds now lists every entry in every market (not just the
+   favorite), so results are grouped under a heading per market instead
+   of one flat list of favorites. */
+.bo-category { display: flex; flex-direction: column; gap: 1px; }
+.bo-cat-heading {
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-faint);
+  padding-bottom: 2px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.break-odds-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 1.5px 0; }
+.break-odds-row .bor-pick { font-size: 10.5px; font-weight: 700; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.break-odds-row .bor-value { font-size: 10.5px; font-weight: 800; color: var(--gold-bright); flex: none; }
 .break-fact-list { display: flex; flex-direction: column; gap: 6px; }
 .break-fact-item { font-size: 11.5px; line-height: 1.35; color: var(--text-dim); font-style: italic; padding-bottom: 6px; border-bottom: 1px solid var(--border-soft); }
 .break-fact-item:last-child { border-bottom: none; padding-bottom: 0; }
@@ -487,7 +502,7 @@ body { overflow: hidden; height: 100vh; }
    -- instead of the normal grid's fixed columns-per-roster-slot layout,
    which doesn't compress well at this scale. */
 .break-roster-board {
-  flex: 1;
+  flex: 1.5;
   min-width: 0;
   min-height: 0;
   display: flex;

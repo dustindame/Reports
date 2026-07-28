@@ -425,23 +425,37 @@
       return;
     }
     breakOddsLoaded = true;
-    breakOddsNote.textContent = "Current favorites, via DraftKings.";
-    const rows = [];
-    if (odds.superBowl) rows.push({ label: "Super Bowl", pick: odds.superBowl.name, value: odds.superBowl.value });
-    odds.divisions.forEach((d) => rows.push({ label: d.label, pick: d.name, value: d.value }));
-    if (odds.mvp) rows.push({ label: "MVP", pick: odds.mvp.name, value: odds.mvp.value });
-    if (odds.rookieOfYear) rows.push({ label: "Rookie of the Year", pick: odds.rookieOfYear.name, value: odds.rookieOfYear.value });
+    breakOddsNote.textContent = "Full odds boards, via DraftKings.";
 
-    if (rows.length === 0) {
+    const nfcOrder = ["NFC East", "NFC North", "NFC South", "NFC West"];
+    const afcOrder = ["AFC East", "AFC North", "AFC South", "AFC West"];
+    const byLabel = (label) => (odds.divisions.find((d) => d.label === label) || {}).picks || [];
+
+    const categories = [
+      { heading: "Super Bowl", picks: odds.superBowl },
+      ...nfcOrder.map((label) => ({ heading: label, picks: byLabel(label) })),
+      ...afcOrder.map((label) => ({ heading: label, picks: byLabel(label) })),
+      { heading: "MVP", picks: odds.mvp },
+      { heading: "Rookie of the Year", picks: odds.rookieOfYear },
+      { heading: "Defensive Player of the Year", picks: odds.defensivePlayerOfYear },
+    ].filter((c) => c.picks && c.picks.length);
+
+    if (categories.length === 0) {
       breakOddsNote.textContent = "No season odds posted yet.";
       return;
     }
-    breakOddsList.innerHTML = rows
+    breakOddsList.innerHTML = categories
       .map(
-        (r) => `<div class="break-odds-row">
-          <span class="bor-label">${escapeHtml(r.label)}</span>
-          <span class="bor-pick">${escapeHtml(r.pick)}</span>
-          <span class="bor-value">${escapeHtml(r.value)}</span>
+        (c) => `<div class="bo-category">
+          <div class="bo-cat-heading">${escapeHtml(c.heading)}</div>
+          ${c.picks
+            .map(
+              (p) => `<div class="break-odds-row">
+                <span class="bor-pick">${escapeHtml(p.name)}</span>
+                <span class="bor-value">${escapeHtml(p.value)}</span>
+              </div>`
+            )
+            .join("")}
         </div>`
       )
       .join("");
