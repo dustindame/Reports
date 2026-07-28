@@ -337,7 +337,10 @@
   const breakConfirmNo = document.getElementById("breakConfirmNo");
 
   function updateBreakUi() {
-    breakToggleBtn.textContent = ON_BREAK ? "END BREAK" : "START BREAK";
+    // Label always just reads "Break" (button is small, next to the
+    // title) -- on/off state is conveyed by the active/red styling and
+    // the toast, not by re-wording the button itself.
+    breakToggleBtn.title = ON_BREAK ? "End break" : "Start break";
     breakToggleBtn.classList.toggle("active", ON_BREAK);
   }
 
