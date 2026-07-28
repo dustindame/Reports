@@ -40,11 +40,11 @@ body {
   flex: none;
 }
 
-.header-top-row {
+.header-actions {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 8px;
+  flex: none;
 }
 
 .setup-link {
@@ -61,12 +61,14 @@ body {
 }
 .setup-link:hover { border-color: var(--gold-dim); }
 
+/* Title on the left, break/settings buttons grouped on the right --
+   was a centered single row before the buttons moved up next to the
+   title. */
 .header-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 10px;
-  margin-top: 6px;
 }
 
 /* Same treatment as the Draft Board title: plain white text with a
