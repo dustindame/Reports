@@ -407,10 +407,8 @@
       return `<div class="break-roster-row">
         <div class="brr-team">
           <span class="brr-dot" style="background:${team.color}"></span>
-          <div>
-            <div class="brr-name">${escapeHtml(team.name)}</div>
-            <div class="brr-budget">$${budget.maxBid} max · $${budget.remaining} left</div>
-          </div>
+          <span class="brr-name">${escapeHtml(team.name)}</span>
+          <span class="brr-budget">$${budget.maxBid} max · $${budget.remaining} left</span>
         </div>
         <div class="brr-picks">${picksHtml}</div>
       </div>`;
