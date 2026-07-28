@@ -679,6 +679,18 @@ const NFL_FUN_FACTS = [
   "The Pittsburgh Steelers have won six Super Bowls, tied with the New England Patriots for the most of any franchise.",
   "Don Shula won more regular-season games as a head coach (328) than anyone else in NFL history.",
   "Brett Favre played 297 consecutive starts at quarterback, an NFL ironman record that still stands.",
+  "Paul Krause holds the all-time career interceptions record with 81, set over a 16-year career that ended in 1979.",
+  "LaDainian Tomlinson holds the all-time record for total touchdowns (rushing + receiving) with 162.",
+  "Jason Hanson attempted more field goals than any kicker in NFL history, going 495-for-621 across 21 seasons.",
+  "Marshall Faulk holds the single-season record for yards from scrimmage by a running back with 2,429 in 1999.",
+  "Randy Moss's 23 receiving touchdowns in 2007 is the single-season receiving TD record.",
+  "George Blanda played 26 seasons in the NFL/AFL, the longest career of any player in league history.",
+  "Walter Payton was, at retirement, the NFL's all-time leading rusher -- a record Emmitt Smith later broke in 2002.",
+  "Reggie White retired with 198 career sacks, second all-time behind Bruce Smith.",
+  "Morten Andersen also holds the record for most career games played by anyone who wasn't a punter or long-snapper, at 382.",
+  "Drew Brees once held the all-time passing yards record before Tom Brady passed him in 2022.",
+  "Jerry Rice played in 13 Pro Bowls, more than any other wide receiver in NFL history.",
+  "Peyton Manning holds the record for most career MVP awards, with 5.",
 ];
 
 /* Folds any picks logged on Player Entry (via DraftStore) into MOCK_DRAFT

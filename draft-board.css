@@ -472,6 +472,10 @@ body { overflow: hidden; height: 100vh; }
   min-height: 0;
   overflow-y: auto;
 }
+/* Season odds is capped per slide (see draft-board.js) so it never
+   needs to scroll -- hidden instead of auto so no scrollbar can ever
+   flash even for a brief oversized render. */
+.break-odds-card { overflow-y: hidden; }
 .break-odds-note { font-size: 10px; color: var(--text-faint); margin: -2px 0 6px; line-height: 1.3; }
 .break-odds-list { display: flex; flex-direction: column; gap: 10px; }
 /* Season odds now lists every entry in every market (not just the

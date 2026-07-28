@@ -461,14 +461,19 @@
     const nfcOrder = ["NFC East", "NFC North", "NFC South", "NFC West"];
     const afcOrder = ["AFC East", "AFC North", "AFC South", "AFC West"];
     const byLabel = (label) => (odds.divisions.find((d) => d.label === label) || {}).picks || [];
+    // Books are already favorite-first, so slicing to the top N keeps the
+    // actual favorites and just drops the long tail -- capped so every
+    // slide fits in the card's fixed height with no scrollbar. Divisional
+    // slides show 4 sub-groups at once, so each gets a tighter cap.
+    const top = (picks, n) => picks.slice(0, n);
 
     oddsSlides = [
-      { heading: "Super Bowl", groups: [{ picks: odds.superBowl }] },
-      { heading: "NFC Divisional Odds", groups: nfcOrder.map((label) => ({ subheading: label, picks: byLabel(label) })) },
-      { heading: "AFC Divisional Odds", groups: afcOrder.map((label) => ({ subheading: label, picks: byLabel(label) })) },
-      { heading: "MVP", groups: [{ picks: odds.mvp }] },
-      { heading: "Rookie of the Year", groups: [{ picks: odds.rookieOfYear }] },
-      { heading: "Defensive Player of the Year", groups: [{ picks: odds.defensivePlayerOfYear }] },
+      { heading: "Super Bowl", groups: [{ picks: top(odds.superBowl, 8) }] },
+      { heading: "NFC Divisional Odds", groups: nfcOrder.map((label) => ({ subheading: label, picks: top(byLabel(label), 3) })) },
+      { heading: "AFC Divisional Odds", groups: afcOrder.map((label) => ({ subheading: label, picks: top(byLabel(label), 3) })) },
+      { heading: "MVP", groups: [{ picks: top(odds.mvp, 8) }] },
+      { heading: "Rookie of the Year", groups: [{ picks: top(odds.rookieOfYear, 8) }] },
+      { heading: "Defensive Player of the Year", groups: [{ picks: top(odds.defensivePlayerOfYear, 8) }] },
     ].filter((s) => s.groups.some((g) => g.picks && g.picks.length));
 
     if (oddsSlides.length === 0) {
