@@ -30,6 +30,7 @@
   const breakOddsNote = document.getElementById("breakOddsNote");
   const breakOddsList = document.getElementById("breakOddsList");
   const breakFactList = document.getElementById("breakFactList");
+  const breakMiniGrid = document.getElementById("breakMiniGrid");
 
   document.getElementById("exportIcon").innerHTML = Icons.download(16, "#fff");
   document.getElementById("snapshotIcon").innerHTML = Icons.camera(16, "#fff");
@@ -387,12 +388,23 @@
   /* ---------------- Break screen ----------------
      Swaps the full roster grid for season betting odds (Super Bowl,
      division winners, MVP, Rookie of the Year) + a rotating set of NFL
-     trivia, whenever the league is on_break. (Earlier versions of this
-     screen showed a plain team-name list, then a live fan poll -- both
-     removed; the poll in particular was rendered conditionally
-     hidden/shown, which changed the break screen's measured height
-     between renders and made fitBoardToScreen's scale flicker. Both
-     cards here are always present so that can't happen anymore.) */
+     trivia + a condensed team board, whenever the league is on_break.
+     (Earlier versions of this screen showed a plain team-name list,
+     then a live fan poll -- both removed; the poll in particular was
+     rendered conditionally hidden/shown, which changed the break
+     screen's measured height between renders and made fitBoardToScreen's
+     scale flicker. Everything here is always present so that can't
+     happen anymore.) */
+  function renderBreakMiniBoard() {
+    breakMiniGrid.innerHTML = TEAMS.map((team) => {
+      const budget = computeTeamBudget(team.id);
+      return `<div class="break-mini-cell">
+        <span class="bmc-dot" style="background:${team.color}"></span>
+        <span class="bmc-text"><b>${escapeHtml(team.name)}</b> · $${budget.maxBid} max / $${budget.remaining} left</span>
+      </div>`;
+    }).join("");
+  }
+
   let breakOddsLoaded = false;
   async function renderBreakOdds() {
     if (breakOddsLoaded) return; // futures don't change fast enough to refetch every break
@@ -452,6 +464,7 @@
     breakScreen.hidden = false;
     boardContent.style.width = ""; // let the break screen's own fixed width drive natural sizing
     renderBreakOdds();
+    renderBreakMiniBoard();
     factPool = [];
     rotateBreakFacts();
     clearInterval(factRotateTimer);
@@ -586,7 +599,9 @@
     renderPositionTotals();
     renderRecent();
     renderGrid();
-    if (!ON_BREAK) {
+    if (ON_BREAK) {
+      renderBreakMiniBoard();
+    } else {
       layoutGrid(); // re-measure in case header content width changed (defense in depth)
       fitBoardToScreen();
     }

@@ -838,12 +838,19 @@ const refNameCache = new Map();
 
 async function resolveRefName(ref) {
   if (!ref || !ref.$ref) return null;
-  if (refNameCache.has(ref.$ref)) return refNameCache.get(ref.$ref);
+  // The $ref URLs in ESPN's response are all "http://", not "https://" --
+  // fetching that from a page served over https (GitHub Pages) is a
+  // mixed-content request and gets silently blocked by the browser,
+  // which was why every futures name resolution was failing (the whole
+  // Season Odds card came back empty). Force https; the endpoint serves
+  // it fine, it's just the $ref strings themselves that are wrong.
+  const url = ref.$ref.replace(/^http:\/\//, "https://");
+  if (refNameCache.has(url)) return refNameCache.get(url);
   try {
-    const res = await fetch(ref.$ref);
+    const res = await fetch(url);
     if (!res.ok) return null;
     const data = await res.json();
-    refNameCache.set(ref.$ref, data.displayName || null);
+    refNameCache.set(url, data.displayName || null);
     return data.displayName || null;
   } catch (e) {
     return null;
