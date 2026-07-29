@@ -19,6 +19,21 @@ body {
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.18), 0 0 70px -18px rgba(212, 175, 55, 0.35);
 }
+/* The bezel above is a desktop-preview mockup of a phone, not meant
+   for an actual phone screen (or the wrapped app) -- on a real narrow
+   viewport it just reads as an ugly border eating into your usable
+   area. Below this width, drop it entirely and go edge-to-edge. */
+@media (max-width: 480px) {
+  .phone-frame {
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
 
 .phone-screen {
   height: 100%;
@@ -126,7 +141,8 @@ body {
    label just reads "Break" rather than "START BREAK"/"END BREAK". */
 .break-toggle-btn {
   flex: none;
-  padding: 4px 12px;
+  height: 34px;
+  padding: 0 14px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--panel-alt-grad);

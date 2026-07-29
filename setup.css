@@ -19,6 +19,20 @@ body {
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.18), 0 0 70px -18px rgba(212, 175, 55, 0.35);
 }
+/* Desktop-preview mockup bezel, not meant for an actual phone screen
+   (or the wrapped app) -- drop it entirely edge-to-edge below phone
+   width instead of it reading as an ugly border. */
+@media (max-width: 480px) {
+  .phone-frame {
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    max-height: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
 
 .phone-screen {
   height: 100%;
