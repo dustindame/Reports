@@ -134,6 +134,35 @@ const LeagueSession = {
   clearPinHash(leagueCode) {
     sessionStorage.removeItem(this.pinStorageKey(leagueCode));
   },
+
+  // Recently-used league codes, most-recent first -- lets a
+  // commissioner switch back to a prior league without retyping the
+  // code. Free tier is capped to ProGate.FREE_MAX_SAVED_LEAGUES;
+  // Pro keeps unlimited history.
+  SAVED_KEY: "auctionDraft.savedLeagues",
+  getSavedLeagues() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(this.SAVED_KEY) || "[]");
+      return Array.isArray(raw) ? raw : [];
+    } catch (e) {
+      return [];
+    }
+  },
+  // Joining a new league beyond the free cap silently bumps the
+  // oldest saved one out of the switcher list (rather than blocking
+  // the join) -- the league itself still works fully either way, the
+  // cap only limits how many stay in quick-switch history.
+  rememberLeague(code, label) {
+    const list = this.getSavedLeagues().filter((l) => l.code !== code);
+    list.unshift({ code, label: label || code, savedAt: Date.now() });
+    const hasProGate = typeof ProGate !== "undefined";
+    const cap = hasProGate && ProGate.isPro() ? 50 : hasProGate ? ProGate.FREE_MAX_SAVED_LEAGUES : 2;
+    localStorage.setItem(this.SAVED_KEY, JSON.stringify(list.slice(0, cap)));
+  },
+  forgetLeague(code) {
+    const list = this.getSavedLeagues().filter((l) => l.code !== code);
+    localStorage.setItem(this.SAVED_KEY, JSON.stringify(list));
+  },
 };
 
 const PLAYER_POOL = {

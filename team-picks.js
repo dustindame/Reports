@@ -183,7 +183,25 @@
     URL.revokeObjectURL(url);
   }
 
-  exportDraftBtn.addEventListener("click", exportDraft);
+  /* ---------------- Pro upsell (CSV export, Recap) ---------------- */
+  const proUpsellOverlay = document.getElementById("proUpsellOverlay");
+  const proUpsellTitle = document.getElementById("proUpsellTitle");
+  const proUpsellHint = document.getElementById("proUpsellHint");
+  const proUpsellClose = document.getElementById("proUpsellClose");
+  proUpsellClose.addEventListener("click", () => { proUpsellOverlay.hidden = true; });
+  function showProUpsell(title, hint) {
+    proUpsellTitle.textContent = title;
+    proUpsellHint.textContent = hint;
+    proUpsellOverlay.hidden = false;
+  }
+
+  exportDraftBtn.addEventListener("click", () => {
+    if (!ProGate.isPro()) {
+      showProUpsell("CSV Export is Pro", "Upgrade to Pro to export the full draft as a CSV file.");
+      return;
+    }
+    exportDraft();
+  });
 
   /* ---------------- Fan message to the Draft Board ---------------- */
 
@@ -243,6 +261,11 @@
   await configReady;
   messageFab.hidden = !CURRENT_LEAGUE_CODE; // demo mode has no league to post to
   recapBanner.href = `recap.html${CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : ""}`;
+  recapBanner.addEventListener("click", (e) => {
+    if (ProGate.isPro()) return;
+    e.preventDefault();
+    showProUpsell("Recap is Pro", "Upgrade to Pro to unlock the full post-draft Recap page.");
+  });
   viewBoardBtn.href = `draft-board.html${CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : ""}`;
   await applyLivePicks();
   updateRecapBanner();

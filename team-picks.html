@@ -26,6 +26,15 @@
         </div>
       </header>
 
+      <div class="league-gate-overlay" id="proUpsellOverlay" hidden>
+        <div class="league-gate-card">
+          <div class="league-gate-icon">⭐</div>
+          <div class="league-gate-title" id="proUpsellTitle">Pro Feature</div>
+          <p class="league-gate-hint" id="proUpsellHint">Upgrade to Pro to unlock this.</p>
+          <button class="league-gate-secondary" id="proUpsellClose">Close</button>
+        </div>
+      </div>
+
       <main class="picks-main">
 
         <a class="recap-banner" id="recapBanner" href="recap.html" hidden>
@@ -74,7 +83,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="shared/supabase-config.js?v=20260728"></script>
-  <script src="shared/data.js?v=20260728b"></script>
+  <script src="shared/pro.js?v=20260728"></script>
+  <script src="shared/data.js?v=20260728c"></script>
   <script src="shared/league-gate.js?v=20260728"></script>
   <script src="shared/icons.js?v=20260728c"></script>
   <script src="team-picks.js?v=20260728e"></script>
