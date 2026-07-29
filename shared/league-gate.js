@@ -72,6 +72,10 @@ const configReady = (async function ensureLeagueAndConfig() {
     const config = await DraftStore.getConfig(savedCode);
     if (config) {
       applyRealConfig(config, savedCode);
+      // Not gated on the free-tier cap -- landing here (via a saved
+      // code or a shared link) always works; the cap only limits how
+      // many leagues get remembered for quick switching later.
+      LeagueSession.rememberLeague(savedCode, config.board_name);
       return;
     }
     // Stale/invalid code (league deleted, typo saved earlier, etc.) — drop
@@ -83,6 +87,7 @@ const configReady = (async function ensureLeagueAndConfig() {
   if (result) {
     LeagueSession.setLeagueCode(result.code);
     applyRealConfig(result.config, result.code);
+    LeagueSession.rememberLeague(result.code, result.config.board_name);
     return;
   }
 

@@ -373,6 +373,13 @@
       doBreakToggle();
       return;
     }
+    // The break screen itself (trivia/odds/leaders) is a Pro feature --
+    // ending an already-started break always stays available above, so
+    // a league that loses Pro mid-draft never gets stuck on break.
+    if (!ProGate.isPro()) {
+      showToast("Break screen is a Pro feature — upgrade to unlock it");
+      return;
+    }
     breakConfirmOverlay.hidden = false;
   });
   breakConfirmYes.addEventListener("click", () => {

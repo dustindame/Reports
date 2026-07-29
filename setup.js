@@ -245,10 +245,14 @@
     return SLOT_TYPES.reduce((sum, t) => sum + slotCounts[t], 0);
   }
 
+  function effectiveMaxTeams() {
+    return ProGate.isPro() ? MAX_TEAMS : Math.min(MAX_TEAMS, ProGate.FREE_MAX_TEAMS);
+  }
+
   function renderTeamCount() {
     teamCountValue.textContent = numTeams;
     teamCountMinus.disabled = numTeams <= MIN_TEAMS;
-    teamCountPlus.disabled = numTeams >= MAX_TEAMS;
+    teamCountPlus.disabled = numTeams >= effectiveMaxTeams();
   }
 
   function renderSlotRows() {
@@ -323,7 +327,36 @@
     toggleNice.checked = niceEnabled;
     toggleRoast.checked = roastEnabled;
     shotsValue.textContent = shotsCount;
+    applyProGating();
   }
+
+  // Dims + disables every Pro-gated control (marked with data-pro="1"
+  // in setup.html) when not unlocked. A capture-phase click listener
+  // (attached once, below) intercepts taps on locked controls to show
+  // an upsell instead of silently doing nothing.
+  function applyProGating() {
+    const isPro = ProGate.isPro();
+    document.querySelectorAll('[data-pro="1"]').forEach((el) => {
+      el.classList.toggle("pro-locked", !isPro);
+    });
+  }
+
+  let proUpsellShownAt = 0;
+  document.addEventListener(
+    "click",
+    (e) => {
+      const locked = e.target.closest('[data-pro="1"].pro-locked');
+      if (!locked) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const now = Date.now();
+      if (now - proUpsellShownAt > 500) {
+        showStatus("That's a Pro feature — upgrade to unlock it", false);
+        proUpsellShownAt = now;
+      }
+    },
+    true
+  );
 
   function showStatus(message, isError) {
     statusMsg.textContent = message;
@@ -362,7 +395,12 @@
     renderTeamNames();
   });
   teamCountPlus.addEventListener("click", () => {
-    if (numTeams >= MAX_TEAMS) return;
+    if (numTeams >= effectiveMaxTeams()) {
+      if (!ProGate.isPro() && numTeams >= ProGate.FREE_MAX_TEAMS) {
+        showStatus(`Upgrade to Pro for more than ${ProGate.FREE_MAX_TEAMS} teams`, false);
+      }
+      return;
+    }
     numTeams += 1;
     renderTeamCount();
     renderTeamNames();
@@ -513,6 +551,7 @@
 
     LeagueSession.setLeagueCode(leagueCode);
     LeagueSession.setPinHash(leagueCode, pinHash);
+    LeagueSession.rememberLeague(leagueCode, boardName);
 
     if (mode === "create") {
       await showCreatedConfirmation(leagueCode, plainPin);

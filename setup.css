@@ -279,6 +279,28 @@ body {
   cursor: pointer;
 }
 .toggle-row-label { font-size: 13px; font-weight: 700; color: var(--text); }
+/* Pro-gated controls: badge on the label, dimmed + non-interactive row
+   until unlocked. Tapping a locked row surfaces an upsell toast (see
+   setup.js) instead of silently doing nothing. */
+.pro-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #0d1f0e;
+  background: linear-gradient(180deg, #4caf50, #2e7d32);
+  border-radius: 999px;
+  padding: 1px 6px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+[data-pro="1"].pro-locked { opacity: 0.5; }
+[data-pro="1"].pro-locked .toggle-switch,
+[data-pro="1"].pro-locked .stepper-btn,
+[data-pro="1"].pro-locked .budget-input,
+[data-pro="1"].pro-locked input { pointer-events: none; }
+.setup-section[data-pro="1"].pro-locked .pro-badge,
+.toggle-row[data-pro="1"].pro-locked .pro-badge { opacity: 1; }
 .inline-stepper { display: flex; align-items: center; gap: 10px; flex: none; }
 .inline-stepper .stepper-btn { width: 30px; height: 30px; font-size: 16px; }
 .inline-stepper .stepper-value { min-width: 20px; font-size: 15px; }
