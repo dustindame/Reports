@@ -1,4 +1,12 @@
 (async function () {
+  // Set by the Android TV app's WebView (see MainActivity.kt) so the
+  // same draft-board.html can tell "running on the actual TV, driven
+  // by a remote with no cursor/file-save destination" apart from a
+  // regular browser -- export/snapshot have nowhere useful to save to
+  // there, and an accidental remote click landing on the QR code
+  // shouldn't navigate the whole TV display away to Team Picks.
+  const IS_TV_APP = /DraftBoardTVApp/.test(navigator.userAgent);
+
   const boardScroll = document.getElementById("boardScroll");
   const boardContent = document.getElementById("boardContent");
   const boardHeader = document.getElementById("boardHeader");
@@ -36,6 +44,14 @@
   document.getElementById("exportIcon").innerHTML = Icons.download(16, "#fff");
   document.getElementById("snapshotIcon").innerHTML = Icons.camera(16, "#fff");
   document.getElementById("recapIcon").innerHTML = Icons.barChart(16, "#fff");
+
+  if (IS_TV_APP) {
+    exportBtn.hidden = true;
+    snapshotBtn.hidden = true;
+    qrCode.removeAttribute("href");
+    qrCode.style.cursor = "default";
+    qrCode.addEventListener("click", (e) => e.preventDefault());
+  }
 
   // Real scannable QR (not the earlier decorative placeholder) now that the
   // app has a stable hosted URL — points at Team Picks, with the current
@@ -197,10 +213,11 @@
     tickerTrack.style.animationDuration = `${Math.max(20, distance / TICKER_PX_PER_SEC)}s`;
   }
 
-  // Space for this row stays reserved at all times (see .message-row.empty
-  // in the CSS) -- toggling "empty" only changes visibility, never
-  // display, so a message appearing/disappearing never changes the
-  // board's total height and never has to re-trigger the zoom-to-fit.
+  // The row's own tinted background (see .message-row in the CSS) stays
+  // visible at all times whether or not a message is active -- only the
+  // scrolling text itself appears/disappears -- and its height is fixed
+  // regardless of content, so a message coming or going never changes
+  // the board's total height or re-triggers the zoom-to-fit.
   //
   // Uses a true marquee (message-scroll keyframe: enters fully off-screen
   // right, exits fully off-screen left) rather than the news ticker's
@@ -209,8 +226,11 @@
   // content just sat visible at the left edge and repeated in place.
   function renderMessageTicker() {
     const hasActive = boardMessages.length > 0;
-    messageRow.classList.toggle("empty", !hasActive);
-    if (!hasActive) return;
+    if (!hasActive) {
+      messageTrack.innerHTML = "";
+      messageTrack.style.animation = "none";
+      return;
+    }
     const items = boardMessages.map((m) => `<span class="ticker-item fan-message">📣 ${escapeHtml(m.text)}</span>`);
     messageTrack.innerHTML = items.join("");
     const containerWidth = messageRow.clientWidth;
@@ -619,7 +639,12 @@
   // whichever axis wasn't the limiting one; scaling width and height
   // independently via transform fills the screen completely instead.
   function fitBoardToScreen() {
-    boardContent.style.transform = "none";
+    // transform doesn't affect layout (scrollWidth/scrollHeight reflect
+    // the untransformed box regardless), so resetting it to "none"
+    // before measuring was never necessary -- it was actually what
+    // caused the board to visibly flash to full unscaled size for a
+    // frame on every single new pick, since this runs on every
+    // DraftStore.onChange.
     const naturalWidth = boardContent.scrollWidth;
     const naturalHeight = boardContent.scrollHeight;
     const availableWidth = boardScroll.clientWidth;

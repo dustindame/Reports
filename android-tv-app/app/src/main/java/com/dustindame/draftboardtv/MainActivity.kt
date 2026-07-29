@@ -45,6 +45,11 @@ class MainActivity : AppCompatActivity() {
             mediaPlaybackRequiresUserGesture = false
             loadWithOverviewMode = true
             useWideViewPort = true
+            // draft-board.js checks navigator.userAgent for this marker to
+            // hide export/snapshot (nowhere to save a file on a TV) and
+            // disable the QR code link (an accidental remote click
+            // shouldn't navigate the whole TV display away).
+            userAgentString = "$userAgentString DraftBoardTVApp/1.0"
         }
 
         webView.webViewClient = object : WebViewClient() {

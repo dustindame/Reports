@@ -223,13 +223,18 @@
     updateConfirmState();
   }
 
-  function clearPlayer() {
+  // Re-focusing the search box makes sense after rejecting a pick (the
+  // user's about to search again) or tapping the explicit Clear button
+  // -- but not after a pick is successfully confirmed, where it just
+  // popped the on-screen keyboard back up for no reason right after
+  // sliding to confirm.
+  function clearPlayer(shouldFocus = true) {
     selectedPlayer = null;
     previewSection.hidden = true;
     searchInput.value = "";
     searchResults.innerHTML = "";
     updateConfirmState();
-    searchInput.focus();
+    if (shouldFocus) searchInput.focus();
   }
 
   function positionBubble() {
@@ -473,7 +478,7 @@
       }
     }
 
-    clearPlayer();
+    clearPlayer(false);
     selectedTeamId = null;
     bidSlider.value = 1;
     await renderTeamGrid();

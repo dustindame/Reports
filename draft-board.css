@@ -248,6 +248,7 @@ body { overflow: hidden; height: 100vh; }
 .recent-chip .rc-price { font-weight: 700; flex: none; margin-left: auto; }
 
 .tools-block { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.tool-btn[hidden] { display: none; }
 .tool-btn {
   width: 32px;
   height: 32px;
@@ -602,17 +603,13 @@ body { overflow: hidden; height: 100vh; }
   overflow: hidden;
 }
 .ticker-row[hidden] { display: none; }
-/* A distinct tint (not just the same look as the news ticker below it)
-   so a fan message reads as its own separate lane, not more news. */
+/* A subtly bluer tint than the news row below it (which is just
+   --panel) so a fan message lane always reads as its own separate
+   strip, not more news -- kept whether or not a message is currently
+   showing, not just while one's animating through. */
 .message-row {
-  background: linear-gradient(180deg, #0d2a3d 0%, #0a1f2e 100%);
-  box-shadow: inset 0 2px 6px -2px rgba(0, 0, 0, 0.5);
+  background: #141b28;
 }
-/* Message row keeps its space reserved at all times (visibility, not
-   display/hidden) so a message appearing or disappearing never changes
-   the board's total height and re-triggers the zoom-to-fit, which felt
-   like the whole board shifting up/down every time a message came in. */
-.message-row.empty { visibility: hidden; }
 
 /* A visible divider between the message lane and the news ticker below
    it -- previously the only separation was the message row's own
