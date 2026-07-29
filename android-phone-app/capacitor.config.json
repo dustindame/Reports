@@ -1,0 +1,13 @@
+{
+  "appId": "com.dustindame.draftentry",
+  "appName": "Draft Entry",
+  "webDir": "www",
+  "server": {
+    "url": "https://dustindame.github.io/Reports/player-entry.html",
+    "cleartext": false,
+    "allowNavigation": ["dustindame.github.io"]
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

@@ -1,0 +1,12 @@
+<resources>
+    <style name="Theme.DraftBoardTV" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:colorBackground">#08080b</item>
+        <item name="android:statusBarColor">#08080b</item>
+    </style>
+
+    <style name="Theme.DraftBoardTV.Fullscreen">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+</resources>

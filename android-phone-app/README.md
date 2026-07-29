@@ -1,0 +1,53 @@
+# Draft Entry (phone app)
+
+Wraps Draft Setup, Draft Entry, and Team Picks (all reachable from
+each other already) in an installable Android app. It's a thin native
+shell — `capacitor.config.json` points it at the live GitHub Pages
+site, so it always shows the current version with zero rebuilds.
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org) (LTS) — needed to run the Capacitor CLI.
+  Not required after the Android project is generated; you won't need
+  it again unless you change `capacitor.config.json`.
+- Android Studio (already installed).
+
+## One-time setup
+
+Run these from this folder (`android-phone-app/`) in a terminal:
+
+```
+npm install
+npx cap add android
+npx cap sync android
+```
+
+`cap add android` generates the native `android/` project (not
+committed to git — it's derived from `capacitor.config.json` and can
+always be regenerated). `cap sync` copies the config into it.
+
+## Open and run
+
+```
+npx cap open android
+```
+
+This launches Android Studio with the project loaded. From there:
+Run ▶ on a plugged-in phone (USB debugging enabled) or an emulator, or
+**Build → Generate Signed Bundle / APK** to produce an installable
+`.apk` you can sideload onto any Android phone (copy it over and open
+it, or `adb install path/to/app-debug.apk`).
+
+## Changing the app icon / splash screen
+
+Defaults come from Capacitor's template. To customize:
+```
+npm install -D @capacitor/assets
+```
+then follow [Capacitor's asset-generation guide](https://capacitorjs.com/docs/guides/splash-screens-and-icons)
+with your own `icon.png` / `splash.png` source images.
+
+## If you ever change the site's URL or add a custom domain
+
+Update `server.url` in `capacitor.config.json`, then re-run
+`npx cap sync android`.
