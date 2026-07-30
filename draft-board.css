@@ -140,6 +140,20 @@ body { overflow: hidden; height: 100vh; }
     1px 1px 0 #2f6fed;
 }
 
+.complete-badge {
+  flex: none;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: #0b2e1a;
+  background: linear-gradient(180deg, #4fd67a, #2fae5a);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+  text-shadow: none;
+}
+.complete-badge[hidden] { display: none; }
+
 /* Condensed, moved under the clock (in the clock-block column) instead
    of under the board name -- one line of numbers + a slim bar, in the
    brand blue used for fan messages instead of gold. */

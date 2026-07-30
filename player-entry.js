@@ -21,6 +21,7 @@
   const pickSearchInput = document.getElementById("pickSearchInput");
 
   document.getElementById("setupGear").innerHTML = Icons.gear(18);
+  document.getElementById("helpIcon").innerHTML = Icons.helpCircle(18);
   document.getElementById("searchIcon").innerHTML = Icons.search(18);
   document.getElementById("flagIcon").innerHTML = Icons.flag(20);
   document.getElementById("slideChevron").innerHTML = Icons.chevronRight(22, "#eaf1ff");
@@ -407,6 +408,9 @@
   const completeConfirmHint = document.getElementById("completeConfirmHint");
   const completeConfirmYes = document.getElementById("completeConfirmYes");
   const completeConfirmNo = document.getElementById("completeConfirmNo");
+  const reopenConfirmOverlay = document.getElementById("reopenConfirmOverlay");
+  const reopenConfirmYes = document.getElementById("reopenConfirmYes");
+  const reopenConfirmNo = document.getElementById("reopenConfirmNo");
 
   function updateCompleteUi() {
     completeDraftBtn.title = DRAFT_COMPLETED ? "Reopen draft" : "Mark draft complete";
@@ -433,12 +437,12 @@
     showToast(DRAFT_COMPLETED ? "Draft marked complete" : "Draft reopened");
   }
 
-  // Reopening a completed draft is low-stakes (just flips a flag back) --
-  // marking it complete is the one worth a confirm, especially since it's
-  // most useful for exactly the case where slots are still open.
+  // Both directions are one-tap, visible-to-everyone actions (Recap
+  // unlocking/re-locking) -- each gets its own confirm so a stray tap
+  // can't flip either way by accident.
   completeDraftBtn.addEventListener("click", () => {
     if (DRAFT_COMPLETED) {
-      doCompleteToggle();
+      reopenConfirmOverlay.hidden = false;
       return;
     }
     if (draftedCount() < TOTAL_SLOTS) {
@@ -456,6 +460,25 @@
   });
   completeConfirmNo.addEventListener("click", () => {
     completeConfirmOverlay.hidden = true;
+  });
+  reopenConfirmYes.addEventListener("click", () => {
+    reopenConfirmOverlay.hidden = true;
+    doCompleteToggle();
+  });
+  reopenConfirmNo.addEventListener("click", () => {
+    reopenConfirmOverlay.hidden = true;
+  });
+
+  // How-To / FAQ -- always available, demo mode included, since it's
+  // just static help text with no league-specific data.
+  const helpBtn = document.getElementById("helpBtn");
+  const helpOverlay = document.getElementById("helpOverlay");
+  const helpCloseBtn = document.getElementById("helpCloseBtn");
+  helpBtn.addEventListener("click", () => {
+    helpOverlay.hidden = false;
+  });
+  helpCloseBtn.addEventListener("click", () => {
+    helpOverlay.hidden = true;
   });
 
   // Editing Settings after the draft has already started wipes every
