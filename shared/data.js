@@ -45,6 +45,8 @@ let NICE_ENABLED = false;
 let SHOTS_COUNT = 0;
 let SHOT_PICK_NUMBERS = [];
 let ROAST_ENABLED = true;
+let SHOW_RECAP = true;
+let BREAK_ENABLED = true;
 let ON_BREAK = false;
 // Approximate break start time (ms epoch), for the Draft Board's break
 // timer -- taken from draft_config.updated_at at the moment on_break
@@ -371,6 +373,8 @@ function applyRealConfig(config, leagueCode) {
   SHOTS_COUNT = Number(config.shots_count) || 0;
   SHOT_PICK_NUMBERS = Array.isArray(config.shot_pick_numbers) ? config.shot_pick_numbers : [];
   ROAST_ENABLED = config.roast_enabled !== false;
+  SHOW_RECAP = config.show_recap !== false;
+  BREAK_ENABLED = config.break_enabled !== false;
   ON_BREAK = Boolean(config.on_break);
   BREAK_STARTED_AT = ON_BREAK && config.updated_at ? new Date(config.updated_at).getTime() : null;
 }
@@ -394,6 +398,8 @@ function applyDemoConfig() {
   SHOTS_COUNT = 0;
   SHOT_PICK_NUMBERS = [];
   ROAST_ENABLED = true;
+  SHOW_RECAP = true;
+  BREAK_ENABLED = true;
   ON_BREAK = false; // demo mode has no backend to toggle a break against
   BREAK_STARTED_AT = null;
 }
@@ -442,7 +448,7 @@ const DraftStore = {
     const { data, error } = await supabaseClient
       .from("draft_config")
       .select(
-        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time, nice_enabled, shots_count, shot_pick_numbers, roast_enabled, on_break"
+        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time, nice_enabled, shots_count, shot_pick_numbers, roast_enabled, show_recap, break_enabled, on_break"
       )
       .eq("league_code", leagueCode)
       .maybeSingle();
@@ -473,6 +479,8 @@ const DraftStore = {
       p_shots_count: Number(boardOptions.shotsCount) || 0,
       p_shot_pick_numbers: boardOptions.shotPickNumbers || [],
       p_roast_enabled: boardOptions.roastEnabled !== false,
+      p_show_recap: boardOptions.showRecap !== false,
+      p_break_enabled: boardOptions.breakEnabled !== false,
     });
     if (error) return { error: error.message };
     return { error: null, id: data };
@@ -499,6 +507,8 @@ const DraftStore = {
       p_shots_count: Number(boardOptions.shotsCount) || 0,
       p_shot_pick_numbers: boardOptions.shotPickNumbers || [],
       p_roast_enabled: boardOptions.roastEnabled !== false,
+      p_show_recap: boardOptions.showRecap !== false,
+      p_break_enabled: boardOptions.breakEnabled !== false,
     });
     if (error) return { error: error.message };
     if (data === false) return { error: "Incorrect commissioner PIN." };

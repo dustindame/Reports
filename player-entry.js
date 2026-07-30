@@ -581,6 +581,6 @@
   updateConfirmState();
   setHandle(0);
 
-  breakToggleBtn.hidden = !CURRENT_LEAGUE_CODE; // demo mode has no league to toggle a break for
+  breakToggleBtn.hidden = !CURRENT_LEAGUE_CODE || !BREAK_ENABLED; // demo mode has no league to toggle a break for; league may have it switched off entirely
   if (CURRENT_LEAGUE_CODE) updateBreakUi();
 })();

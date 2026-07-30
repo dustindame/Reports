@@ -315,6 +315,22 @@ body {
 [data-pro="1"].pro-locked input { pointer-events: none; }
 .setup-section[data-pro="1"].pro-locked .pro-badge,
 .toggle-row[data-pro="1"].pro-locked .pro-badge { opacity: 1; }
+/* A locked Pro toggle should visibly read as "off", not "on but
+   greyed out" -- even if the league's saved value underneath is
+   actually true (e.g. it was turned on back when Pro was unlocked).
+   This only changes what it looks like; the real stored value is
+   untouched, so it's exactly where it was left once Pro unlocks
+   again. */
+.toggle-row[data-pro="1"].pro-locked .toggle-switch:checked,
+.setup-section[data-pro="1"].pro-locked .toggle-switch:checked {
+  background: var(--panel-alt);
+  border-color: var(--border);
+}
+.toggle-row[data-pro="1"].pro-locked .toggle-switch:checked::before,
+.setup-section[data-pro="1"].pro-locked .toggle-switch:checked::before {
+  transform: none;
+  background: var(--text-faint);
+}
 .inline-stepper { display: flex; align-items: center; gap: 10px; flex: none; }
 .inline-stepper .stepper-btn { width: 30px; height: 30px; font-size: 16px; }
 .inline-stepper .stepper-value { min-width: 20px; font-size: 15px; }
@@ -430,3 +446,29 @@ body {
   cursor: not-allowed;
 }
 .save-btn:not(:disabled):active { transform: translateY(1px); }
+
+/* ---------------- Pro explainer ---------------- */
+
+.pro-explainer {
+  border: 1px solid #2e7d32;
+  background: linear-gradient(155deg, rgba(76, 175, 80, 0.08) 0%, rgba(76, 175, 80, 0.02) 100%);
+}
+.pro-explainer-intro {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.55;
+  margin: 0 0 12px;
+}
+.pro-feature-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pro-feature-list li {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.pro-feature-list li b { color: var(--text); }
