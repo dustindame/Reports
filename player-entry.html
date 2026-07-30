@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
   <title>Draft Entry</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728b" />
-  <link rel="stylesheet" href="shared/league-gate.css?v=20260728b" />
-  <link rel="stylesheet" href="player-entry.css?v=20260728f" />
+  <link rel="stylesheet" href="shared/league-gate.css?v=20260728g" />
+  <link rel="stylesheet" href="player-entry.css?v=20260728g" />
 </head>
 <body>
   <div class="phone-frame">
@@ -18,6 +18,7 @@
           <div class="header-actions">
             <button class="break-toggle-btn" id="breakToggleBtn" hidden>Break</button>
             <button class="break-toggle-btn" id="completeDraftBtn" hidden>Complete</button>
+            <button class="setup-link" id="helpBtn" aria-label="Help &amp; FAQ"><span id="helpIcon"></span></button>
             <a class="setup-link" href="setup.html" aria-label="Draft setup"><span id="setupGear"></span></a>
           </div>
         </div>
@@ -40,6 +41,53 @@
           <p class="league-gate-hint" id="completeConfirmHint">This unlocks the Recap page even though not every roster slot is filled. You can undo this later from the same button.</p>
           <button class="league-gate-continue" id="completeConfirmYes">MARK COMPLETE</button>
           <button class="league-gate-secondary" id="completeConfirmNo">Cancel</button>
+        </div>
+      </div>
+
+      <div class="league-gate-overlay" id="reopenConfirmOverlay" hidden>
+        <div class="league-gate-card">
+          <div class="league-gate-icon">↩️</div>
+          <div class="league-gate-title">Reopen Draft?</div>
+          <p class="league-gate-hint">This re-locks the Recap page until the draft is completed again (or every roster slot fills).</p>
+          <button class="league-gate-continue" id="reopenConfirmYes">REOPEN DRAFT</button>
+          <button class="league-gate-secondary" id="reopenConfirmNo">Cancel</button>
+        </div>
+      </div>
+
+      <div class="league-gate-overlay" id="helpOverlay" hidden>
+        <div class="league-gate-card faq-card">
+          <div class="league-gate-title">How To &amp; FAQ</div>
+          <div class="faq-scroll">
+            <div class="faq-item">
+              <div class="faq-q">How do I log a pick?</div>
+              <div class="faq-a">Search the player, tap the winning team, set the price, then slide to confirm. It shows up live on the Draft Board and Team Picks instantly.</div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-q">How do I undo a pick?</div>
+              <div class="faq-a">Find it in the "All Picks" list below and tap the ✕ next to it.</div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-q">What's the commissioner PIN for?</div>
+              <div class="faq-a">It's set when the league is created and protects every write — logging picks, starting a break, marking the draft complete, changing settings. Sharing the league code alone lets people view the board, not edit it.</div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-q">What does Break do?</div>
+              <div class="faq-a">Switches the Draft Board (Pro feature) to a trivia/stat-leaders/odds screen for everyone watching — handy for a real pause in the draft.</div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-q">What does Complete do, and why would I use it early?</div>
+              <div class="faq-a">Marking a draft complete unlocks the Recap page even if some roster slots never got filled — some drafts end early. You can reopen it later from the same button if needed.</div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-q">Will my league ever get deleted?</div>
+              <div class="faq-a">Free-tier leagues are cleared out automatically after 7 idle days if the draft's still unfinished, or 14 idle days once it's complete — this keeps old one-off drafts from piling up. Pro leagues are never auto-deleted.</div>
+            </div>
+            <div class="faq-item">
+              <div class="faq-q">How do people join or follow along?</div>
+              <div class="faq-a">Scan the QR code on the Draft Board, or open Team Picks and enter the league code — no PIN needed just to watch.</div>
+            </div>
+          </div>
+          <button class="league-gate-secondary" id="helpCloseBtn">Close</button>
         </div>
       </div>
 
@@ -134,7 +182,7 @@
   <script src="shared/pro.js?v=20260728b"></script>
   <script src="shared/data.js?v=20260728g"></script>
   <script src="shared/league-gate.js?v=20260728"></script>
-  <script src="shared/icons.js?v=20260728c"></script>
+  <script src="shared/icons.js?v=20260728h"></script>
   <script src="player-entry.js?v=20260728i"></script>
 </body>
 </html>

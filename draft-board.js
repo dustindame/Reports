@@ -33,6 +33,7 @@
   const exportBtn = document.getElementById("exportBtn");
   const snapshotBtn = document.getElementById("snapshotBtn");
   const recapLink = document.getElementById("recapLink");
+  const completeBadge = document.getElementById("completeBadge");
   const breakScreen = document.getElementById("breakScreen");
   const breakTimer = document.getElementById("breakTimer");
   const breakOddsNote = document.getElementById("breakOddsNote");
@@ -680,6 +681,7 @@
   messageRow.hidden = !SHOW_MESSAGES; // fully collapsed when the feature is off; when on, space stays reserved via .empty
 
   renderQr();
+  completeBadge.hidden = !DRAFT_COMPLETED;
   recapLink.hidden = !SHOW_RECAP;
   recapLink.href = `recap.html${CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : ""}`;
   await applyLivePicks();
@@ -744,6 +746,13 @@
   // The commissioner toggling break mode from Player Entry streams in
   // here -- switch screens without needing a manual refresh.
   DraftStore.onConfigChange((newConfig) => {
+    const nowCompleted = Boolean(newConfig.draft_completed);
+    if (nowCompleted !== DRAFT_COMPLETED) {
+      DRAFT_COMPLETED = nowCompleted;
+      completeBadge.hidden = !DRAFT_COMPLETED;
+      if (!ON_BREAK) fitBoardToScreen(); // badge changes header width slightly
+    }
+
     const nowOnBreak = Boolean(newConfig.on_break);
     if (nowOnBreak === ON_BREAK) return;
     ON_BREAK = nowOnBreak;

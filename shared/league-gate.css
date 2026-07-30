@@ -37,6 +37,16 @@
 .league-gate-title { margin: 0 0 8px; font-size: 20px; font-weight: 800; color: var(--text); }
 .league-gate-hint { margin: 0 0 18px; font-size: 13px; color: var(--text-dim); line-height: 1.5; }
 
+/* How-To/FAQ card -- taller and left-aligned unlike the short confirm
+   prompts above, since it holds a scrollable list of Q&A instead of one
+   or two lines of text. */
+.faq-card { max-width: 420px; text-align: left; display: flex; flex-direction: column; max-height: 82vh; }
+.faq-card .league-gate-title { text-align: center; }
+.faq-scroll { overflow-y: auto; margin: 0 0 16px; padding-right: 4px; }
+.faq-item + .faq-item { margin-top: 14px; }
+.faq-q { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.faq-a { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
 .league-gate-input {
   width: 100%;
   text-align: center;
