@@ -51,16 +51,16 @@
   let teamNames = DEFAULT_TEAM_NAMES.slice(0, numTeams);
   let boardName = "";
   let showNews = true;
-  let showMessages = true;
-  let showRecent = true;
+  let showMessages = false;
+  let showRecent = false;
   let showDraftedTotal = true;
   let showPositionTotals = false;
   let showElapsedTime = false;
   let niceEnabled = false;
   let shotsCount = 0;
-  let roastEnabled = true;
-  let showRecap = true;
-  let breakEnabled = true;
+  let roastEnabled = false;
+  let showRecap = false;
+  let breakEnabled = false;
 
   /* ---------------- small overlay prompts (reuses shared/league-gate.css) ---------------- */
 
@@ -203,16 +203,16 @@
     teamNames = DEFAULT_TEAM_NAMES.slice(0, numTeams);
     boardName = "";
     showNews = true;
-    showMessages = true;
-    showRecent = true;
+    showMessages = false;
+    showRecent = false;
     showDraftedTotal = true;
     showPositionTotals = false;
     showElapsedTime = false;
     niceEnabled = false;
     shotsCount = 0;
-    roastEnabled = true;
-    showRecap = true;
-    breakEnabled = true;
+    roastEnabled = false;
+    showRecap = false;
+    breakEnabled = false;
     renderAll();
   }
 

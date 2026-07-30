@@ -4,8 +4,18 @@
 -- a casual league who just doesn't want a Recap page at all).
 
 alter table public.draft_config
-  add column if not exists show_recap boolean not null default true,
-  add column if not exists break_enabled boolean not null default true;
+  add column if not exists show_recap boolean not null default false,
+  add column if not exists break_enabled boolean not null default false;
+
+-- Every Pro-gated display option should default OFF for a brand new
+-- league (previously show_messages/show_recent/roast_enabled defaulted
+-- true even though all three are Pro features) -- only changes the
+-- default applied to future inserts, doesn't touch any already-saved
+-- league's stored preference.
+alter table public.draft_config
+  alter column show_messages set default false,
+  alter column show_recent set default false,
+  alter column roast_enabled set default false;
 
 grant select (show_recap, break_enabled) on public.draft_config to anon;
 
@@ -21,17 +31,17 @@ create or replace function public.create_league(
   p_roster_slots jsonb,
   p_board_name text default 'Auction Draft Board',
   p_show_news boolean default true,
-  p_show_messages boolean default true,
-  p_show_recent boolean default true,
+  p_show_messages boolean default false,
+  p_show_recent boolean default false,
   p_show_drafted_total boolean default true,
   p_show_position_totals boolean default false,
   p_show_elapsed_time boolean default false,
   p_nice_enabled boolean default false,
   p_shots_count integer default 0,
   p_shot_pick_numbers jsonb default '[]'::jsonb,
-  p_roast_enabled boolean default true,
-  p_show_recap boolean default true,
-  p_break_enabled boolean default true
+  p_roast_enabled boolean default false,
+  p_show_recap boolean default false,
+  p_break_enabled boolean default false
 ) returns uuid
 language plpgsql
 security definer
@@ -65,17 +75,17 @@ create or replace function public.update_league(
   p_clear_picks boolean default true,
   p_board_name text default 'Auction Draft Board',
   p_show_news boolean default true,
-  p_show_messages boolean default true,
-  p_show_recent boolean default true,
+  p_show_messages boolean default false,
+  p_show_recent boolean default false,
   p_show_drafted_total boolean default true,
   p_show_position_totals boolean default false,
   p_show_elapsed_time boolean default false,
   p_nice_enabled boolean default false,
   p_shots_count integer default 0,
   p_shot_pick_numbers jsonb default '[]'::jsonb,
-  p_roast_enabled boolean default true,
-  p_show_recap boolean default true,
-  p_break_enabled boolean default true
+  p_roast_enabled boolean default false,
+  p_show_recap boolean default false,
+  p_break_enabled boolean default false
 ) returns boolean
 language plpgsql
 security definer
