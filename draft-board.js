@@ -51,6 +51,12 @@
     qrCode.removeAttribute("href");
     qrCode.style.cursor = "default";
     qrCode.addEventListener("click", (e) => e.preventDefault());
+    // Removing href alone stops navigation but an <a> is still a
+    // focusable/highlightable element by default -- a Fire TV remote's
+    // D-pad spatial navigation would still land on it and light it up.
+    // tabindex="-1" takes it out of that focus order entirely.
+    qrCode.tabIndex = -1;
+    qrCode.setAttribute("aria-hidden", "true");
   }
 
   // Real scannable QR (not the earlier decorative placeholder) now that the

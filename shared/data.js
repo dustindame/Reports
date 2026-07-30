@@ -387,19 +387,25 @@ function applyDemoConfig() {
   TOTAL_SLOTS = TEAMS.length * ROSTER_SLOTS.length;
   MOCK_DRAFT = buildMockDraft();
 
+  // Demo mode (no real league) has no Setup screen of its own to gate
+  // these behind Pro -- without checking ProGate here, the public demo
+  // showed every Pro feature turned on for free, regardless of actual
+  // entitlement. Mirrors real free-tier behavior unless test-unlocked.
+  const isPro = typeof ProGate !== "undefined" && ProGate.isPro();
+
   BOARD_NAME = "Auction Draft Board";
   SHOW_NEWS = true;
-  SHOW_MESSAGES = true;
-  SHOW_RECENT = true;
+  SHOW_MESSAGES = isPro;
+  SHOW_RECENT = isPro;
   SHOW_DRAFTED_TOTAL = true;
-  SHOW_POSITION_TOTALS = false;
+  SHOW_POSITION_TOTALS = isPro;
   SHOW_ELAPSED_TIME = false;
-  NICE_ENABLED = false;
+  NICE_ENABLED = isPro;
   SHOTS_COUNT = 0;
   SHOT_PICK_NUMBERS = [];
-  ROAST_ENABLED = true;
-  SHOW_RECAP = true;
-  BREAK_ENABLED = true;
+  ROAST_ENABLED = isPro;
+  SHOW_RECAP = isPro;
+  BREAK_ENABLED = isPro;
   ON_BREAK = false; // demo mode has no backend to toggle a break against
   BREAK_STARTED_AT = null;
 }
