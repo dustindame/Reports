@@ -395,6 +395,69 @@
     breakConfirmOverlay.hidden = true;
   });
 
+  /* ---------------- Manual draft completion ----------------
+     Not available in demo mode. "Complete" is normally inferred from
+     every roster slot filling, but a real draft can end early -- this
+     lets the commissioner mark it done anyway (unlocks Recap, and moves
+     the league onto the 14-day cleanup clock instead of the 7-day
+     unfinished one -- see set_draft_completed / cleanup_stale_leagues). */
+  const completeDraftBtn = document.getElementById("completeDraftBtn");
+  const completeConfirmOverlay = document.getElementById("completeConfirmOverlay");
+  const completeConfirmTitle = document.getElementById("completeConfirmTitle");
+  const completeConfirmHint = document.getElementById("completeConfirmHint");
+  const completeConfirmYes = document.getElementById("completeConfirmYes");
+  const completeConfirmNo = document.getElementById("completeConfirmNo");
+
+  function updateCompleteUi() {
+    completeDraftBtn.title = DRAFT_COMPLETED ? "Reopen draft" : "Mark draft complete";
+    completeDraftBtn.classList.toggle("active", DRAFT_COMPLETED);
+  }
+
+  async function doCompleteToggle() {
+    completeDraftBtn.disabled = true;
+    const pinHash = LeagueSession.getPinHash(CURRENT_LEAGUE_CODE);
+    const { error } = await DraftStore.setDraftCompleted(!DRAFT_COMPLETED, pinHash);
+    completeDraftBtn.disabled = false;
+    if (error) {
+      if (error === "Incorrect commissioner PIN.") {
+        LeagueSession.clearPinHash(CURRENT_LEAGUE_CODE);
+        showToast("Wrong PIN — try again");
+        await ensurePinUnlocked();
+      } else {
+        showToast(`Couldn't update: ${error}`);
+      }
+      return;
+    }
+    DRAFT_COMPLETED = !DRAFT_COMPLETED;
+    updateCompleteUi();
+    showToast(DRAFT_COMPLETED ? "Draft marked complete" : "Draft reopened");
+  }
+
+  // Reopening a completed draft is low-stakes (just flips a flag back) --
+  // marking it complete is the one worth a confirm, especially since it's
+  // most useful for exactly the case where slots are still open.
+  completeDraftBtn.addEventListener("click", () => {
+    if (DRAFT_COMPLETED) {
+      doCompleteToggle();
+      return;
+    }
+    if (draftedCount() < TOTAL_SLOTS) {
+      completeConfirmTitle.textContent = "Mark Draft Complete?";
+      completeConfirmHint.textContent = "Not every roster slot is filled yet. This unlocks the Recap page anyway and treats the draft as done — use it when the draft has to end early.";
+    } else {
+      completeConfirmTitle.textContent = "Mark Draft Complete?";
+      completeConfirmHint.textContent = "This unlocks the Recap page for everyone. You can reopen the draft later from this same button.";
+    }
+    completeConfirmOverlay.hidden = false;
+  });
+  completeConfirmYes.addEventListener("click", () => {
+    completeConfirmOverlay.hidden = true;
+    doCompleteToggle();
+  });
+  completeConfirmNo.addEventListener("click", () => {
+    completeConfirmOverlay.hidden = true;
+  });
+
   // Editing Settings after the draft has already started wipes every
   // pick logged so far (see setup.js's "SAVE CHANGES" flow) -- warn
   // right at the point of clicking the gear, before the commissioner
@@ -583,4 +646,7 @@
 
   breakToggleBtn.hidden = !CURRENT_LEAGUE_CODE || !BREAK_ENABLED; // demo mode has no league to toggle a break for; league may have it switched off entirely
   if (CURRENT_LEAGUE_CODE) updateBreakUi();
+
+  completeDraftBtn.hidden = !CURRENT_LEAGUE_CODE; // demo mode has no league to mark complete -- free feature, not Pro-gated
+  if (CURRENT_LEAGUE_CODE) updateCompleteUi();
 })();

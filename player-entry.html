@@ -17,6 +17,7 @@
           <h1 class="entry-title">DRAFT ENTRY</h1>
           <div class="header-actions">
             <button class="break-toggle-btn" id="breakToggleBtn" hidden>Break</button>
+            <button class="break-toggle-btn" id="completeDraftBtn" hidden>Complete</button>
             <a class="setup-link" href="setup.html" aria-label="Draft setup"><span id="setupGear"></span></a>
           </div>
         </div>
@@ -29,6 +30,16 @@
           <p class="league-gate-hint">This switches the Draft Board to the break screen (trivia, stat leaders, season odds) for everyone watching. Make sure the draft is actually pausing.</p>
           <button class="league-gate-continue" id="breakConfirmYes">START BREAK</button>
           <button class="league-gate-secondary" id="breakConfirmNo">Cancel</button>
+        </div>
+      </div>
+
+      <div class="league-gate-overlay" id="completeConfirmOverlay" hidden>
+        <div class="league-gate-card">
+          <div class="league-gate-icon">🏁</div>
+          <div class="league-gate-title" id="completeConfirmTitle">Mark Draft Complete?</div>
+          <p class="league-gate-hint" id="completeConfirmHint">This unlocks the Recap page even though not every roster slot is filled. You can undo this later from the same button.</p>
+          <button class="league-gate-continue" id="completeConfirmYes">MARK COMPLETE</button>
+          <button class="league-gate-secondary" id="completeConfirmNo">Cancel</button>
         </div>
       </div>
 
@@ -121,9 +132,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="shared/supabase-config.js?v=20260728"></script>
   <script src="shared/pro.js?v=20260728b"></script>
-  <script src="shared/data.js?v=20260728f"></script>
+  <script src="shared/data.js?v=20260728g"></script>
   <script src="shared/league-gate.js?v=20260728"></script>
   <script src="shared/icons.js?v=20260728c"></script>
-  <script src="player-entry.js?v=20260728h"></script>
+  <script src="player-entry.js?v=20260728i"></script>
 </body>
 </html>

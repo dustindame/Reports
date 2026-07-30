@@ -48,6 +48,8 @@ let ROAST_ENABLED = true;
 let SHOW_RECAP = true;
 let BREAK_ENABLED = true;
 let ON_BREAK = false;
+let IS_PRO_LEAGUE = false;
+let DRAFT_COMPLETED = false;
 // Approximate break start time (ms epoch), for the Draft Board's break
 // timer -- taken from draft_config.updated_at at the moment on_break
 // flips true. Approximate because any other config write would also
@@ -377,6 +379,8 @@ function applyRealConfig(config, leagueCode) {
   BREAK_ENABLED = config.break_enabled !== false;
   ON_BREAK = Boolean(config.on_break);
   BREAK_STARTED_AT = ON_BREAK && config.updated_at ? new Date(config.updated_at).getTime() : null;
+  IS_PRO_LEAGUE = Boolean(config.is_pro);
+  DRAFT_COMPLETED = Boolean(config.draft_completed);
 }
 
 function applyDemoConfig() {
@@ -408,6 +412,8 @@ function applyDemoConfig() {
   BREAK_ENABLED = isPro;
   ON_BREAK = false; // demo mode has no backend to toggle a break against
   BREAK_STARTED_AT = null;
+  IS_PRO_LEAGUE = isPro;
+  DRAFT_COMPLETED = false; // demo mode always shows an in-progress draft
 }
 
 function getTeamRoster(teamId) {
@@ -454,7 +460,7 @@ const DraftStore = {
     const { data, error } = await supabaseClient
       .from("draft_config")
       .select(
-        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time, nice_enabled, shots_count, shot_pick_numbers, roast_enabled, show_recap, break_enabled, on_break"
+        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time, nice_enabled, shots_count, shot_pick_numbers, roast_enabled, show_recap, break_enabled, on_break, is_pro, draft_completed"
       )
       .eq("league_code", leagueCode)
       .maybeSingle();
@@ -522,6 +528,7 @@ const DraftStore = {
       p_roast_enabled: boardOptions.roastEnabled !== false,
       p_show_recap: boardOptions.showRecap !== false,
       p_break_enabled: boardOptions.breakEnabled !== false,
+      p_is_pro: typeof ProGate !== "undefined" && ProGate.isPro(),
     });
     if (error) return { error: error.message };
     if (data === false) return { error: "Incorrect commissioner PIN." };
@@ -668,6 +675,25 @@ const DraftStore = {
       p_league_code: CURRENT_LEAGUE_CODE,
       p_pin_hash: pinHash,
       p_on_break: onBreak,
+    });
+    if (error) return { error: error.message };
+    if (data === false) return { error: "Incorrect commissioner PIN." };
+    return { error: null };
+  },
+
+  /* ---------------- Manual draft completion ----------------
+     "Complete" is normally inferred from draftedCount() >= TOTAL_SLOTS,
+     but a real draft can end early (a team drops out, time runs short) --
+     this lets the commissioner mark it done anyway. Also feeds the
+     server-side cleanup job: a completed league is swept after 14 idle
+     days, an unfinished one after 7 (see set_draft_completed / the
+     cleanup_stale_leagues cron job in supabase/migrations). */
+  async setDraftCompleted(completed, pinHash) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
+    const { data, error } = await supabaseClient.rpc("set_draft_completed", {
+      p_league_code: CURRENT_LEAGUE_CODE,
+      p_pin_hash: pinHash,
+      p_completed: completed,
     });
     if (error) return { error: error.message };
     if (data === false) return { error: "Incorrect commissioner PIN." };
