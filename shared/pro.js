@@ -60,3 +60,21 @@ const ProGate = {
     }
   },
 };
+
+// Mobile browsers have no console to run ProGate.setTestUnlock(true) from
+// -- a ?pro=1 / ?pro=0 URL param does the same thing with just a link/typed
+// URL. Strips the param from the address bar afterward via replaceState so
+// it doesn't linger in a bookmarked or shared URL.
+(function applyProUrlParam() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("pro")) return;
+    ProGate.setTestUnlock(params.get("pro") === "1");
+    params.delete("pro");
+    const rest = params.toString();
+    const cleanUrl = window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash;
+    window.history.replaceState(null, "", cleanUrl);
+  } catch (e) {
+    /* ignore */
+  }
+})();
