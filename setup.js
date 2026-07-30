@@ -351,6 +351,23 @@
     });
   }
 
+  // TEMPORARY dev/test control (see setup.html) -- lets Pro be flipped
+  // on/off from a button instead of the console/URL-param tricks, for
+  // easy testing on any device including a phone. Remove this whole
+  // block (and the matching HTML/CSS) once real Pro billing ships or
+  // it's no longer needed for testing.
+  const devProToggle = document.getElementById("devProToggle");
+  function updateDevProToggleUi() {
+    const isPro = ProGate.isPro();
+    devProToggle.textContent = isPro ? "TEST: Pro is ON — Tap to Turn Off" : "TEST: Pro is OFF — Tap to Turn On";
+    devProToggle.classList.toggle("active", isPro);
+  }
+  devProToggle.addEventListener("click", () => {
+    ProGate.setTestUnlock(!ProGate.isPro());
+    window.location.reload();
+  });
+  updateDevProToggleUi();
+
   let proUpsellShownAt = 0;
   document.addEventListener(
     "click",
