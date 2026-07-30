@@ -22,6 +22,8 @@
   const toggleDraftedTotal = document.getElementById("toggleDraftedTotal");
   const togglePositionTotals = document.getElementById("togglePositionTotals");
   const toggleElapsedTime = document.getElementById("toggleElapsedTime");
+  const toggleShowRecap = document.getElementById("toggleShowRecap");
+  const toggleBreakEnabled = document.getElementById("toggleBreakEnabled");
   const toggleNice = document.getElementById("toggleNice");
   const toggleRoast = document.getElementById("toggleRoast");
   const shotsValue = document.getElementById("shotsValue");
@@ -57,6 +59,8 @@
   let niceEnabled = false;
   let shotsCount = 0;
   let roastEnabled = true;
+  let showRecap = true;
+  let breakEnabled = true;
 
   /* ---------------- small overlay prompts (reuses shared/league-gate.css) ---------------- */
 
@@ -186,6 +190,8 @@
     niceEnabled = Boolean(config.nice_enabled);
     shotsCount = Number(config.shots_count) || 0;
     roastEnabled = config.roast_enabled !== false;
+    showRecap = config.show_recap !== false;
+    breakEnabled = config.break_enabled !== false;
   }
 
   function switchToCreate() {
@@ -205,6 +211,8 @@
     niceEnabled = false;
     shotsCount = 0;
     roastEnabled = true;
+    showRecap = true;
+    breakEnabled = true;
     renderAll();
   }
 
@@ -324,6 +332,8 @@
     toggleDraftedTotal.checked = showDraftedTotal;
     togglePositionTotals.checked = showPositionTotals;
     toggleElapsedTime.checked = showElapsedTime;
+    toggleShowRecap.checked = showRecap;
+    toggleBreakEnabled.checked = breakEnabled;
     toggleNice.checked = niceEnabled;
     toggleRoast.checked = roastEnabled;
     shotsValue.textContent = shotsCount;
@@ -440,6 +450,8 @@
   toggleDraftedTotal.addEventListener("change", () => { showDraftedTotal = toggleDraftedTotal.checked; });
   togglePositionTotals.addEventListener("change", () => { showPositionTotals = togglePositionTotals.checked; });
   toggleElapsedTime.addEventListener("change", () => { showElapsedTime = toggleElapsedTime.checked; });
+  toggleShowRecap.addEventListener("change", () => { showRecap = toggleShowRecap.checked; });
+  toggleBreakEnabled.addEventListener("change", () => { breakEnabled = toggleBreakEnabled.checked; });
   toggleNice.addEventListener("change", () => { niceEnabled = toggleNice.checked; });
   toggleRoast.addEventListener("change", () => { roastEnabled = toggleRoast.checked; });
   shotsMinus.addEventListener("click", () => {
@@ -535,6 +547,8 @@
       shotsCount,
       shotPickNumbers: pickRandomShotNumbers(shotsCount, totalPicks),
       roastEnabled,
+      showRecap,
+      breakEnabled,
     };
 
     const { error } =

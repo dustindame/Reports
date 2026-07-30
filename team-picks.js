@@ -18,7 +18,7 @@
   document.getElementById("messageIcon").innerHTML = Icons.megaphone(16, "#fff");
 
   function updateRecapBanner() {
-    recapBanner.hidden = draftedCount() < TOTAL_SLOTS;
+    recapBanner.hidden = !SHOW_RECAP || draftedCount() < TOTAL_SLOTS;
   }
 
   /* ---------------- Draft-wide stats (shown on the team-picker screen) ----------------

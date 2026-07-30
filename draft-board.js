@@ -674,6 +674,7 @@
   messageRow.hidden = !SHOW_MESSAGES; // fully collapsed when the feature is off; when on, space stays reserved via .empty
 
   renderQr();
+  recapLink.hidden = !SHOW_RECAP;
   recapLink.href = `recap.html${CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : ""}`;
   await applyLivePicks();
   renderTracker();

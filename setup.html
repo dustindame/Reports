@@ -6,7 +6,7 @@
   <title>Draft Setup</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728b" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260728" />
-  <link rel="stylesheet" href="setup.css?v=20260728e" />
+  <link rel="stylesheet" href="setup.css?v=20260728f" />
 </head>
 <body>
   <div class="phone-frame">
@@ -84,6 +84,8 @@
             <label class="toggle-row"><span class="toggle-row-label">Draft Elapsed Time</span><input type="checkbox" class="toggle-switch" id="toggleElapsedTime" /></label>
             <label class="toggle-row" data-pro="1"><span class="toggle-row-label">Recent Picks <span class="pro-badge">PRO</span></span><input type="checkbox" class="toggle-switch" id="toggleRecent" /></label>
             <label class="toggle-row" data-pro="1"><span class="toggle-row-label">Drafted by Position <span class="pro-badge">PRO</span></span><input type="checkbox" class="toggle-switch" id="togglePositionTotals" /></label>
+            <label class="toggle-row" data-pro="1"><span class="toggle-row-label">Recap Page <span class="pro-badge">PRO</span></span><input type="checkbox" class="toggle-switch" id="toggleShowRecap" /></label>
+            <label class="toggle-row" data-pro="1"><span class="toggle-row-label">Break Screen <span class="pro-badge">PRO</span></span><input type="checkbox" class="toggle-switch" id="toggleBreakEnabled" /></label>
           </div>
         </section>
 
@@ -115,6 +117,19 @@
         <button class="save-btn" id="saveBtn">CREATE LEAGUE</button>
         <button class="league-gate-secondary" id="switchToCreateBtn" hidden>Start a Different League Instead</button>
 
+        <section class="setup-section pro-explainer">
+          <div class="section-label">What's in Pro <span class="pro-badge">PRO</span></div>
+          <p class="pro-explainer-intro">Everything above marked <span class="pro-badge">PRO</span> is part of a one-time upgrade. Free already covers a full draft — up to 10 teams, every position, up to 2 saved leagues, board snapshots, the news ticker, elapsed time, and a custom board name.</p>
+          <ul class="pro-feature-list">
+            <li><b>Recap Page</b> — full post-draft stats: price trends, team composition, spend by position, and (if turned on) the roast section.</li>
+            <li><b>Break Screen</b> — the Draft Board switches to trivia, season odds, and all-time stat leaders whenever the draft is on break.</li>
+            <li><b>Recent Picks &amp; Drafted by Position</b> — two more live stat widgets on the Draft Board header.</li>
+            <li><b>Fun Extras</b> — NICE celebrations, Fan Messages, Shots, and the Recap roast section.</li>
+            <li><b>CSV Export</b> — download the full draft as a spreadsheet from Team Picks.</li>
+            <li><b>More teams &amp; leagues</b> — beyond 10 teams per league and 2 saved leagues.</li>
+          </ul>
+        </section>
+
       </main>
     </div>
   </div>
@@ -122,8 +137,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="shared/supabase-config.js?v=20260728"></script>
   <script src="shared/pro.js?v=20260728"></script>
-  <script src="shared/data.js?v=20260728c"></script>
+  <script src="shared/data.js?v=20260728d"></script>
   <script src="shared/icons.js?v=20260728"></script>
-  <script src="setup.js?v=20260728e"></script>
+  <script src="setup.js?v=20260728f"></script>
 </body>
 </html>
