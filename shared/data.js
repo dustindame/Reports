@@ -487,8 +487,15 @@ const DraftStore = {
       p_roast_enabled: boardOptions.roastEnabled !== false,
       p_show_recap: boardOptions.showRecap !== false,
       p_break_enabled: boardOptions.breakEnabled !== false,
+      p_device_id: typeof ProGate !== "undefined" ? ProGate.getDeviceId() : null,
+      p_is_pro: typeof ProGate !== "undefined" && ProGate.isPro(),
     });
-    if (error) return { error: error.message };
+    if (error) {
+      if (error.message && error.message.includes("FREE_LEAGUE_LIMIT_REACHED")) {
+        return { error: "Free accounts are limited to 2 leagues on this device — upgrade to Pro for unlimited leagues." };
+      }
+      return { error: error.message };
+    }
     return { error: null, id: data };
   },
 

@@ -36,4 +36,27 @@ const ProGate = {
       /* ignore */
     }
   },
+
+  // A random ID generated once per device/browser and persisted, so
+  // the server can count how many leagues THIS device has created and
+  // enforce the free-tier league cap for real (not just "remembered
+  // locally" the way LeagueSession's saved-leagues list is) -- without
+  // requiring any real login. Same honesty caveat as everything else
+  // client-controlled here: clearing site data, reinstalling the app,
+  // or a determined direct API call resets/bypasses it. Good enough
+  // for a niche app; a real account system would be the bulletproof
+  // version of this, at real added cost.
+  DEVICE_ID_KEY: "auctionDraft.deviceId",
+  getDeviceId() {
+    try {
+      let id = localStorage.getItem(this.DEVICE_ID_KEY);
+      if (!id) {
+        id = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        localStorage.setItem(this.DEVICE_ID_KEY, id);
+      }
+      return id;
+    } catch (e) {
+      return null;
+    }
+  },
 };
