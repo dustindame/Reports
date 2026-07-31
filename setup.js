@@ -44,6 +44,12 @@
   const SLOT_MAX = { QB: 4, RB: 6, WR: 6, TE: 4, DEF: 3, K: 3 };
 
   let mode = "create"; // or "edit"
+  // True once a loaded-for-edit league already has is_pro=true in Supabase.
+  // Pro is a property of the LEAGUE, not the device editing it -- anyone
+  // with the league code + PIN (e.g. a friend covering Draft Entry) must
+  // get full Pro access to an already-Pro league even on a non-Pro device,
+  // and must never be able to accidentally downgrade it back to free.
+  let existingLeagueIsPro = false;
   let leagueCode = generateLeagueCode();
   let numTeams = DEFAULT_NUM_TEAMS;
   let budget = DEFAULT_BUDGET;
@@ -192,10 +198,12 @@
     roastEnabled = config.roast_enabled !== false;
     showRecap = config.show_recap !== false;
     breakEnabled = config.break_enabled !== false;
+    existingLeagueIsPro = Boolean(config.is_pro);
   }
 
   function switchToCreate() {
     mode = "create";
+    existingLeagueIsPro = false;
     leagueCode = generateLeagueCode();
     numTeams = DEFAULT_NUM_TEAMS;
     budget = DEFAULT_BUDGET;
@@ -254,7 +262,7 @@
   }
 
   function effectiveMaxTeams() {
-    return ProGate.isPro() ? MAX_TEAMS : Math.min(MAX_TEAMS, ProGate.FREE_MAX_TEAMS);
+    return ProGate.isPro() || existingLeagueIsPro ? MAX_TEAMS : Math.min(MAX_TEAMS, ProGate.FREE_MAX_TEAMS);
   }
 
   function renderTeamCount() {
@@ -345,7 +353,7 @@
   // (attached once, below) intercepts taps on locked controls to show
   // an upsell instead of silently doing nothing.
   function applyProGating() {
-    const isPro = ProGate.isPro();
+    const isPro = ProGate.isPro() || existingLeagueIsPro;
     document.querySelectorAll('[data-pro="1"]').forEach((el) => {
       el.classList.toggle("pro-locked", !isPro);
     });
@@ -566,6 +574,9 @@
       roastEnabled,
       showRecap,
       breakEnabled,
+      // Once a league is Pro, saving it must never flip is_pro back to
+      // false just because the device doing the editing isn't Pro itself.
+      isPro: ProGate.isPro() || existingLeagueIsPro,
     };
 
     const { error } =

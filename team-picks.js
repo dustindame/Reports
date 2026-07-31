@@ -196,7 +196,11 @@
   }
 
   exportDraftBtn.addEventListener("click", () => {
-    if (!ProGate.isPro()) {
+    // Pro is a property of the LEAGUE (IS_PRO_LEAGUE, from draft_config.is_pro),
+    // not of whoever's device this happens to be -- anyone with the league
+    // code can use every Pro feature of an already-Pro league, e.g. a
+    // friend covering Draft Entry/Team Picks on their own non-Pro phone.
+    if (!ProGate.isPro() && !IS_PRO_LEAGUE) {
       showProUpsell("CSV Export is Pro", "Upgrade to Pro to export the full draft as a CSV file.");
       return;
     }
@@ -262,7 +266,7 @@
   messageFab.hidden = !CURRENT_LEAGUE_CODE; // demo mode has no league to post to
   recapBanner.href = `recap.html${CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : ""}`;
   recapBanner.addEventListener("click", (e) => {
-    if (ProGate.isPro()) return;
+    if (ProGate.isPro() || IS_PRO_LEAGUE) return;
     e.preventDefault();
     showProUpsell("Recap is Pro", "Upgrade to Pro to unlock the full post-draft Recap page.");
   });

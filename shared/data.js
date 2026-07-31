@@ -494,7 +494,7 @@ const DraftStore = {
       p_show_recap: boardOptions.showRecap !== false,
       p_break_enabled: boardOptions.breakEnabled !== false,
       p_device_id: typeof ProGate !== "undefined" ? ProGate.getDeviceId() : null,
-      p_is_pro: typeof ProGate !== "undefined" && ProGate.isPro(),
+      p_is_pro: boardOptions.isPro !== undefined ? Boolean(boardOptions.isPro) : typeof ProGate !== "undefined" && ProGate.isPro(),
     });
     if (error) {
       if (error.message && error.message.includes("FREE_LEAGUE_LIMIT_REACHED")) {
@@ -528,7 +528,7 @@ const DraftStore = {
       p_roast_enabled: boardOptions.roastEnabled !== false,
       p_show_recap: boardOptions.showRecap !== false,
       p_break_enabled: boardOptions.breakEnabled !== false,
-      p_is_pro: typeof ProGate !== "undefined" && ProGate.isPro(),
+      p_is_pro: boardOptions.isPro !== undefined ? Boolean(boardOptions.isPro) : typeof ProGate !== "undefined" && ProGate.isPro(),
     });
     if (error) return { error: error.message };
     if (data === false) return { error: "Incorrect commissioner PIN." };
