@@ -44,7 +44,7 @@
   const breakLeadersList = document.getElementById("breakLeadersList");
   const breakRosterList = document.getElementById("breakRosterList");
 
-  document.getElementById("switchLeagueIcon").innerHTML = Icons.swap(16, "#fff");
+  document.getElementById("switchLeagueIcon").innerHTML = Icons.swap(20, "#fff");
   document.getElementById("exportIcon").innerHTML = Icons.download(16, "#fff");
   document.getElementById("snapshotIcon").innerHTML = Icons.camera(16, "#fff");
   document.getElementById("recapIcon").innerHTML = Icons.barChart(16, "#fff");
