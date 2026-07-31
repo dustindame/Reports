@@ -35,6 +35,9 @@
   const recapLink = document.getElementById("recapLink");
   const completeBadge = document.getElementById("completeBadge");
   const switchLeagueBtn = document.getElementById("switchLeagueBtn");
+  const helpBtn = document.getElementById("helpBtn");
+  const helpOverlay = document.getElementById("helpOverlay");
+  const helpCloseBtn = document.getElementById("helpCloseBtn");
   const boardLoadingScreen = document.getElementById("boardLoadingScreen");
   const breakScreen = document.getElementById("breakScreen");
   const breakTimer = document.getElementById("breakTimer");
@@ -44,6 +47,7 @@
   const breakLeadersList = document.getElementById("breakLeadersList");
   const breakRosterList = document.getElementById("breakRosterList");
 
+  document.getElementById("helpIcon").innerHTML = Icons.helpCircle(20, "#fff");
   document.getElementById("switchLeagueIcon").innerHTML = Icons.swap(20, "#fff");
   document.getElementById("exportIcon").innerHTML = Icons.download(16, "#fff");
   document.getElementById("snapshotIcon").innerHTML = Icons.camera(16, "#fff");
@@ -55,6 +59,13 @@
   // this device at a *different* league without clearing localStorage
   // by hand. This reuses the same code-entry overlay the first-run
   // prompt uses.
+  helpBtn.addEventListener("click", () => {
+    helpOverlay.hidden = false;
+  });
+  helpCloseBtn.addEventListener("click", () => {
+    helpOverlay.hidden = true;
+  });
+
   switchLeagueBtn.addEventListener("click", async () => {
     const result = await promptForLeagueCode();
     if (result) {
