@@ -85,6 +85,13 @@ const Icons = {
     </svg>`;
   },
 
+  swap(size = 20, color = "#d4af37") {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 8h13.5M17.5 8l-3.5-3.5M17.5 8l-3.5 3.5" stroke="${color}" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20 16H6.5M6.5 16l3.5-3.5M6.5 16l3.5 3.5" stroke="${color}" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  },
+
   helpCircle(size = 20, color = "#d4af37") {
     return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="12" cy="12" r="9.2" stroke="${color}" stroke-width="1.8"/>

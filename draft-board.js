@@ -34,6 +34,8 @@
   const snapshotBtn = document.getElementById("snapshotBtn");
   const recapLink = document.getElementById("recapLink");
   const completeBadge = document.getElementById("completeBadge");
+  const switchLeagueBtn = document.getElementById("switchLeagueBtn");
+  const boardLoadingScreen = document.getElementById("boardLoadingScreen");
   const breakScreen = document.getElementById("breakScreen");
   const breakTimer = document.getElementById("breakTimer");
   const breakOddsNote = document.getElementById("breakOddsNote");
@@ -42,9 +44,26 @@
   const breakLeadersList = document.getElementById("breakLeadersList");
   const breakRosterList = document.getElementById("breakRosterList");
 
+  document.getElementById("switchLeagueIcon").innerHTML = Icons.swap(16, "#fff");
   document.getElementById("exportIcon").innerHTML = Icons.download(16, "#fff");
   document.getElementById("snapshotIcon").innerHTML = Icons.camera(16, "#fff");
   document.getElementById("recapIcon").innerHTML = Icons.barChart(16, "#fff");
+
+  // Once a league code is remembered on this device, the board goes
+  // straight to it with no prompt (correct for "same phone that
+  // created it") -- but there was previously no visible way to point
+  // this device at a *different* league without clearing localStorage
+  // by hand. This reuses the same code-entry overlay the first-run
+  // prompt uses.
+  switchLeagueBtn.addEventListener("click", async () => {
+    const result = await promptForLeagueCode();
+    if (result) {
+      window.location.href = `draft-board.html?league=${encodeURIComponent(result.code)}`;
+    } else {
+      LeagueSession.clearLeagueCode();
+      window.location.reload();
+    }
+  });
 
   if (IS_TV_APP) {
     exportBtn.hidden = true;
@@ -697,6 +716,17 @@
     layoutGrid();
     fitBoardToScreen();
   }
+
+  // Layout is settled now -- reveal the real board. requestAnimationFrame
+  // lets the browser actually paint the just-applied transform/sizes
+  // before the loading screen's opacity fades out, so there's no gap
+  // where the raw unscaled board is visible for a frame.
+  requestAnimationFrame(() => {
+    boardLoadingScreen.style.opacity = "0";
+    setTimeout(() => {
+      boardLoadingScreen.hidden = true;
+    }, 350);
+  });
 
   // Picks that already existed when the board loaded shouldn't retroactively
   // trigger the shot banner or pick sound -- only ones that arrive from here on.

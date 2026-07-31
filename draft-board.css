@@ -10,6 +10,62 @@
 
 body { overflow: hidden; height: 100vh; }
 
+/* Covers the board's first paint -- config fetch + the header/grid
+   layout math (fitBoardToScreen) both take a beat, and without this
+   the unscaled board flashes at full/wrong size for a frame before
+   snapping into place. Removed once fitBoardToScreen's first real run
+   completes (see draft-board.js), or immediately if a league-code
+   prompt is needed instead (see shared/league-gate.js). */
+.board-loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  transition: opacity 0.35s ease;
+}
+.board-loading-screen[hidden] { display: none; }
+.board-loading-ball {
+  font-size: 64px;
+  line-height: 1;
+  animation: board-loading-spin 1.1s ease-in-out infinite;
+}
+.board-loading-text {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--gold-dim);
+}
+.board-loading-bar {
+  width: 160px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--panel-alt);
+  overflow: hidden;
+}
+.board-loading-bar-fill {
+  width: 40%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #0076b6, #2f6fed);
+  animation: board-loading-bar 1.3s ease-in-out infinite;
+}
+@keyframes board-loading-spin {
+  0%, 100% { transform: rotate(-14deg) scale(1); }
+  50% { transform: rotate(14deg) scale(1.08); }
+}
+@keyframes board-loading-bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .board-loading-ball { animation: none; }
+  .board-loading-bar-fill { animation: none; width: 100%; }
+}
+
 .board-scroll-wrapper {
   width: 100vw;
   height: 100vh;
