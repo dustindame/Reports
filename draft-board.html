@@ -6,9 +6,14 @@
   <title>Auction Draft Board</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728f" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260728g" />
-  <link rel="stylesheet" href="draft-board.css?v=20260728j" />
+  <link rel="stylesheet" href="draft-board.css?v=20260728k" />
 </head>
 <body class="turf-bg">
+  <div class="board-loading-screen turf-bg" id="boardLoadingScreen">
+    <div class="board-loading-ball">🏈</div>
+    <div class="board-loading-text">LOADING DRAFT BOARD…</div>
+    <div class="board-loading-bar"><div class="board-loading-bar-fill"></div></div>
+  </div>
   <div class="board-scroll-wrapper" id="boardScroll">
     <div class="board-content" id="boardContent">
 
@@ -37,6 +42,7 @@
         </div>
 
         <div class="header-block tools-block">
+          <button class="tool-btn" id="switchLeagueBtn" title="Switch to a different league"><span id="switchLeagueIcon"></span></button>
           <button class="tool-btn" id="exportBtn" title="Download a backup of all picks (CSV)"><span id="exportIcon"></span></button>
           <button class="tool-btn" id="snapshotBtn" title="Save the board as an image"><span id="snapshotIcon"></span></button>
           <a class="tool-btn" id="recapLink" href="recap.html" title="View draft recap"><span id="recapIcon"></span></a>
@@ -105,8 +111,8 @@
   <script src="shared/supabase-config.js?v=20260728e"></script>
   <script src="shared/pro.js?v=20260728c"></script>
   <script src="shared/data.js?v=20260728k"></script>
-  <script src="shared/league-gate.js?v=20260728e"></script>
-  <script src="shared/icons.js?v=20260728h"></script>
-  <script src="draft-board.js?v=20260728j"></script>
+  <script src="shared/league-gate.js?v=20260728f"></script>
+  <script src="shared/icons.js?v=20260728i"></script>
+  <script src="draft-board.js?v=20260728k"></script>
 </body>
 </html>

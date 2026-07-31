@@ -27,6 +27,16 @@ function promptForLeagueCode() {
     `;
     document.body.appendChild(overlay);
 
+    // Draft Board has a themed loading screen covering first paint (see
+    // draft-board.html) -- if it turns out a league code prompt is
+    // needed, that screen has to get out of the way immediately so the
+    // prompt is actually visible. A plain DOM query works regardless of
+    // script load order (unlike an event/callback registered by
+    // draft-board.js, which might not have run yet). No-op on pages
+    // that don't have this element.
+    const loadingScreen = document.getElementById("boardLoadingScreen");
+    if (loadingScreen) loadingScreen.hidden = true;
+
     const input = overlay.querySelector("#leagueGateInput");
     const errorEl = overlay.querySelector("#leagueGateError");
     const continueBtn = overlay.querySelector("#leagueGateContinue");
