@@ -7,6 +7,8 @@
   const clearBtn = document.getElementById("clearBtn");
   const teamGrid = document.getElementById("teamGrid");
   const bidSlider = document.getElementById("bidSlider");
+  const bidMinus = document.getElementById("bidMinus");
+  const bidPlus = document.getElementById("bidPlus");
   const bidAmountTrack = document.getElementById("bidAmountTrack");
   const amountBubble = document.getElementById("amountBubble");
   const toast = document.getElementById("toast");
@@ -22,6 +24,7 @@
 
   document.getElementById("setupGear").innerHTML = Icons.gear(18);
   document.getElementById("helpIcon").innerHTML = Icons.helpCircle(18);
+  document.getElementById("refreshIcon").innerHTML = Icons.refresh(18);
   document.getElementById("searchIcon").innerHTML = Icons.search(18);
   document.getElementById("flagIcon").innerHTML = Icons.flag(20);
   document.getElementById("slideChevron").innerHTML = Icons.chevronRight(22, "#eaf1ff");
@@ -481,11 +484,23 @@
     helpOverlay.hidden = true;
   });
 
-  // Editing Settings after the draft has already started wipes every
-  // pick logged so far (see setup.js's "SAVE CHANGES" flow) -- warn
-  // right at the point of clicking the gear, before the commissioner
-  // even lands on that page, not just once they're already there.
-  const setupLink = document.querySelector(".setup-link");
+  // Same reasoning as Draft Board's refresh button: Setup changes made
+  // elsewhere don't reach this page until it reloads (config is only
+  // fetched once at load; only picks sync live). A plain reload is
+  // safe since Supabase is the source of truth for everything here.
+  document.getElementById("refreshBtn").addEventListener("click", () => {
+    window.location.reload();
+  });
+
+  // Once the draft has started, structural settings (team count, budget,
+  // roster positions) lock automatically in Setup -- this just gives a
+  // heads-up at the point of clicking the gear, before landing there.
+  // NOTE: was `document.querySelector(".setup-link")` -- both this link
+  // and the Help button share that class, so it silently grabbed the
+  // Help button instead (a <button>, with no .href) and clicking Help
+  // triggered this Settings-navigation logic, then navigated to
+  // `.../undefined` on confirm. Target the gear link by id instead.
+  const setupLink = document.getElementById("setupLink");
   const settingsConfirmOverlay = document.getElementById("settingsConfirmOverlay");
   const settingsConfirmYes = document.getElementById("settingsConfirmYes");
   const settingsConfirmNo = document.getElementById("settingsConfirmNo");
@@ -651,6 +666,16 @@
     renderRecentPicks();
   });
   bidSlider.addEventListener("input", updateAmount);
+  function nudgeBid(delta) {
+    const min = Number(bidSlider.min);
+    const max = Number(bidSlider.max);
+    const next = Math.min(max, Math.max(min, Number(bidSlider.value) + delta));
+    if (next === Number(bidSlider.value)) return;
+    bidSlider.value = next;
+    updateAmount();
+  }
+  bidMinus.addEventListener("click", () => nudgeBid(-1));
+  bidPlus.addEventListener("click", () => nudgeBid(1));
 
   // Someone else's pick (another Player Entry session) also affects this
   // team's live budget, so keep the cards in sync via Supabase Realtime.

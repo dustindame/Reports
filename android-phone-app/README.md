@@ -1,7 +1,8 @@
-# Draft Entry (phone app)
+# Bid Board (phone app)
 
-Wraps Draft Setup, Draft Entry, and Team Picks (all reachable from
-each other already) in an installable Android app. It's a thin native
+Wraps Draft Setup, Bid Board (the pick-entry screen, `player-entry.html`),
+and Team Picks (all reachable from each other already) in an
+installable Android app. It's a thin native
 shell — `capacitor.config.json` points it at the live GitHub Pages
 site, so it always shows the current version with zero rebuilds.
 

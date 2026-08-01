@@ -36,6 +36,7 @@
   const completeBadge = document.getElementById("completeBadge");
   const switchLeagueBtn = document.getElementById("switchLeagueBtn");
   const helpBtn = document.getElementById("helpBtn");
+  const refreshBtn = document.getElementById("refreshBtn");
   const helpOverlay = document.getElementById("helpOverlay");
   const helpCloseBtn = document.getElementById("helpCloseBtn");
   const boardLoadingScreen = document.getElementById("boardLoadingScreen");
@@ -48,6 +49,7 @@
   const breakRosterList = document.getElementById("breakRosterList");
 
   document.getElementById("helpIcon").innerHTML = Icons.helpCircle(20, "#fff");
+  document.getElementById("refreshIcon").innerHTML = Icons.refresh(18, "#fff");
   document.getElementById("switchLeagueIcon").innerHTML = Icons.swap(20, "#fff");
   document.getElementById("exportIcon").innerHTML = Icons.download(16, "#fff");
   document.getElementById("snapshotIcon").innerHTML = Icons.camera(16, "#fff");
@@ -64,6 +66,16 @@
   });
   helpCloseBtn.addEventListener("click", () => {
     helpOverlay.hidden = true;
+  });
+
+  // Config (Setup changes -- board name, toggles, Fun Extras, etc.) is
+  // only fetched once at page load; picks sync live via Realtime, but
+  // a settings change made elsewhere doesn't reach an already-open
+  // Draft Board until it reloads. A plain reload is the safest fix --
+  // Supabase is the source of truth for everything shown here, so
+  // there's no state to lose, unlike trying to patch config in place.
+  refreshBtn.addEventListener("click", () => {
+    window.location.reload();
   });
 
   switchLeagueBtn.addEventListener("click", async () => {

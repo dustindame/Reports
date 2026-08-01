@@ -416,7 +416,33 @@ button.setup-link { cursor: pointer; font: inherit; padding: 0; }
   border-radius: var(--radius-lg);
   background: linear-gradient(160deg, #cfa544, #8a6c1f 45%, #cfa544);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  flex: 1;
+  min-width: 0;
 }
+
+/* $1-at-a-time nudge buttons either side of the slider -- dragging a
+   touch slider precisely to an exact dollar is fiddly; these give an
+   exact, repeatable increment. */
+.bid-step-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.bid-step-btn {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(160deg, #cfa544, #8a6c1f 45%, #cfa544);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+  color: #201703;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+.bid-step-btn:active { transform: scale(0.94); }
 
 #bidSlider {
   -webkit-appearance: none;

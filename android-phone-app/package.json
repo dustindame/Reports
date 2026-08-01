@@ -1,7 +1,7 @@
 {
   "name": "draft-entry-app",
   "version": "1.0.0",
-  "description": "Draft Setup / Draft Entry / Team Picks, wrapped as an installable Android app",
+  "description": "Draft Setup / Bid Board / Team Picks, wrapped as an installable Android app",
   "private": true,
   "scripts": {
     "sync": "cap sync android",

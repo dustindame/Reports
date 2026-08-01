@@ -4,9 +4,9 @@ Draft copy for Google Play (phone app) and the Amazon Appstore (Fire TV app). Re
 
 ---
 
-## Google Play — Draft Entry (phone app)
+## Google Play — Bid Board (phone app)
 
-**Title** (max 30 characters): `Draft Entry — Auction Draft`
+**Title** (max 30 characters): `Bid Board — Auction Draft`
 
 **Short description** (max 80 characters):
 `Log fantasy football auction picks live, synced to your TV in real time.`
@@ -15,7 +15,7 @@ Draft copy for Google Play (phone app) and the Amazon Appstore (Fire TV app). Re
 
 > Run your fantasy football auction draft like a pro — no spreadsheet, no yelling across the room.
 >
-> Draft Entry is the phone-side companion to Draft Board (the TV display): search a player, tap the winning team, slide to the winning bid, and confirm. Every pick shows up instantly on your TV and on everyone else's phones — no refreshing, no "wait, did that save?"
+> Bid Board is the phone-side companion to Draft Board (the TV display): search a player, tap the winning team, slide to the winning bid, and confirm. Every pick shows up instantly on your TV and on everyone else's phones — no refreshing, no "wait, did that save?"
 >
 > **Built for how auction drafts actually work:**
 > - No fixed turn order — any team can bid on any player, whenever it happens
@@ -51,7 +51,7 @@ Draft copy for Google Play (phone app) and the Amazon Appstore (Fire TV app). Re
 
 > Turn any TV into a live fantasy football auction draft board.
 >
-> Draft Board shows every team's roster, remaining budget, and recent picks in one wide display that updates instantly as picks are logged from the free Draft Entry phone app. No manual refreshing, no spreadsheet on a laptop propped up in the corner.
+> Draft Board shows every team's roster, remaining budget, and recent picks in one wide display that updates instantly as picks are logged from the free Bid Board phone app. No manual refreshing, no spreadsheet on a laptop propped up in the corner.
 >
 > **What's on screen:**
 > - Every team's full roster and budget, color-coded by position
@@ -64,7 +64,7 @@ Draft copy for Google Play (phone app) and the Amazon Appstore (Fire TV app). Re
 > - Fan Messages from the room, shown right on the ticker
 > - A full post-draft Recap page, one tap away
 >
-> This app is a passive display — pair it with the free Draft Entry phone app (available on Google Play) to actually run your draft. No purchase needed on this app itself; league features are unlocked through Draft Entry.
+> This app is a passive display — pair it with the free Bid Board phone app (available on Google Play) to actually run your draft. No purchase needed on this app itself; league features are unlocked through Bid Board.
 >
 > Not affiliated with or endorsed by the NFL or any NFL team.
 

@@ -1,6 +1,6 @@
 {
   "appId": "com.dustindame.draftentry",
-  "appName": "Draft Entry",
+  "appName": "Bid Board",
   "webDir": "www",
   "server": {
     "url": "https://dustindame.github.io/Reports/player-entry.html",

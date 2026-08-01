@@ -740,3 +740,26 @@ body { overflow: hidden; height: 100vh; }
   0% { transform: translateX(var(--message-start, 100%)); }
   100% { transform: translateX(var(--message-end, -100%)); }
 }
+
+/* The shared .faq-card (shared/league-gate.css) is sized for a phone
+   overlay (max-width: 420px) -- on a TV that reads as a tiny box in
+   the middle of a huge screen. Take advantage of the real estate
+   instead: much wider, bigger type, and the FAQ items run two columns
+   side by side rather than one long scroll. */
+.tv-faq-card {
+  max-width: 1100px;
+  width: 90vw;
+  max-height: 85vh;
+  padding: 48px 56px;
+}
+.tv-faq-card .league-gate-title { font-size: 34px; margin-bottom: 24px; }
+.tv-faq-card .faq-scroll {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 40px;
+  align-content: start;
+}
+.tv-faq-card .faq-item + .faq-item { margin-top: 0; }
+.tv-faq-card .faq-q { font-size: 20px; margin-bottom: 8px; }
+.tv-faq-card .faq-a { font-size: 17px; line-height: 1.6; }
+.tv-faq-card .league-gate-secondary { font-size: 18px; padding: 14px 28px; margin-top: 24px; }

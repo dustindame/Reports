@@ -132,6 +132,13 @@ const Icons = {
     </svg>`;
   },
 
+  refresh(size = 18, color = "#d4af37") {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 12a8 8 0 0 1 13.66-5.66L20 8.5M20 8.5V4M20 8.5h-4.5" stroke="${color}" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20 12a8 8 0 0 1-13.66 5.66L4 15.5M4 15.5V20M4 15.5h4.5" stroke="${color}" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  },
+
   copy(size = 18, color = "#d4af37") {
     return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="8" y="8" width="12" height="12" rx="2" stroke="${color}" stroke-width="1.8"/>

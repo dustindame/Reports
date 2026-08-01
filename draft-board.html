@@ -6,7 +6,7 @@
   <title>Auction Draft Board</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728f" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260728g" />
-  <link rel="stylesheet" href="draft-board.css?v=20260731a" />
+  <link rel="stylesheet" href="draft-board.css?v=20260801a" />
 </head>
 <body class="turf-bg">
   <div class="board-loading-screen turf-bg" id="boardLoadingScreen">
@@ -43,6 +43,7 @@
 
         <div class="header-block tools-block">
           <button class="tool-btn" id="helpBtn" title="Help &amp; FAQ"><span id="helpIcon"></span></button>
+          <button class="tool-btn" id="refreshBtn" title="Refresh — picks up any Setup changes immediately"><span id="refreshIcon"></span></button>
           <button class="tool-btn" id="switchLeagueBtn" title="Switch to a different league"><span id="switchLeagueIcon"></span></button>
           <button class="tool-btn" id="exportBtn" title="Download a backup of all picks (CSV)"><span id="exportIcon"></span></button>
           <button class="tool-btn" id="snapshotBtn" title="Save the board as an image"><span id="snapshotIcon"></span></button>
@@ -94,39 +95,6 @@
         </div>
       </main>
 
-      <div class="league-gate-overlay" id="helpOverlay" hidden>
-        <div class="league-gate-card faq-card">
-          <div class="league-gate-title">Help &amp; FAQ</div>
-          <div class="faq-scroll">
-            <div class="faq-item">
-              <div class="faq-q">If this league is Pro, do I need Pro on this device too?</div>
-              <div class="faq-a">No — Pro belongs to the league, not any one device. Once a league is upgraded to Pro, every Pro feature (Break Screen, Recap, Fan Messages, and more) shows up here for anyone viewing it, regardless of which device or app is doing the viewing.</div>
-            </div>
-            <div class="faq-item">
-              <div class="faq-q">What does the Switch League button do?</div>
-              <div class="faq-a">Lets this device point at a different league without clearing its remembered code by hand — enter a different league's code and it switches over immediately.</div>
-            </div>
-            <div class="faq-item">
-              <div class="faq-q">Can more than one person log picks?</div>
-              <div class="faq-a">Yes — anyone with the league code and PIN can log picks from Draft Entry on their own phone, even at the same time as someone else. The same player can never be drafted twice, even if two people enter it around the same moment.</div>
-            </div>
-            <div class="faq-item">
-              <div class="faq-q">What does the download icon do?</div>
-              <div class="faq-a">Downloads a CSV backup of every pick made so far, straight from this device — a safety net independent of anything else. (Not available inside the Fire TV app itself, since there's nowhere on a TV to save or open a downloaded file.)</div>
-            </div>
-            <div class="faq-item">
-              <div class="faq-q">How do people follow along on their phone?</div>
-              <div class="faq-a">Scan the QR code — it opens Team Picks with this league already loaded, no code needed.</div>
-            </div>
-            <div class="faq-item">
-              <div class="faq-q">Will this league ever get deleted?</div>
-              <div class="faq-a">Free-tier leagues are cleared automatically after 7 idle days if unfinished, or 14 idle days once complete. Pro leagues last much longer — 60 idle days — since a draft doesn't need to stick around forever once it's been copied into your actual fantasy service.</div>
-            </div>
-          </div>
-          <button class="league-gate-secondary" id="helpCloseBtn">Close</button>
-        </div>
-      </div>
-
       <footer class="board-ticker" id="boardTicker">
         <div class="ticker-row message-row" id="messageRow" hidden>
           <div class="ticker-track" id="messageTrack"></div>
@@ -139,6 +107,47 @@
     </div>
   </div>
 
+  <!-- Deliberately OUTSIDE #boardContent: that element gets a CSS
+       `transform: scale(...)` from fitBoardToScreen() to fit the board
+       to the screen, and a transform on an ancestor also scales any
+       position:fixed descendant (creates a new containing block for
+       it) -- this overlay was shrinking along with the board's zoom
+       level, which is why it looked tiny on a big TV regardless of its
+       own CSS size. Living outside boardContent, it now sizes purely
+       off the real viewport. -->
+  <div class="league-gate-overlay" id="helpOverlay" hidden>
+    <div class="league-gate-card faq-card tv-faq-card">
+      <div class="league-gate-title">Help &amp; FAQ</div>
+      <div class="faq-scroll">
+        <div class="faq-item">
+          <div class="faq-q">If this league is Pro, do I need Pro on this device too?</div>
+          <div class="faq-a">No — Pro belongs to the league, not any one device. Once a league is upgraded to Pro, every Pro feature (Break Screen, Recap, Fan Messages, and more) shows up here for anyone viewing it, regardless of which device or app is doing the viewing.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">What does the Switch League button do?</div>
+          <div class="faq-a">Lets this device point at a different league without clearing its remembered code by hand — enter a different league's code and it switches over immediately.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Can more than one person log picks?</div>
+          <div class="faq-a">Yes — anyone with the league code and PIN can log picks from Bid Board on their own phone, even at the same time as someone else. The same player can never be drafted twice, even if two people enter it around the same moment.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">What does the download icon do?</div>
+          <div class="faq-a">Downloads a CSV backup of every pick made so far, straight from this device — a safety net independent of anything else. (Not available inside the Fire TV app itself, since there's nowhere on a TV to save or open a downloaded file.)</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">How do people follow along on their phone?</div>
+          <div class="faq-a">Scan the QR code — it opens Team Picks with this league already loaded, no code needed.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q">Will this league ever get deleted?</div>
+          <div class="faq-a">Free-tier leagues are cleared automatically after 7 idle days if unfinished, or 14 idle days once complete. Pro leagues last much longer — 60 idle days — since a draft doesn't need to stick around forever once it's been copied into your actual fantasy service.</div>
+        </div>
+      </div>
+      <button class="league-gate-secondary" id="helpCloseBtn">Close</button>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -146,7 +155,7 @@
   <script src="shared/pro.js?v=20260728c"></script>
   <script src="shared/data.js?v=20260731e"></script>
   <script src="shared/league-gate.js?v=20260731a"></script>
-  <script src="shared/icons.js?v=20260731a"></script>
-  <script src="draft-board.js?v=20260731c"></script>
+  <script src="shared/icons.js?v=20260801a"></script>
+  <script src="draft-board.js?v=20260801a"></script>
 </body>
 </html>
