@@ -92,14 +92,25 @@ Run ▶ on a plugged-in phone (USB debugging enabled) or an emulator, or
 `.apk` you can sideload onto any Android phone (copy it over and open
 it, or `adb install path/to/app-debug.apk`).
 
-## Changing the app icon / splash screen
+## App icon
 
-Defaults come from Capacitor's template. To customize:
+The real icon (auction gavel + football + roster grid) is checked in at
+`assets/icon.png` (1024x1024) — this is the source of truth, tracked in
+git even though `android/` itself isn't. All actual density-specific
+icon/splash files were generated from it via `@capacitor/assets` and
+live under the (gitignored) `android/` folder, so **regenerate them any
+time `android/` is recreated from scratch**:
 ```
 npm install -D @capacitor/assets
+npx capacitor-assets generate --android
 ```
-then follow [Capacitor's asset-generation guide](https://capacitorjs.com/docs/guides/splash-screens-and-icons)
-with your own `icon.png` / `splash.png` source images.
+No splash-specific source was provided, so the icon image doubles as
+the splash screen too — replace `assets/splash.png` (if one is added
+later) and re-run the same command to give the splash its own image
+instead.
+
+To use a different icon going forward, replace `assets/icon.png` and
+re-run the command above.
 
 ## If you ever change the site's URL or add a custom domain
 
