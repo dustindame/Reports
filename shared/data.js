@@ -356,7 +356,27 @@ function buildEmptyDraft() {
 }
 
 /* ---------- switching between a real league and the local demo ---------- */
+// Snapshot of the config as last applied, so onConfigChange handlers
+// (below) can tell "on_break/draft_completed changed" (handled with a
+// smooth in-place transition already) apart from "something else
+// changed" (board name, display toggles, Fun Extras, budget, roster,
+// team names, is_pro -- anything Setup can touch), which is safest to
+// just handle with a full reload rather than trying to patch every
+// possible field in place across every page.
+let LAST_CONFIG_SNAPSHOT = null;
+const CONFIG_FIELDS_TO_WATCH = [
+  "board_name", "show_news", "show_messages", "show_recent", "show_drafted_total",
+  "show_position_totals", "show_elapsed_time", "nice_enabled", "shots_count",
+  "roast_enabled", "show_recap", "break_enabled", "is_pro", "num_teams", "budget",
+  "roster_slots", "team_names",
+];
+function configHasOtherChanges(newConfig) {
+  if (!LAST_CONFIG_SNAPSHOT) return false;
+  return CONFIG_FIELDS_TO_WATCH.some((key) => JSON.stringify(newConfig[key]) !== JSON.stringify(LAST_CONFIG_SNAPSHOT[key]));
+}
+
 function applyRealConfig(config, leagueCode) {
+  LAST_CONFIG_SNAPSHOT = config;
   CURRENT_LEAGUE_CODE = leagueCode;
   TEAMS = config.team_names.map((name, i) => ({ id: `t${i + 1}`, name, color: teamColorVar(i) }));
   ROSTER_SLOTS = config.roster_slots;

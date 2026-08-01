@@ -37,7 +37,6 @@ body {
 
 .phone-screen {
   height: 100%;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   /* Same field photo as the Draft Board header, with the same dark
@@ -110,11 +109,20 @@ button.setup-link { cursor: pointer; font: inherit; padding: 0; }
 
 .entry-main {
   flex: 1;
+  min-height: 0; /* without this, a flex child won't actually scroll internally -- it just grows to fit its content instead */
+  overflow-y: auto;
   padding: 18px 16px 24px;
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
+/* The header no longer scrolls at all now -- previously the whole
+   .phone-screen scrolled as one unit, and an overlay-style scrollbar
+   (common on Android WebView -- it draws on top of content rather
+   than reserving layout space, so no amount of padding could clear
+   it) would visually cover the rightmost header button (Settings)
+   while scrolling. Header now stays put; only this content area
+   scrolls, so its scrollbar never overlaps the header at all. */
 
 .section-label {
   display: flex;

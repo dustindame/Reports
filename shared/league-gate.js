@@ -10,6 +10,38 @@
    side (Draft Board, Team Picks, and just navigating to Enter Pick).
    =========================================================== */
 
+// A themed replacement for window.confirm() -- the native browser/OS
+// confirm dialog doesn't match the app's look at all (plain system
+// font, no theming) and reads as broken/unfinished next to everything
+// else. Reuses the same .league-gate-overlay/.league-gate-card styling
+// as every other prompt in the app. Caller is responsible for
+// escaping any interpolated values in `hint` (see escapeHtml in
+// shared/data.js) since this sets innerHTML.
+function showThemedConfirm({ icon = "⚠️", title, hint, confirmText = "Confirm", cancelText = "Cancel" }) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.className = "league-gate-overlay";
+    overlay.innerHTML = `
+      <div class="league-gate-card">
+        <div class="league-gate-icon">${icon}</div>
+        <div class="league-gate-title">${title}</div>
+        <p class="league-gate-hint">${hint}</p>
+        <button class="league-gate-continue" id="themedConfirmYes">${confirmText}</button>
+        <button class="league-gate-secondary" id="themedConfirmNo">${cancelText}</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector("#themedConfirmYes").addEventListener("click", () => {
+      overlay.remove();
+      resolve(true);
+    });
+    overlay.querySelector("#themedConfirmNo").addEventListener("click", () => {
+      overlay.remove();
+      resolve(false);
+    });
+  });
+}
+
 function promptForLeagueCode() {
   return new Promise((resolve) => {
     const overlay = document.createElement("div");

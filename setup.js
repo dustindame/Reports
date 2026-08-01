@@ -78,6 +78,36 @@
 
   /* ---------------- small overlay prompts (reuses shared/league-gate.css) ---------------- */
 
+  // A themed replacement for window.confirm() -- setup.html doesn't
+  // load shared/league-gate.js (it manages its own overlay flow
+  // independently), so this is a local copy of the same helper rather
+  // than a cross-page dependency. Caller must escape any interpolated
+  // values in `hint` since this sets innerHTML.
+  function showThemedConfirm({ icon = "⚠️", title, hint, confirmText = "Confirm", cancelText = "Cancel" }) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement("div");
+      overlay.className = "league-gate-overlay";
+      overlay.innerHTML = `
+        <div class="league-gate-card">
+          <div class="league-gate-icon">${icon}</div>
+          <div class="league-gate-title">${title}</div>
+          <p class="league-gate-hint">${hint}</p>
+          <button class="league-gate-continue" id="themedConfirmYes">${confirmText}</button>
+          <button class="league-gate-secondary" id="themedConfirmNo">${cancelText}</button>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      overlay.querySelector("#themedConfirmYes").addEventListener("click", () => {
+        overlay.remove();
+        resolve(true);
+      });
+      overlay.querySelector("#themedConfirmNo").addEventListener("click", () => {
+        overlay.remove();
+        resolve(false);
+      });
+    });
+  }
+
   function promptForExistingCode() {
     return new Promise((resolve) => {
       const overlay = document.createElement("div");
@@ -635,13 +665,19 @@
       pinHash = LeagueSession.getPinHash(leagueCode);
     }
 
-    const confirmMessage =
+    const confirmHint =
       mode === "create"
-        ? `Create a new league: ${numTeams} teams, $${budget} budget, ${slots} roster slots per team. Continue?`
+        ? `Create a new league: ${numTeams} teams, $${budget} budget, ${slots} roster slots per team.`
         : draftStarted
         ? `Save changes to league ${leagueCode}? Team count, budget, and roster positions are locked since picks are already logged — everything else will update, and existing picks are kept.`
-        : `Save changes to league ${leagueCode}: ${numTeams} teams, $${budget} budget, ${slots} roster slots per team — this clears any picks already made. Continue?`;
-    if (!window.confirm(confirmMessage)) return;
+        : `Save changes to league ${leagueCode}: ${numTeams} teams, $${budget} budget, ${slots} roster slots per team — this clears any picks already made.`;
+    const confirmed = await showThemedConfirm({
+      icon: mode === "create" ? "🏈" : "⚠️",
+      title: mode === "create" ? "Create League?" : "Save Changes?",
+      hint: confirmHint,
+      confirmText: mode === "create" ? "CREATE" : "SAVE",
+    });
+    if (!confirmed) return;
 
     saveBtn.disabled = true;
     saveBtn.textContent = mode === "create" ? "CREATING..." : "SAVING...";

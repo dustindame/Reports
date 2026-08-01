@@ -615,6 +615,18 @@
   }
 
   function enterBreakMode() {
+    // Capture the grid's real natural height BEFORE hiding it. The
+    // break screen previously had a hardcoded height: 620px in CSS,
+    // completely disconnected from the actual board's proportions --
+    // fitBoardToScreen picks whichever of the width/height ratio is
+    // more limiting to compute one uniform zoom factor, and a fixed
+    // height that doesn't match the board's real aspect ratio meant
+    // the break screen ended up scaled by width alone, leaving big
+    // empty margins top/bottom on a wide/large TV. Matching the grid's
+    // own natural height keeps the same aspect ratio the rest of the
+    // board already uses, so the existing scale-to-fill logic works
+    // correctly here too.
+    breakScreen.style.height = `${grid.scrollHeight}px`;
     grid.hidden = true;
     breakScreen.hidden = false;
     // With the grid hidden, boardContent's only remaining wide child is
@@ -799,6 +811,14 @@
   // The commissioner toggling break mode from Player Entry streams in
   // here -- switch screens without needing a manual refresh.
   DraftStore.onConfigChange((newConfig) => {
+    // Anything besides on_break/draft_completed changing (Setup was
+    // saved) is safest to just reload for -- Supabase is the source of
+    // truth for everything shown here, so there's nothing to lose.
+    if (configHasOtherChanges(newConfig)) {
+      window.location.reload();
+      return;
+    }
+
     const nowCompleted = Boolean(newConfig.draft_completed);
     if (nowCompleted !== DRAFT_COMPLETED) {
       DRAFT_COMPLETED = nowCompleted;

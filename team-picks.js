@@ -281,6 +281,10 @@
     if (!rosterView.hidden && currentTeamId) showRoster(currentTeamId);
   });
   DraftStore.onConfigChange((config) => {
+    if (configHasOtherChanges(config)) {
+      window.location.reload();
+      return;
+    }
     DRAFT_COMPLETED = Boolean(config.draft_completed);
     updateRecapBanner();
   });

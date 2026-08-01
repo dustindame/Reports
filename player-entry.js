@@ -111,7 +111,13 @@
         const pick = MOCK_DRAFT.picks.find((p) => p.id === pickId);
         if (!pick) return;
         const team = teamById(pick.teamId);
-        if (!window.confirm(`Remove ${pick.name} ($${pick.price}) from ${team.name}?`)) return;
+        const ok = await showThemedConfirm({
+          icon: "✕",
+          title: "Remove this pick?",
+          hint: `${escapeHtml(pick.name)} ($${pick.price}) from ${escapeHtml(team.name)}.`,
+          confirmText: "REMOVE",
+        });
+        if (!ok) return;
         await undoPick(pickId);
       });
     });
@@ -484,12 +490,14 @@
     helpOverlay.hidden = true;
   });
 
-  // Same reasoning as Draft Board's refresh button: Setup changes made
-  // elsewhere don't reach this page until it reloads (config is only
-  // fetched once at load; only picks sync live). A plain reload is
-  // safe since Supabase is the source of truth for everything here.
+  // Manual fallback, plus this page didn't previously subscribe to
+  // config changes at all -- Setup saves now auto-reload it instead of
+  // requiring a manual tap or a round trip through Switch League.
   document.getElementById("refreshBtn").addEventListener("click", () => {
     window.location.reload();
+  });
+  DraftStore.onConfigChange((newConfig) => {
+    if (configHasOtherChanges(newConfig)) window.location.reload();
   });
 
   // Once the draft has started, structural settings (team count, budget,

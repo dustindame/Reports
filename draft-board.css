@@ -490,6 +490,12 @@ body { overflow: hidden; height: 100vh; }
 .break-screen[hidden] { display: none; }
 .break-screen {
   width: 100%;
+  /* Fallback only -- draft-board.js sets this inline to the grid's own
+     natural height on entering break mode, so the break screen keeps
+     the same aspect ratio the board's scale-to-fit math already uses.
+     620px was a disconnected magic number that made the break screen
+     scale down by width alone on a big TV, leaving large empty margins
+     top/bottom. */
   height: 620px;
   display: flex;
   flex-direction: column;
