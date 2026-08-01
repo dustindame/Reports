@@ -3,6 +3,7 @@
   const leagueCodeDisplay = document.getElementById("leagueCodeDisplay");
   const leagueCodeHint = document.getElementById("leagueCodeHint");
   const haveCodeBtn = document.getElementById("haveCodeBtn");
+  const copyCodeBtn = document.getElementById("copyCodeBtn");
   const pinSection = document.getElementById("pinSection");
   const pinInput = document.getElementById("pinInput");
   const pinConfirmInput = document.getElementById("pinConfirmInput");
@@ -494,6 +495,40 @@
     budgetInput.value = budget;
   });
 
+  document.getElementById("copyCodeIcon").innerHTML = Icons.copy(16);
+
+  // Clipboard access can fail (no permission, insecure context, older
+  // WebView) -- falls back to a hidden-textarea + execCommand, which
+  // works in more places even though it's the deprecated API, so this
+  // button doesn't just silently do nothing on a device where the
+  // modern clipboard API isn't available.
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        return true;
+      } catch (e2) {
+        return false;
+      }
+    }
+  }
+
+  copyCodeBtn.addEventListener("click", async () => {
+    const ok = await copyText(leagueCode);
+    showStatus(ok ? "League code copied!" : "Couldn't copy — copy it by hand instead.", !ok);
+  });
+
   haveCodeBtn.addEventListener("click", async () => {
     const result = await promptForExistingCode();
     if (!result) return;
@@ -535,7 +570,7 @@
         <div class="league-gate-card">
           <div class="league-gate-icon">✅</div>
           <h2 class="league-gate-title">League Created!</h2>
-          <p class="league-gate-hint">Write these down — the PIN can't be recovered if lost.</p>
+          <p class="league-gate-hint">Write these down — the PIN can't be recovered if lost. Anyone you give both of these to can log picks too, from their own phone — handy if you want to split up Draft Entry duty or hand it off if you need to step away.</p>
           <div class="created-field">
             <span class="created-label">League Code</span>
             <span class="created-value">${escapeHtml(code)}</span>
@@ -544,10 +579,17 @@
             <span class="created-label">Commissioner PIN</span>
             <span class="created-value">${escapeHtml(pin)}</span>
           </div>
+          <button class="league-gate-secondary" id="createdCopyBtn">Copy Code &amp; PIN to Share</button>
           <button class="league-gate-continue" id="createdContinue">CONTINUE TO ENTER PICK</button>
         </div>
       `;
       document.body.appendChild(overlay);
+      const copyBtn = overlay.querySelector("#createdCopyBtn");
+      copyBtn.addEventListener("click", async () => {
+        const shareText = `Join our draft!\nLeague Code: ${code}\nCommissioner PIN: ${pin}\n(Anyone with both can log picks in Draft Entry.)`;
+        const ok = await copyText(shareText);
+        copyBtn.textContent = ok ? "Copied!" : "Couldn't copy — write it down instead";
+      });
       overlay.querySelector("#createdContinue").addEventListener("click", () => {
         overlay.remove();
         resolve();

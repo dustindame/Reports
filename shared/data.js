@@ -558,7 +558,12 @@ const DraftStore = {
       p_position: pick.position,
       p_price: pick.price,
     });
-    if (error) return { error: error.message };
+    if (error) {
+      if (error.message && error.message.includes("PLAYER_ALREADY_DRAFTED")) {
+        return { error: "That player was already drafted -- someone else logged this pick first." };
+      }
+      return { error: error.message };
+    }
     if (data === false) return { error: "Incorrect commissioner PIN." };
     return { error: null };
   },

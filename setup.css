@@ -150,7 +150,14 @@ body {
 
 /* ---------------- League code + PIN ---------------- */
 
+.league-code-row {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
 .league-code-display {
+  flex: 1;
   text-align: center;
   font-size: 30px;
   font-weight: 800;
@@ -163,6 +170,19 @@ body {
   padding: 16px;
   font-variant-numeric: tabular-nums;
 }
+
+.copy-code-btn {
+  flex: none;
+  width: 48px;
+  border: 1px solid #3f5f9e;
+  border-radius: var(--radius-lg);
+  background: var(--panel-grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.copy-code-btn:hover { border-color: #0076b6; }
 
 #haveCodeBtn { margin-top: 10px; }
 

@@ -6,7 +6,7 @@
   <title>Draft Setup</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728b" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260728g" />
-  <link rel="stylesheet" href="setup.css?v=20260731c" />
+  <link rel="stylesheet" href="setup.css?v=20260731d" />
 </head>
 <body>
   <div class="phone-frame">
@@ -22,7 +22,10 @@
 
         <section class="setup-section">
           <div class="section-label" id="leagueCodeLabel">Your League Code</div>
-          <div class="league-code-display" id="leagueCodeDisplay">------</div>
+          <div class="league-code-row">
+            <div class="league-code-display" id="leagueCodeDisplay">------</div>
+            <button class="copy-code-btn" id="copyCodeBtn" type="button" aria-label="Copy league code"><span id="copyCodeIcon"></span></button>
+          </div>
           <div class="stepper-hint" id="leagueCodeHint">Share this so others can view your league on the Draft Board and Team Picks.</div>
           <button class="league-gate-secondary" id="haveCodeBtn">I Already Have a League Code</button>
         </section>
@@ -147,8 +150,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="shared/supabase-config.js?v=20260728"></script>
   <script src="shared/pro.js?v=20260728c"></script>
-  <script src="shared/data.js?v=20260731c"></script>
-  <script src="shared/icons.js?v=20260728i"></script>
-  <script src="setup.js?v=20260731c"></script>
+  <script src="shared/data.js?v=20260731d"></script>
+  <script src="shared/icons.js?v=20260731a"></script>
+  <script src="setup.js?v=20260731d"></script>
 </body>
 </html>
