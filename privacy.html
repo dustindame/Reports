@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Fantasy Auction Draft</title>
+  <link rel="stylesheet" href="shared/theme.css?v=20260728b" />
+  <style>
+    body { min-height: 100vh; padding: 40px 20px 80px; }
+    .legal-page { max-width: 720px; margin: 0 auto; }
+    h1 { font-size: 28px; margin-bottom: 4px; }
+    .updated { color: var(--text-faint); font-size: 12.5px; margin-bottom: 28px; }
+    h2 { font-size: 17px; color: var(--gold-bright); margin: 32px 0 8px; }
+    p, li { color: var(--text-dim); line-height: 1.6; font-size: 14.5px; }
+    ul { padding-left: 20px; }
+    a { color: var(--gold-bright); }
+    .back-link { display: inline-block; margin-bottom: 24px; font-size: 13px; }
+  </style>
+</head>
+<body class="turf-bg">
+  <div class="legal-page">
+    <a class="back-link" href="index.html">&larr; Back</a>
+    <h1>Privacy <span class="gold-text">Policy</span></h1>
+    <p class="updated">Last updated July 31, 2026</p>
+
+    <p>This app runs live fantasy football auction drafts. It's built for a private group running its own draft, not a public social platform — this page explains exactly what data exists and where it goes.</p>
+
+    <h2>What we collect</h2>
+    <p>There are no user accounts, no sign-up, and no personal information collected beyond what you voluntarily put into a league:</p>
+    <ul>
+      <li><b>A league code</b> — a random 6-character code identifying a draft. Not tied to your identity.</li>
+      <li><b>A commissioner PIN</b> — chosen by whoever creates the league. We never store the PIN itself; only a one-way cryptographic hash of it (SHA-256), so even we cannot see or recover your actual PIN.</li>
+      <li><b>Team names, player picks, and prices</b> — whatever your league's commissioner and members enter while running the draft.</li>
+      <li><b>Optional Fan Messages</b> — free-text messages your league can choose to post to the shared ticker, if that feature is turned on.</li>
+    </ul>
+    <p>We do not collect names, emails, phone numbers, precise location, contacts, photos, or any device identifiers beyond a randomly generated on-device ID used only to enforce the free tier's league-count limit (see below).</p>
+
+    <h2>Where your data is stored</h2>
+    <p>League and pick data is stored in a Postgres database hosted by <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a>, a third-party database provider. We do not sell, share, or use your data for advertising. Supabase acts purely as our database host — see their own privacy policy for how they handle infrastructure-level data.</p>
+
+    <h2>How long we keep it</h2>
+    <p>Drafts aren't kept forever:</p>
+    <ul>
+      <li><b>Free-tier leagues</b> are automatically deleted after 7 idle days if the draft is unfinished, or 14 idle days once it's complete.</li>
+      <li><b>Pro leagues</b> are automatically deleted after 60 idle days, regardless of completion status.</li>
+    </ul>
+    <p>Once a league is deleted, its data cannot be recovered. If you want to keep a permanent copy of your results, download the CSV export or the Recap page before that window closes.</p>
+
+    <h2>Who can see your league</h2>
+    <p>Anyone with your league's 6-character code can <i>view</i> its board and rosters — this is intentional (it's how the TV display and QR-code sharing work) and is the same trust model as a shared physical draft board in a room. <i>Editing</i> a league (logging picks, changing settings) additionally requires the commissioner's PIN, which is checked on our server before any change is allowed.</p>
+
+    <h2>Third-party content</h2>
+    <p>The Draft Board's news ticker pulls public sports headlines directly from ESPN's and CBS Sports' public RSS feeds, and season odds/scores from ESPN's public API. These requests go directly from your device/browser to those services; we don't proxy or log them ourselves.</p>
+
+    <h2>Children's privacy</h2>
+    <p>This app is intended for general audiences running fantasy football drafts and is not directed at children under 13. We do not knowingly collect data from children.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>If this policy changes, the "Last updated" date above will change too. Material changes will be reflected here before they take effect.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about this policy or your data can be sent via <a href="https://github.com/dustindame/Reports/issues" target="_blank" rel="noopener">GitHub Issues on this project</a>.</p>
+  </div>
+</body>
+</html>

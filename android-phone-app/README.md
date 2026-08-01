@@ -54,6 +54,32 @@ This file isn't committed (nothing under `android/` is), so this patch
 has to be reapplied any time the native project is regenerated from
 scratch.
 
+**A second required patch, same root cause, in `node_modules` this
+time:** the installed AGP version also rejects the *old-style*
+`getDefaultProguardFile('proguard-android.txt')` used inside the
+Capacitor plugin modules themselves (confirmed via a real `assembleDebug`
+run — this fails the build otherwise, it's not optional). In both:
+- `node_modules/@capacitor/android/capacitor/build.gradle`
+- `node_modules/@capacitor/app/android/build.gradle`
+
+change:
+```
+proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+```
+to:
+```
+proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+```
+
+Since these live in `node_modules` (also not committed, and wiped by
+`npm install`), re-check for and reapply this any time dependencies
+are reinstalled — search for `getDefaultProguardFile('proguard-android.txt')`
+across `node_modules` if a build fails with this exact error again;
+there may be additional plugin modules by then that need the same fix.
+
+**Verified:** `.\gradlew.bat assembleDebug` completes with `BUILD
+SUCCESSFUL` after both patches above are applied, confirmed 2026-07-31.
+
 ## Open and run
 
 ```
