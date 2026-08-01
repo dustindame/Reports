@@ -247,7 +247,7 @@
     const percent = max > min ? (Number(bidSlider.value) - min) / (max - min) : 0;
     const trackRect = bidAmountTrack.getBoundingClientRect();
     const sliderRect = bidSlider.getBoundingClientRect();
-    const thumbSize = 34;
+    const thumbSize = 46;
     const left = sliderRect.left - trackRect.left + thumbSize / 2 + percent * (sliderRect.width - thumbSize);
     amountBubble.style.left = `${left}px`;
   }

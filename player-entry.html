@@ -6,7 +6,7 @@
   <title>Bid Board</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728b" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260728g" />
-  <link rel="stylesheet" href="player-entry.css?v=20260801a" />
+  <link rel="stylesheet" href="player-entry.css?v=20260801b" />
 </head>
 <body>
   <div class="phone-frame">
@@ -145,11 +145,9 @@
           <div class="section-label">Amount Selected for Pick</div>
           <div class="bid-amount-track" id="bidAmountTrack">
             <div class="amount-bubble" id="amountBubble">$1</div>
-            <div class="bid-step-row">
+            <div class="field-frame">
               <button type="button" class="bid-step-btn" id="bidMinus" aria-label="Decrease by $1">−</button>
-              <div class="field-frame">
-                <input type="range" id="bidSlider" min="1" max="200" value="1" step="1" />
-              </div>
+              <input type="range" id="bidSlider" min="1" max="200" value="1" step="1" />
               <button type="button" class="bid-step-btn" id="bidPlus" aria-label="Increase by $1">+</button>
             </div>
           </div>
@@ -200,6 +198,6 @@
   <script src="shared/data.js?v=20260731e"></script>
   <script src="shared/league-gate.js?v=20260731a"></script>
   <script src="shared/icons.js?v=20260801a"></script>
-  <script src="player-entry.js?v=20260801a"></script>
+  <script src="player-entry.js?v=20260801b"></script>
 </body>
 </html>
