@@ -6,7 +6,7 @@
   <title>Draft Setup</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728b" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260728g" />
-  <link rel="stylesheet" href="setup.css?v=20260728g" />
+  <link rel="stylesheet" href="setup.css?v=20260731c" />
 </head>
 <body>
   <div class="phone-frame">
@@ -34,7 +34,7 @@
           <div class="stepper-hint">Only you need this to log picks or edit settings — it can't be recovered if lost, so write it down.</div>
         </section>
 
-        <section class="setup-section">
+        <section class="setup-section" id="teamCountSection">
           <div class="slot-row">
             <div class="slot-row-label">Number of Teams</div>
             <div class="slot-row-stepper">
@@ -44,9 +44,10 @@
             </div>
           </div>
           <div class="stepper-hint">6–14 teams</div>
+          <div class="stepper-hint draft-locked-hint" id="teamCountLockedHint" hidden>🔒 Locked — the draft has already started</div>
         </section>
 
-        <section class="setup-section">
+        <section class="setup-section" id="budgetSection">
           <div class="slot-row">
             <div class="slot-row-label">Budget per Team</div>
             <div class="budget-input-wrap">
@@ -56,12 +57,14 @@
               <button class="stepper-btn" id="budgetPlus" aria-label="Increase budget">+</button>
             </div>
           </div>
+          <div class="stepper-hint draft-locked-hint" id="budgetLockedHint" hidden>🔒 Locked — the draft has already started</div>
         </section>
 
-        <section class="setup-section">
+        <section class="setup-section" id="rosterSection">
           <div class="section-label">Roster / Lineup</div>
           <div class="slot-rows" id="slotRows"></div>
           <div class="total-slots-row">Total slots per team: <span class="total-slots-value" id="totalSlotsValue">13</span></div>
+          <div class="stepper-hint draft-locked-hint" id="rosterLockedHint" hidden>🔒 Locked — the draft has already started</div>
         </section>
 
         <section class="setup-section">
@@ -144,8 +147,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="shared/supabase-config.js?v=20260728"></script>
   <script src="shared/pro.js?v=20260728c"></script>
-  <script src="shared/data.js?v=20260731b"></script>
+  <script src="shared/data.js?v=20260731c"></script>
   <script src="shared/icons.js?v=20260728i"></script>
-  <script src="setup.js?v=20260731b"></script>
+  <script src="setup.js?v=20260731c"></script>
 </body>
 </html>

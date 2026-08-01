@@ -308,6 +308,15 @@ body {
   margin-left: 4px;
   vertical-align: middle;
 }
+/* Team count / budget / roster positions, once a draft has picks logged --
+   distinct from .pro-locked (that's an upsell; this can't be unlocked by
+   buying anything, only by not having started drafting yet). */
+.draft-locked { opacity: 0.5; }
+.draft-locked .stepper-btn,
+.draft-locked .budget-input,
+.draft-locked input { pointer-events: none; }
+.draft-locked-hint { color: var(--gold-bright, #e8c14a); }
+
 [data-pro="1"].pro-locked { opacity: 0.5; }
 [data-pro="1"].pro-locked .toggle-switch,
 [data-pro="1"].pro-locked .stepper-btn,

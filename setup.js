@@ -50,6 +50,13 @@
   // get full Pro access to an already-Pro league even on a non-Pro device,
   // and must never be able to accidentally downgrade it back to free.
   let existingLeagueIsPro = false;
+  // True once an edited league already has at least one pick logged.
+  // Team count, budget, and roster positions get locked at that point --
+  // changing any of them would shift/invalidate what existing picks
+  // actually mean (team indices, budget math, position eligibility) --
+  // while board name, display toggles, and Fun Extras stay freely
+  // editable since they don't touch anything already drafted.
+  let draftStarted = false;
   let leagueCode = generateLeagueCode();
   let numTeams = DEFAULT_NUM_TEAMS;
   let budget = DEFAULT_BUDGET;
@@ -199,11 +206,13 @@
     showRecap = config.show_recap !== false;
     breakEnabled = config.break_enabled !== false;
     existingLeagueIsPro = Boolean(config.is_pro);
+    draftStarted = await DraftStore.hasAnyPicks(code);
   }
 
   function switchToCreate() {
     mode = "create";
     existingLeagueIsPro = false;
+    draftStarted = false;
     leagueCode = generateLeagueCode();
     numTeams = DEFAULT_NUM_TEAMS;
     budget = DEFAULT_BUDGET;
@@ -244,7 +253,9 @@
       haveCodeBtn.hidden = true;
       pinSection.hidden = true;
       saveBtn.textContent = "SAVE CHANGES";
-      warningBox.textContent = "⚠️ Saving clears any picks already made in this league.";
+      warningBox.textContent = draftStarted
+        ? "🔒 Picks have already been logged — team count, budget, and roster positions are locked and existing picks are kept. Everything else can still be changed freely."
+        : "⚠️ Saving clears any picks already made in this league.";
       switchToCreateBtn.hidden = false;
     } else {
       leagueCodeLabel.textContent = "Your New League Code";
@@ -288,6 +299,7 @@
 
     slotRows.querySelectorAll(".stepper-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
+        if (draftStarted) return;
         const type = btn.dataset.slot;
         const dir = Number(btn.dataset.dir);
         const next = slotCounts[type] + dir;
@@ -346,6 +358,27 @@
     toggleRoast.checked = roastEnabled;
     shotsValue.textContent = shotsCount;
     applyProGating();
+    applyDraftLock();
+  }
+
+  // Locks team count, budget, and roster positions once the draft has any
+  // picks logged -- changing any of them mid-draft would shift/invalidate
+  // what's already been drafted (team indices, budget math, position
+  // eligibility). Board name, display toggles, and Fun Extras are
+  // unaffected -- those are safe to change at any time.
+  const teamCountSection = document.getElementById("teamCountSection");
+  const budgetSection = document.getElementById("budgetSection");
+  const rosterSection = document.getElementById("rosterSection");
+  const teamCountLockedHint = document.getElementById("teamCountLockedHint");
+  const budgetLockedHint = document.getElementById("budgetLockedHint");
+  const rosterLockedHint = document.getElementById("rosterLockedHint");
+  function applyDraftLock() {
+    [teamCountSection, budgetSection, rosterSection].forEach((el) => {
+      el.classList.toggle("draft-locked", draftStarted);
+    });
+    teamCountLockedHint.hidden = !draftStarted;
+    budgetLockedHint.hidden = !draftStarted;
+    rosterLockedHint.hidden = !draftStarted;
   }
 
   // Dims + disables every Pro-gated control (marked with data-pro="1"
@@ -424,12 +457,13 @@
   /* ---------------- events ---------------- */
 
   teamCountMinus.addEventListener("click", () => {
-    if (numTeams <= MIN_TEAMS) return;
+    if (draftStarted || numTeams <= MIN_TEAMS) return;
     numTeams -= 1;
     renderTeamCount();
     renderTeamNames();
   });
   teamCountPlus.addEventListener("click", () => {
+    if (draftStarted) return;
     if (numTeams >= effectiveMaxTeams()) {
       if (!ProGate.isPro() && numTeams >= ProGate.FREE_MAX_TEAMS) {
         showStatus(`Upgrade to Pro for more than ${ProGate.FREE_MAX_TEAMS} teams`, false);
@@ -443,16 +477,19 @@
   const BUDGET_STEP = 5;
   const BUDGET_MAX = 10000;
   budgetInput.addEventListener("input", () => {
+    if (draftStarted) { budgetInput.value = budget; return; }
     const digitsOnly = budgetInput.value.replace(/[^0-9]/g, "");
     if (digitsOnly !== budgetInput.value) budgetInput.value = digitsOnly;
     budget = Math.min(BUDGET_MAX, Math.max(1, Number(digitsOnly) || 0));
     if (Number(digitsOnly) > BUDGET_MAX) budgetInput.value = budget;
   });
   budgetMinus.addEventListener("click", () => {
+    if (draftStarted) return;
     budget = Math.max(1, budget - BUDGET_STEP);
     budgetInput.value = budget;
   });
   budgetPlus.addEventListener("click", () => {
+    if (draftStarted) return;
     budget = Math.min(BUDGET_MAX, budget + BUDGET_STEP);
     budgetInput.value = budget;
   });
@@ -551,6 +588,8 @@
     const confirmMessage =
       mode === "create"
         ? `Create a new league: ${numTeams} teams, $${budget} budget, ${slots} roster slots per team. Continue?`
+        : draftStarted
+        ? `Save changes to league ${leagueCode}? Team count, budget, and roster positions are locked since picks are already logged — everything else will update, and existing picks are kept.`
         : `Save changes to league ${leagueCode}: ${numTeams} teams, $${budget} budget, ${slots} roster slots per team — this clears any picks already made. Continue?`;
     if (!window.confirm(confirmMessage)) return;
 
@@ -582,7 +621,7 @@
     const { error } =
       mode === "create"
         ? await DraftStore.createLeague({ leagueCode, pinHash, teamNames: namesToSave, budget, rosterSlots, boardOptions })
-        : await DraftStore.updateLeague({ leagueCode, pinHash, teamNames: namesToSave, budget, rosterSlots, clearPicks: true, boardOptions });
+        : await DraftStore.updateLeague({ leagueCode, pinHash, teamNames: namesToSave, budget, rosterSlots, clearPicks: !draftStarted, boardOptions });
 
     if (error) {
       showStatus(`Couldn't save: ${error}`, true);

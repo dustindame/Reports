@@ -575,6 +575,25 @@ const DraftStore = {
     return { error: null };
   },
 
+  // Setup doesn't go through league-gate.js/configReady (it manages its own
+  // create/edit flow independently), so it has no CURRENT_LEAGUE_CODE to
+  // rely on -- this takes an explicit code instead of using getPicks()'s
+  // global. Used to decide whether structural settings (team count,
+  // budget, roster positions) should be locked because a draft is
+  // already underway.
+  async hasAnyPicks(leagueCode) {
+    if (!supabaseClient || !leagueCode) return false;
+    const { count, error } = await supabaseClient
+      .from("picks")
+      .select("id", { count: "exact", head: true })
+      .eq("league_code", leagueCode);
+    if (error) {
+      console.error("Failed to check for existing picks:", error);
+      return false;
+    }
+    return (count || 0) > 0;
+  },
+
   async getPicks() {
     if (!supabaseClient || !CURRENT_LEAGUE_CODE) return [];
     const { data, error } = await supabaseClient
