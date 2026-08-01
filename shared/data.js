@@ -455,6 +455,13 @@ const supabaseClient =
     : null;
 
 const DraftStore = {
+  // Returns: the config object if found, `null` if the code is genuinely
+  // not a real league (safe to forget), or `undefined` if the request
+  // itself failed (no network, Supabase unreachable, etc.) -- callers
+  // MUST NOT treat `undefined` the same as `null`. A saved league code
+  // is a device's only way back into its league; wiping it because of a
+  // transient connection problem (very plausible for a Fire TV at boot,
+  // or a phone with a weak signal) is worse than just retrying.
   async getConfig(leagueCode) {
     if (!supabaseClient || !leagueCode) return null;
     const { data, error } = await supabaseClient
@@ -466,7 +473,7 @@ const DraftStore = {
       .maybeSingle();
     if (error) {
       console.error("Failed to load league config from Supabase:", error);
-      return null;
+      return undefined;
     }
     return data;
   },

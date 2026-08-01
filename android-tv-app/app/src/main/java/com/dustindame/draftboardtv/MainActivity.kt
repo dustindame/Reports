@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import android.webkit.WebChromeClient
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
@@ -45,6 +46,12 @@ class MainActivity : AppCompatActivity() {
             mediaPlaybackRequiresUserGesture = false
             loadWithOverviewMode = true
             useWideViewPort = true
+            // This is a live, frequently-updated web app, not a static
+            // asset-heavy site -- default WebView HTTP caching can keep
+            // showing a stale version after a real deploy (we hit this:
+            // a CSS change needed a manual Force Stop + Clear Cache to
+            // show up). Always hit the network instead.
+            cacheMode = WebSettings.LOAD_NO_CACHE
             // draft-board.js checks navigator.userAgent for this marker to
             // hide export/snapshot (nowhere to save a file on a TV) and
             // disable the QR code link (an accidental remote click

@@ -31,6 +31,11 @@ body {
   text-decoration: none;
 }
 .back-btn:hover { border-color: var(--gold-dim); }
+#downloadRecapBtn {
+  left: auto;
+  right: 28px;
+  cursor: pointer;
+}
 .header-row { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .title-icon { display: flex; line-height: 0; }
 .recap-title {
@@ -300,5 +305,6 @@ body {
   .recap-main { padding: 18px; }
   .recap-title { font-size: 19px; }
   .back-btn { left: 16px; top: 18px; }
+  #downloadRecapBtn { left: auto; right: 16px; top: 18px; }
   .recap-header { padding: 18px 16px 14px; }
 }

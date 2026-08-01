@@ -26,6 +26,34 @@ npx cap sync android
 committed to git — it's derived from `capacitor.config.json` and can
 always be regenerated). `cap sync` copies the config into it.
 
+**Required manual patch after `cap add android`:** this is a live,
+frequently-updated web app, and default WebView caching can keep
+showing a stale version after a real deploy (this has actually
+happened — a CSS change needed a manual Force Stop + Clear Cache to
+show up). Replace the generated
+`android/app/src/main/java/com/dustindame/draftentry/MainActivity.java`
+with:
+
+```java
+package com.dustindame.draftentry;
+
+import android.os.Bundle;
+import android.webkit.WebSettings;
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        this.bridge.getWebView().getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+    }
+}
+```
+
+This file isn't committed (nothing under `android/` is), so this patch
+has to be reapplied any time the native project is regenerated from
+scratch.
+
 ## Open and run
 
 ```

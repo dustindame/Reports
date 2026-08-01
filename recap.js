@@ -6,6 +6,26 @@
   document.getElementById("footballIcon").innerHTML = Icons.football(22, "var(--qb)");
   document.getElementById("recapBoardName").textContent = BOARD_NAME || "Auction Draft Board";
 
+  // Leagues aren't kept forever (see README's Data Retention section) --
+  // this is the permanent-copy safety net, same pattern as Draft Board's
+  // own snapshot/backup buttons. Deliberately not Pro-gated: preserving
+  // your own data before it's gone is a safety feature, not a perk.
+  const downloadRecapBtn = document.getElementById("downloadRecapBtn");
+  const recapPage = document.getElementById("recapPage");
+  document.getElementById("downloadRecapIcon").innerHTML = Icons.download(16);
+  downloadRecapBtn.addEventListener("click", async () => {
+    downloadRecapBtn.disabled = true;
+    try {
+      const canvas = await html2canvas(recapPage, { backgroundColor: "#08080b" });
+      const link = document.createElement("a");
+      link.download = `draft-recap-${CURRENT_LEAGUE_CODE || "demo"}-${Date.now()}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } finally {
+      downloadRecapBtn.disabled = false;
+    }
+  });
+
   const POS_KEYS = ["QB", "RB", "WR", "TE", "DEF", "K"];
 
   function playerRank(name) {

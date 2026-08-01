@@ -6,10 +6,10 @@
   <title>Draft Recap</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260728g" />
-  <link rel="stylesheet" href="recap.css?v=20260728" />
+  <link rel="stylesheet" href="recap.css?v=20260731a" />
 </head>
 <body class="turf-bg">
-  <div class="recap-page">
+  <div class="recap-page" id="recapPage">
 
     <header class="recap-header">
       <a class="back-btn" href="draft-board.html" aria-label="Back to Draft Board"><span id="backIcon"></span></a>
@@ -18,6 +18,7 @@
         <h1 class="recap-title">DRAFT <span class="gold-text">RECAP</span> — <span id="recapBoardName">Auction Draft Board</span></h1>
         <span class="title-icon" id="footballIcon"></span>
       </div>
+      <button class="back-btn" id="downloadRecapBtn" title="Download Recap as an image — leagues aren't kept forever, this is your permanent copy"><span id="downloadRecapIcon"></span></button>
     </header>
 
     <main class="recap-main">
@@ -83,11 +84,12 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="shared/supabase-config.js?v=20260728"></script>
   <script src="shared/pro.js?v=20260728c"></script>
-  <script src="shared/data.js?v=20260731d"></script>
-  <script src="shared/league-gate.js?v=20260728f"></script>
+  <script src="shared/data.js?v=20260731e"></script>
+  <script src="shared/league-gate.js?v=20260731a"></script>
   <script src="shared/icons.js?v=20260731a"></script>
-  <script src="recap.js?v=20260728"></script>
+  <script src="recap.js?v=20260731a"></script>
 </body>
 </html>

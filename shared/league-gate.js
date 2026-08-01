@@ -51,7 +51,9 @@ function promptForLeagueCode() {
       continueBtn.textContent = "CHECKING...";
       const config = await DraftStore.getConfig(code);
       if (!config) {
-        errorEl.textContent = "No league found with that code.";
+        errorEl.textContent = config === undefined
+          ? "Couldn't check that code — check your connection and try again."
+          : "No league found with that code.";
         errorEl.hidden = false;
         continueBtn.disabled = false;
         continueBtn.textContent = "CONTINUE";
@@ -72,6 +74,65 @@ function promptForLeagueCode() {
   });
 }
 
+// Shown only when a SAVED code fails to load because the request itself
+// failed (no network, Supabase unreachable) -- distinct from the code
+// being genuinely bad. Keeps the saved code intact and just waits for a
+// working connection, rather than dropping into "enter your code again"
+// (a real problem on a Fire TV, where that means typing 6 characters
+// with a remote's on-screen keyboard for what's usually just a few
+// seconds of bad timing at boot).
+function showConnectionErrorAndRetry(savedCode) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.className = "league-gate-overlay";
+    overlay.innerHTML = `
+      <div class="league-gate-card">
+        <div class="league-gate-icon">📡</div>
+        <h2 class="league-gate-title">Can't Connect</h2>
+        <p class="league-gate-hint">Your league is still remembered on this device — this just couldn't reach it. Check the connection and try again.</p>
+        <button class="league-gate-continue" id="connErrorRetry">RETRY</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const loadingScreen = document.getElementById("boardLoadingScreen");
+    if (loadingScreen) loadingScreen.hidden = true;
+
+    const retryBtn = overlay.querySelector("#connErrorRetry");
+    let retrying = false;
+
+    async function attempt() {
+      if (retrying) return;
+      retrying = true;
+      retryBtn.disabled = true;
+      retryBtn.textContent = "CHECKING...";
+      const config = await DraftStore.getConfig(savedCode);
+      if (config) {
+        window.removeEventListener("online", attempt);
+        overlay.remove();
+        resolve(config);
+        return;
+      }
+      retrying = false;
+      retryBtn.disabled = false;
+      retryBtn.textContent = "RETRY";
+      if (config === null) {
+        // Connection's fine now, but the league is genuinely gone (rare
+        // mid-retry, but possible) -- only NOW is it safe to drop it.
+        window.removeEventListener("online", attempt);
+        overlay.remove();
+        resolve(null);
+      }
+    }
+
+    retryBtn.addEventListener("click", attempt);
+    // Auto-retry the moment the device/app reports it's back online,
+    // instead of making someone actually tap the button once the wifi
+    // reconnects on its own (common right after this actually happens).
+    window.addEventListener("online", attempt);
+  });
+}
+
 const configReady = (async function ensureLeagueAndConfig() {
   const params = new URLSearchParams(window.location.search);
   const urlLeague = params.get("league");
@@ -79,7 +140,13 @@ const configReady = (async function ensureLeagueAndConfig() {
 
   const savedCode = LeagueSession.getLeagueCode();
   if (savedCode) {
-    const config = await DraftStore.getConfig(savedCode);
+    let config = await DraftStore.getConfig(savedCode);
+    if (config === undefined) {
+      // Request failed -- NOT confirmation the code is bad. Wait for a
+      // working connection rather than wiping a perfectly good saved
+      // league.
+      config = await showConnectionErrorAndRetry(savedCode);
+    }
     if (config) {
       applyRealConfig(config, savedCode);
       // Not gated on the free-tier cap -- landing here (via a saved
@@ -88,8 +155,8 @@ const configReady = (async function ensureLeagueAndConfig() {
       LeagueSession.rememberLeague(savedCode, config.board_name);
       return;
     }
-    // Stale/invalid code (league deleted, typo saved earlier, etc.) — drop
-    // it and fall through to prompting instead of silently demo-ing.
+    // Confirmed not found (league deleted, typo saved earlier, etc.) --
+    // drop it and fall through to prompting instead of silently demo-ing.
     LeagueSession.clearLeagueCode();
   }
 

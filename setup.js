@@ -108,7 +108,9 @@
         continueBtn.textContent = "CHECKING...";
         const config = await DraftStore.getConfig(code);
         if (!config) {
-          errorEl.textContent = "No league found with that code.";
+          errorEl.textContent = config === undefined
+            ? "Couldn't check that code — check your connection and try again."
+            : "No league found with that code.";
           errorEl.hidden = false;
           continueBtn.disabled = false;
           continueBtn.textContent = "CONTINUE";
@@ -239,6 +241,12 @@
     const config = await DraftStore.getConfig(savedCode);
     if (config) {
       await loadForEdit(savedCode, config);
+    } else if (config === undefined) {
+      // Request failed (no connection, Supabase unreachable, etc.) --
+      // NOT confirmation the code is bad. Leave it saved and just tell
+      // the user, rather than silently dropping into "create a new
+      // league" mode as if their league had vanished.
+      showStatus("Couldn't reach your league — check your connection and reopen Setup to try again.", true);
     } else {
       LeagueSession.clearLeagueCode();
     }
