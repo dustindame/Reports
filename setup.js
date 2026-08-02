@@ -73,6 +73,16 @@
   let showElapsedTime = false;
   let niceEnabled = false;
   let shotsCount = 0;
+  // Tracks the shot_pick_numbers/shots_count as loaded, so saving
+  // settings unrelated to Shots doesn't re-roll which picks are "take a
+  // shot" moments -- pickRandomShotNumbers used to run unconditionally
+  // on every single save, silently reshuffling the list even when
+  // shotsCount hadn't changed. Combined with Draft Board now
+  // auto-refreshing on any settings save, that reshuffle could make an
+  // old, already-passed pick suddenly match the new random list and
+  // incorrectly re-trigger a shot banner for it.
+  let loadedShotsCount = 0;
+  let existingShotPickNumbers = [];
   let roastEnabled = false;
   let showRecap = false;
   let breakEnabled = false;
@@ -236,6 +246,8 @@
     showElapsedTime = Boolean(config.show_elapsed_time);
     niceEnabled = Boolean(config.nice_enabled);
     shotsCount = Number(config.shots_count) || 0;
+    loadedShotsCount = shotsCount;
+    existingShotPickNumbers = Array.isArray(config.shot_pick_numbers) ? config.shot_pick_numbers : [];
     roastEnabled = config.roast_enabled !== false;
     showRecap = config.show_recap !== false;
     breakEnabled = config.break_enabled !== false;
@@ -261,6 +273,8 @@
     showElapsedTime = false;
     niceEnabled = false;
     shotsCount = 0;
+    loadedShotsCount = 0;
+    existingShotPickNumbers = [];
     roastEnabled = false;
     showRecap = false;
     breakEnabled = false;
@@ -700,7 +714,11 @@
       showElapsedTime,
       niceEnabled,
       shotsCount,
-      shotPickNumbers: pickRandomShotNumbers(shotsCount, totalPicks),
+      // Only re-roll which picks are "shot" picks when shotsCount
+      // actually changed -- otherwise keep whatever was already set, so
+      // saving an unrelated setting (board name, a display toggle) mid-
+      // draft doesn't silently reshuffle the list.
+      shotPickNumbers: shotsCount === loadedShotsCount ? existingShotPickNumbers : pickRandomShotNumbers(shotsCount, totalPicks),
       roastEnabled,
       showRecap,
       breakEnabled,

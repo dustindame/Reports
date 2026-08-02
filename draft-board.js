@@ -405,8 +405,20 @@
     }, 10000);
   }
 
-  function checkForShotPicks() {
+  // Takes the SAME newPickIds list collectNewPickIds() already computes
+  // for the flash-animation -- scanning every historical pick in
+  // MOCK_DRAFT.picks (as this used to) meant that ANY page reload (the
+  // manual Refresh button, the connection-retry auto-reload, or now the
+  // Setup auto-refresh -- which fires on literally any settings change,
+  // not just ones related to Shots) reset announcedShotPicks to empty
+  // and re-announced a "take a shot" banner for picks that happened
+  // long ago, the next time anyone made a new pick. Only ever check
+  // picks that are actually new since the last check now.
+  function checkForShotPicks(newPickIds) {
+    if (!newPickIds || newPickIds.length === 0) return;
+    const newIdSet = new Set(newPickIds);
     MOCK_DRAFT.picks.forEach((p) => {
+      if (!newIdSet.has(p.id)) return;
       if (SHOT_PICK_NUMBERS.includes(p.pickNumber) && !announcedShotPicks.has(p.pickNumber)) {
         announcedShotPicks.add(p.pickNumber);
         showShotBanner();
@@ -805,7 +817,7 @@
     if (newPickIds.length && !ON_BREAK) {
       flashNewPickCells(newPickIds);
     }
-    checkForShotPicks();
+    checkForShotPicks(newPickIds);
   });
 
   // The commissioner toggling break mode from Player Entry streams in
