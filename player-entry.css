@@ -247,6 +247,12 @@ button.setup-link { cursor: pointer; font: inherit; padding: 0; }
   gap: 6px;
   flex-wrap: wrap;
 }
+.search-result-custom .src-warning {
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--gold-bright);
+}
 .src-pos-btn {
   padding: 6px 12px;
   border-radius: 999px;

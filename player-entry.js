@@ -199,6 +199,7 @@
           <div class="src-pos-row">
             ${CUSTOM_ENTRY_POSITIONS.map((pos) => `<button class="src-pos-btn" data-pos="${pos}" style="border-color:var(${POSITION_COLOR_VAR[pos]})">${pos}</button>`).join("")}
           </div>
+          <div class="src-warning">⚠️ Spell it exactly the same way every time — "AJ Smith" and "A.J. Smith" would count as two different players, and duplicate-pick protection can't catch a spelling mismatch.</div>
         </div>`
       : "";
 
