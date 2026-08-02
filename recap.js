@@ -1,4 +1,12 @@
 (async function () {
+  // Same marker MainActivity.kt appends to the Fire TV app's WebView user
+  // agent (see draft-board.js) -- still present here since Recap is
+  // reached by navigating within that same WebView from Draft Board.
+  // A downloaded file has nowhere to go on a TV: no file browser, no
+  // Photos app, nothing to ever find it in again -- same reasoning as
+  // hiding Draft Board's own export/snapshot buttons there.
+  const IS_TV_APP = /DraftBoardTVApp/.test(navigator.userAgent);
+
   await configReady;
 
   document.getElementById("backIcon").innerHTML = Icons.chevronLeft(16);
@@ -13,6 +21,7 @@
   const downloadRecapBtn = document.getElementById("downloadRecapBtn");
   const recapPage = document.getElementById("recapPage");
   document.getElementById("downloadRecapIcon").innerHTML = Icons.download(16);
+  if (IS_TV_APP) downloadRecapBtn.hidden = true;
   downloadRecapBtn.addEventListener("click", async () => {
     downloadRecapBtn.disabled = true;
     try {
