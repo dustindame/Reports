@@ -47,7 +47,7 @@ All pages load the Supabase JS client from a CDN (`@supabase/supabase-js@2`) bef
 
 ## Data retention
 
-Drafts aren't kept forever — a daily cleanup job (`cleanup_stale_leagues()`, via `pg_cron`) deletes a league and everything scoped to it (picks, board messages, polls) once it's gone idle long enough:
+Drafts aren't kept forever — a daily cleanup job (`cleanup_stale_leagues()`, via `pg_cron`) deletes a league and everything scoped to it (picks, board messages, polls) once it's gone idle long enough. This includes the **Recap page** — it isn't stored separately, it's generated live from the picks, so once those are gone there's nothing left to generate it from:
 
 - **Free-tier leagues**: 7 idle days if the draft's unfinished, 14 idle days once it's marked complete.
 - **Pro leagues**: 60 idle days, regardless of completion status — long enough to actually run and review a draft, but a draft doesn't need to stick around forever once its results have been copied into whatever real fantasy service is actually being used.
