@@ -50,12 +50,23 @@ https://dustindame.github.io/Reports/draft-board.html?league=YOURCODE
 ```
 rebuild, and the TV boots straight into your league every time.
 
-## Known placeholders to replace before this looks "finished"
+## App icon and banner
 
-- `app/src/main/res/drawable/tv_banner.xml` — the launcher banner is a
-  plain colored placeholder, not real branded art. Android TV banners
-  are conventionally a 320×180 PNG; replace this file with a real
-  `drawable-xhdpi/tv_banner.png` (delete the `.xml` version) once you
-  have artwork.
-- `ic_launcher_background.xml` / `ic_launcher_foreground.xml` — same
-  story for the app icon.
+Real artwork is in place as of 2026-08-01 — `drawable/ic_launcher_foreground.png`
+(432×432, adaptive icon foreground) and `drawable/tv_banner.png` (320×180,
+launcher-row banner), both generated from `../assets/tv-icon-source.png`
+(the tracked master source, same convention as the phone app's
+`assets/icon.png`). The banner was fit-within (not cropped) to the
+320×180 aspect using the source image's own blue background as
+padding, so nothing in the artwork got cut off.
+
+To use different art later: replace `../assets/tv-icon-source.png` and
+regenerate both files at their target sizes (432×432 square for the
+icon foreground, 320×180 fit-within for the banner) -- there's no
+automated tool for this side (unlike the phone app's
+`@capacitor/assets`), so it's a manual resize; ask Claude to do it or
+use any image editor.
+
+`ic_launcher_background.xml` is unchanged (a plain solid-color vector)
+since the new foreground is fully opaque and covers it entirely either
+way.
