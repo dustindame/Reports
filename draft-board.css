@@ -718,6 +718,16 @@ body { overflow: hidden; height: 100vh; }
   font-weight: 600;
   color: var(--text-dim);
   will-change: transform;
+  /* This element is a transform-animated child of boardContent, which
+     itself gets a transform: scale(...) from fitBoardToScreen() -- a
+     transform inside an already-transformed ancestor is a known cause
+     of stutter, especially on lower-powered hardware (a Fire TV
+     Stick's GPU is nowhere near a phone/desktop's). backface-visibility
+     plus a translateZ(0) baked into the keyframes below (a plain static
+     transform here would just get overridden by the animation) forces
+     this onto its own composited layer instead of being re-rasterized
+     as part of the parent's transformed layer every frame. */
+  backface-visibility: hidden;
 }
 .ticker-track span.ticker-item {
   padding: 0 32px;
@@ -732,8 +742,8 @@ body { overflow: hidden; height: 100vh; }
 }
 
 @keyframes ticker-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% { transform: translateX(0) translateZ(0); }
+  100% { transform: translateX(-50%) translateZ(0); }
 }
 
 /* Messages use a true marquee (enters fully off-screen right, exits

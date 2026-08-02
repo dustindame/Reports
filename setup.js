@@ -43,6 +43,7 @@
   // How high each real position's lineup count can go -- unlisted slot
   // types (FLEX/SFLEX/BENCH) keep the generic 10-slot ceiling below.
   const SLOT_MAX = { QB: 4, RB: 6, WR: 6, TE: 4, DEF: 3, K: 3 };
+  const TOTAL_SLOTS_MAX = 30;
 
   let mode = "create"; // or "edit"
   // True once a loaded-for-edit league already has is_pro=true in Supabase.
@@ -344,6 +345,10 @@
         const next = slotCounts[type] + dir;
         const max = SLOT_MAX[type] ?? 10;
         if (next < 0 || next > max) return;
+        if (dir > 0 && totalSlots() + 1 > TOTAL_SLOTS_MAX) {
+          showStatus(`A roster can't have more than ${TOTAL_SLOTS_MAX} total slots per team.`, false);
+          return;
+        }
         slotCounts[type] = next;
         document.getElementById(`slot${type}Value`).textContent = next;
         renderTotalSlots();

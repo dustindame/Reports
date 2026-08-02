@@ -26,7 +26,7 @@ Draft copy for Google Play (phone app) and the Amazon Appstore (Fire TV app). Re
 > **Set up your league in minutes:**
 > - 6–14 teams, custom budget, custom roster positions (including Kicker and Superflex)
 > - A shareable league code and commissioner PIN — viewing is open, editing is protected
-> - A free tier that covers a full draft: up to 10 teams, every position, board snapshots, and more
+> - A free tier that covers a full draft: up to 14 teams, every position, board snapshots, and more
 >
 > **Pro unlocks:**
 > - A full post-draft Recap page with price trends, spend breakdowns, and (if you want it) a savage AI-generated roast of every team's draft

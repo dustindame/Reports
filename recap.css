@@ -54,7 +54,13 @@ body {
 
 .stat-tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  /* Fixed 5 equal columns, not auto-fit -- auto-fit's minmax(180px,1fr)
+     meant that at a lot of realistic widths, only 4 tiles fit per row
+     and the 5th got shoved onto its own row, stretched to the full
+     container width by itself. There are always exactly 5 of these,
+     so keep them on one row and let them get narrower together
+     instead. See the 640px breakpoint below for phone-width screens. */
+  grid-template-columns: repeat(5, 1fr);
   gap: 14px;
 }
 .stat-tile {
@@ -307,4 +313,7 @@ body {
   .back-btn { left: 16px; top: 18px; }
   #downloadRecapBtn { left: auto; right: 16px; top: 18px; }
   .recap-header { padding: 18px 16px 14px; }
+  /* 5 equal columns get too narrow to read on a phone-width screen --
+     2 columns (3 rows for 5 tiles) instead. */
+  .stat-tiles { grid-template-columns: repeat(2, 1fr); }
 }

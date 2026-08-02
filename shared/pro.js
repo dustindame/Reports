@@ -12,7 +12,7 @@
    =========================================================== */
 
 const ProGate = {
-  FREE_MAX_TEAMS: 10,
+  FREE_MAX_TEAMS: 14, // matches MAX_TEAMS (shared/data.js) -- no team-count cap on free anymore
   FREE_MAX_SAVED_LEAGUES: 2,
 
   isPro() {
