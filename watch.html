@@ -31,12 +31,14 @@
     <input type="text" class="league-gate-input" id="watchCodeInput" maxlength="6" placeholder="e.g. BLZ4K2" autocapitalize="characters" autocomplete="off" />
     <div class="league-gate-error" id="watchCodeError" hidden></div>
     <button class="league-gate-continue" id="watchCodeGo">VIEW DRAFT BOARD</button>
+    <button class="league-gate-secondary" id="watchDemoBtn">Use Demo Instead</button>
   </div>
 
   <script>
     const input = document.getElementById("watchCodeInput");
     const errorEl = document.getElementById("watchCodeError");
     const goBtn = document.getElementById("watchCodeGo");
+    const demoBtn = document.getElementById("watchDemoBtn");
 
     function go() {
       const code = input.value.trim().toUpperCase();
@@ -50,6 +52,13 @@
 
     goBtn.addEventListener("click", go);
     input.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+    demoBtn.addEventListener("click", () => {
+      // This browser may have a real league remembered from a previous
+      // visit -- draft-board.html would silently reload that instead of
+      // the demo if we don't clear it first.
+      localStorage.removeItem("auctionDraft.leagueCode");
+      window.location.href = "draft-board.html";
+    });
     input.focus();
   </script>
 </body>
