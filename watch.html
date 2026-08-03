@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch a Draft</title>
+  <link rel="stylesheet" href="shared/theme.css?v=20260728b" />
+  <link rel="stylesheet" href="shared/league-gate.css?v=20260728g" />
+  <style>
+    body.turf-bg { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .watch-card {
+      max-width: 420px;
+      width: 100%;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-panel);
+      padding: 32px 28px;
+      text-align: center;
+    }
+    .watch-icon { font-size: 40px; margin-bottom: 8px; }
+    .watch-title { font-size: 22px; margin: 0 0 8px; color: var(--text); }
+    .watch-hint { font-size: 13.5px; color: var(--text-dim); line-height: 1.5; margin: 0 0 22px; }
+  </style>
+</head>
+<body class="turf-bg">
+  <div class="watch-card">
+    <div class="watch-icon">🏈</div>
+    <h1 class="watch-title">Watch a Draft</h1>
+    <p class="watch-hint">No app needed — enter your league code below and this screen becomes your Draft Board. Works on any TV browser, a laptop plugged into a TV, or casting from your phone.</p>
+    <input type="text" class="league-gate-input" id="watchCodeInput" maxlength="6" placeholder="e.g. BLZ4K2" autocapitalize="characters" autocomplete="off" />
+    <div class="league-gate-error" id="watchCodeError" hidden></div>
+    <button class="league-gate-continue" id="watchCodeGo">VIEW DRAFT BOARD</button>
+  </div>
+
+  <script>
+    const input = document.getElementById("watchCodeInput");
+    const errorEl = document.getElementById("watchCodeError");
+    const goBtn = document.getElementById("watchCodeGo");
+
+    function go() {
+      const code = input.value.trim().toUpperCase();
+      if (!code) {
+        errorEl.textContent = "Enter a league code first.";
+        errorEl.hidden = false;
+        return;
+      }
+      window.location.href = `draft-board.html?league=${encodeURIComponent(code)}`;
+    }
+
+    goBtn.addEventListener("click", go);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+    input.focus();
+  </script>
+</body>
+</html>

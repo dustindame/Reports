@@ -70,9 +70,20 @@ body {
   color: #fff;
 }
 .board-message-fab {
-  background: rgba(8, 10, 14, 0.35);
+  width: auto;
+  height: 34px;
+  padding: 0 14px 0 10px;
+  border-radius: 17px;
+  gap: 6px;
+  background: #2f6fed;
   border: 1.5px solid #2f6fed;
   color: #fff;
+  font-weight: 700;
+}
+.board-message-label {
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 .phone-screen {
