@@ -37,7 +37,7 @@ Fire TV doesn't have Google Play by default, so you'll sideload:
 ## Setting your league code
 
 Right now `MainActivity.kt` hardcodes the URL to
-`https://dustindame.github.io/Reports/draft-board.html` with no league
+`https://reports.bidboard.workers.dev/draft-board.html` with no league
 code, so it'll prompt for one on first launch (same as opening that
 URL in a browser) — you'll need to re-enter it if the app is ever
 force-stopped and Chrome's WebView data gets cleared, since there's no
@@ -46,7 +46,7 @@ persistent settings screen yet.
 **To skip that entirely**, once you know your league code, change the
 `DRAFT_BOARD_URL` constant in `MainActivity.kt` to:
 ```
-https://dustindame.github.io/Reports/draft-board.html?league=YOURCODE
+https://reports.bidboard.workers.dev/draft-board.html?league=YOURCODE
 ```
 rebuild, and the TV boots straight into your league every time.
 

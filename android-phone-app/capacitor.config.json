@@ -3,9 +3,9 @@
   "appName": "Bid Board",
   "webDir": "www",
   "server": {
-    "url": "https://dustindame.github.io/Reports/player-entry.html",
+    "url": "https://reports.bidboard.workers.dev/player-entry.html",
     "cleartext": false,
-    "allowNavigation": ["dustindame.github.io"]
+    "allowNavigation": ["reports.bidboard.workers.dev"]
   },
   "android": {
     "allowMixedContent": false

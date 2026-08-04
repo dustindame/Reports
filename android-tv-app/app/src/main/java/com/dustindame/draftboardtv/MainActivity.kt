@@ -24,7 +24,7 @@ import androidx.appcompat.app.AppCompatActivity
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        private const val DRAFT_BOARD_URL = "https://dustindame.github.io/Reports/draft-board.html"
+        private const val DRAFT_BOARD_URL = "https://reports.bidboard.workers.dev/draft-board.html"
     }
 
     private lateinit var webView: WebView
