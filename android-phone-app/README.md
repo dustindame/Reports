@@ -117,9 +117,18 @@ other changes needed (SDK Platform 35 was already installed locally).
 
 **`versionCode` must increase on every upload** -- Play Console rejects
 a re-upload of a version code it's already seen, even for a failed/draft
-release. Currently at `3` (in `android/app/build.gradle`'s
-`defaultConfig`) as of the first successful Closed Testing upload
-attempt on 2026-08-03 -- bump it again before the next real upload.
+release. Currently at `4` (in `android/app/build.gradle`'s
+`defaultConfig`) as of the real Play Billing integration built
+2026-08-04 -- bump it again before the next real upload.
+
+**Real Play Billing purchase flow, added 2026-08-04:** see
+`ProBillingPlugin.java` (custom Capacitor plugin, registered in
+`MainActivity.java`) and `shared/pro.js`'s `initNativeBilling()` /
+`purchase()`. This is tracked in git (not inside `android/`), so no
+manual patch needed here beyond the `android/` files already covered
+above (the plugin itself and its `MainActivity.java` registration line
+DO live inside `android/` and would need reapplying after a fresh
+`cap add android` -- see the plugin source for what to restore).
 
 ## Open and run
 
