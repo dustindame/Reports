@@ -81,6 +81,34 @@ there may be additional plugin modules by then that need the same fix.
 **Verified:** `.\gradlew.bat assembleDebug` completes with `BUILD
 SUCCESSFUL` after both patches above are applied, confirmed 2026-07-31.
 
+**A third required patch, also lost on `cap add android`:** Google Play
+requires the app to declare the `BILLING` permission before it'll let
+you create an in-app product in Play Console, which only happens by
+actually depending on the Play Billing library. In
+`android/app/build.gradle`, inside the `dependencies { }` block, add:
+```
+implementation "com.android.billingclient:billing:7.1.1"
+```
+(check for a newer version at release time). This alone gets the
+`BILLING` permission merged into the manifest automatically -- no
+manual `AndroidManifest.xml` edit needed. The actual purchase-flow
+code (calling the billing client, setting
+`window.NATIVE_PRO_UNLOCKED`) is separate and still needs to be
+written; this patch only unblocks creating the `pro_upgrade` product
+in Play Console.
+
+**Release signing, for building an actual uploadable AAB:** `build.gradle`
+reads signing config from `android/keystore.properties` (gitignored,
+lost on `cap add android` -- copy `android/keystore.properties.example`
+to `android/keystore.properties` and fill in the real values). Points
+at the upload key generated 2026-08-02, stored at
+`G:\My Drive\Draft Board Backups\bidboard-upload-keystore.jks`, alias
+`bidboard-upload` (store and key password are the same value, a PKCS12
+quirk -- see the signing key section in `PROJECT_STATE.md`). Once that
+file exists, `.\gradlew.bat bundleRelease` produces a signed AAB at
+`android/app/build/outputs/bundle/release/app-release.aab`, ready to
+upload to Play Console.
+
 ## Open and run
 
 ```
