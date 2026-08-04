@@ -467,6 +467,40 @@
   });
   updateDevProToggleUi();
 
+  // Real Pro purchase -- only ever shown inside the Android phone app
+  // (Play Billing doesn't exist anywhere else), and only when this
+  // league/device isn't already Pro. Persists the purchase to this
+  // specific league's server record immediately by replaying the exact
+  // same save path the SAVE button uses (isPro in that payload reads
+  // ProGate.isPro(), which is now true) -- works whether creating a
+  // new league or editing an existing one.
+  const buyProBtn = document.getElementById("buyProBtn");
+  const buyProStatus = document.getElementById("buyProStatus");
+  function updateBuyProUi() {
+    const alreadyPro = ProGate.isPro() || existingLeagueIsPro;
+    buyProBtn.hidden = !ProGate.hasNativeBilling() || alreadyPro;
+  }
+  buyProBtn.addEventListener("click", async () => {
+    buyProBtn.disabled = true;
+    buyProBtn.textContent = "PROCESSING...";
+    buyProStatus.hidden = true;
+    try {
+      await ProGate.purchase();
+      buyProStatus.textContent = "Purchase successful! Saving...";
+      buyProStatus.hidden = false;
+      applyProGating();
+      saveBtn.click();
+      updateBuyProUi();
+    } catch (e) {
+      buyProStatus.textContent = e.message || "Purchase didn't go through.";
+      buyProStatus.hidden = false;
+      buyProBtn.disabled = false;
+      buyProBtn.textContent = "BUY PRO — $3.99";
+    }
+  });
+  window.addEventListener("pro-status-ready", updateBuyProUi);
+  updateBuyProUi();
+
   let proUpsellShownAt = 0;
   document.addEventListener(
     "click",
