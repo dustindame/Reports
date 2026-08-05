@@ -110,6 +110,7 @@
   font-size: 12.5px;
   cursor: pointer;
 }
+.league-gate-secondary + .league-gate-secondary { margin-top: 10px; }
 .league-gate-secondary:hover { border-color: var(--gold-dim); color: var(--gold); }
 
 .created-field {
