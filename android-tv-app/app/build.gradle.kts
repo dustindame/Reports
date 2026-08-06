@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.dustindame.draftboardtv"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.dustindame.draftboardtv"
         minSdk = 21 // covers every Fire TV Stick generation still in use
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
     }
