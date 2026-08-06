@@ -109,15 +109,20 @@ file exists, `.\gradlew.bat bundleRelease` produces a signed AAB at
 `android/app/build/outputs/bundle/release/app-release.aab`, ready to
 upload to Play Console.
 
-**Target SDK 35, also lost on `cap add android`:** Play Console rejected
-the first upload (2026-08-03) with "must target at least API level 35"
--- `android/variables.gradle` originally set `compileSdkVersion` and
-`targetSdkVersion` to `34`; bumped both to `35`. Built cleanly with no
-other changes needed (SDK Platform 35 was already installed locally).
+**Target SDK 35, then 36 -- this number moves forward roughly yearly,
+expect to bump it again:** Play rejected the first upload (2026-08-03)
+requiring API 35; rejected again (2026-08-06) requiring API 36
+("target API level not within 1 year of latest Android release, effective
+Aug 30 2026"). `android/variables.gradle`'s `compileSdkVersion`/
+`targetSdkVersion` are now both `36`. Built cleanly both times with no
+other changes needed (each new SDK Platform was already installed
+locally) -- but don't assume that stays true forever; check for
+required local SDK Platform installs if a future bump fails to
+resolve.
 
 **`versionCode` must increase on every upload** -- Play Console rejects
 a re-upload of a version code it's already seen, even for a failed/draft
-release. Currently at `7` (in `android/app/build.gradle`'s
+release. Currently at `8` (in `android/app/build.gradle`'s
 `defaultConfig`) -- bump it again before the next real upload.
 
 **Status bar inset fix attempt #1 didn't actually work, 2026-08-06** --
