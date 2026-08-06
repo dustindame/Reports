@@ -20,7 +20,7 @@ android {
         applicationId = "com.dustindame.draftboardtv"
         minSdk = 21 // covers every Fire TV Stick generation still in use
         targetSdk = 36
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0.0"
     }
 
