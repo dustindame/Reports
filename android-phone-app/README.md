@@ -117,18 +117,30 @@ other changes needed (SDK Platform 35 was already installed locally).
 
 **`versionCode` must increase on every upload** -- Play Console rejects
 a re-upload of a version code it's already seen, even for a failed/draft
-release. Currently at `4` (in `android/app/build.gradle`'s
-`defaultConfig`) as of the real Play Billing integration built
-2026-08-04 -- bump it again before the next real upload.
+release. Currently at `6` (in `android/app/build.gradle`'s
+`defaultConfig`) -- bump it again before the next real upload.
 
-**Real Play Billing purchase flow, added 2026-08-04:** see
-`ProBillingPlugin.java` (custom Capacitor plugin, registered in
-`MainActivity.java`) and `shared/pro.js`'s `initNativeBilling()` /
-`purchase()`. This is tracked in git (not inside `android/`), so no
-manual patch needed here beyond the `android/` files already covered
-above (the plugin itself and its `MainActivity.java` registration line
-DO live inside `android/` and would need reapplying after a fresh
-`cap add android` -- see the plugin source for what to restore).
+**Real Play Billing purchase flow, added 2026-08-04:** `ProBillingPlugin.java`
+(a custom Capacitor plugin, `android/app/src/main/java/com/dustindame/draftentry/`)
+and `shared/pro.js`'s `initNativeBilling()` / `purchase()`. The plugin
+file itself and its one-line registration in `MainActivity.java` (also
+inside `android/`) are **not tracked by git** (`android/` is entirely
+gitignored) and must be manually recreated after a fresh
+`cap add android` -- see git history / this README for the plugin's
+full source if it's ever lost.
+
+**Billing library bumped to `9.0.0`, 2026-08-06** (was `7.1.1`) --
+Google requires v8.0.0+ by 2026-08-30 or app updates get rejected.
+`com.android.billingclient:billing:9.0.0` requires `minSdk 23`
+(`android/variables.gradle` was `22`, an already-ancient Android 5.1 --
+bumped, no real users lost). The v9 API also changed shape from v7:
+`enablePendingPurchases()` now needs a `PendingPurchasesParams` argument
+(`.enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())`),
+and `queryProductDetailsAsync`'s callback returns a
+`QueryProductDetailsResult` object now, not a plain `List` -- call
+`.getProductDetailsList()` on it. If bumping this library again in the
+future, expect the API to have moved again; check the actual compiler
+errors rather than assuming v7-era code still applies.
 
 ## Open and run
 
