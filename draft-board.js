@@ -818,6 +818,13 @@
       flashNewPickCells(newPickIds);
     }
     checkForShotPicks(newPickIds);
+    // Tells the Fire TV/Android TV native shell a real pick just landed,
+    // so it can keep the screen awake -- but only while picks are
+    // actually coming in, not indefinitely (see MainActivity.kt). No-op
+    // outside that app (window.AndroidTVBridge won't exist).
+    if (newPickIds.length && window.AndroidTVBridge?.onDraftActivity) {
+      window.AndroidTVBridge.onDraftActivity();
+    }
   });
 
   // The commissioner toggling break mode from Player Entry streams in

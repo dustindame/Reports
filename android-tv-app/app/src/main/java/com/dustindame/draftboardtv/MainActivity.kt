@@ -2,8 +2,11 @@ package com.dustindame.draftboardtv
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.view.WindowManager
+import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -25,20 +28,41 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val DRAFT_BOARD_URL = "https://reports.bidboard.workers.dev/draft-board.html"
+        // How long the screen stays awake after the most recent pick
+        // before falling back to normal TV screensaver/standby behavior.
+        // Google's TV quality review flags apps that keep the screen on
+        // indefinitely with no real activity -- this only holds it awake
+        // while picks are genuinely still coming in.
+        private const val KEEP_AWAKE_TIMEOUT_MS = 30L * 60 * 1000
     }
 
     private lateinit var webView: WebView
+    private val idleHandler = Handler(Looper.getMainLooper())
+    private val idleRunnable = Runnable {
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
+
+    /** Exposed to the web page as `window.AndroidTVBridge` (see draft-board.js). */
+    private inner class WebAppBridge {
+        @JavascriptInterface
+        fun onDraftActivity() {
+            runOnUiThread {
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                idleHandler.removeCallbacks(idleRunnable)
+                idleHandler.postDelayed(idleRunnable, KEEP_AWAKE_TIMEOUT_MS)
+            }
+        }
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Passive TV display -- never let the screen sleep mid-draft.
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         hideSystemBars()
 
         webView = WebView(this)
         setContentView(webView)
+        webView.addJavascriptInterface(WebAppBridge(), "AndroidTVBridge")
 
         webView.settings.apply {
             javaScriptEnabled = true
@@ -92,6 +116,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        idleHandler.removeCallbacks(idleRunnable)
         webView.destroy()
         super.onDestroy()
     }
