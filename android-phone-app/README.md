@@ -117,8 +117,28 @@ other changes needed (SDK Platform 35 was already installed locally).
 
 **`versionCode` must increase on every upload** -- Play Console rejects
 a re-upload of a version code it's already seen, even for a failed/draft
-release. Currently at `6` (in `android/app/build.gradle`'s
+release. Currently at `7` (in `android/app/build.gradle`'s
 `defaultConfig`) -- bump it again before the next real upload.
+
+**Status bar inset fix attempt #1 didn't actually work, 2026-08-06** --
+the original fix attached the insets listener directly to
+`bridge.getWebView()`. Confirmed on a real device (versionCode 5/6,
+installed via the actual Play Store update, not sideloaded) that the
+header was STILL covered by the status bar -- the listener wasn't
+taking effect. Root cause theory: `BridgeActivity` wraps the WebView
+inside its own internal layout, and Capacitor's own bridge can attach
+its own inset handling to that same view, silently overriding a
+listener set here in `onCreate()`. Fix attempt #2 (current): attach the
+listener to `findViewById(android.R.id.content)` (the Activity's root
+content view) instead, which receives the real window insets first,
+before Capacitor's internal layout exists. **This has NOT yet been
+verified on a real device** -- if the header is still covered after
+installing versionCode 7, this theory was wrong and needs a different
+approach (candidates: check whether Capacitor's own `WebViewListener`
+or a config flag already handles insets and needs disabling instead of
+worked around; or fall back to a JS-side fix reading
+`window.visualViewport`/computed safe-area values instead of relying
+on native padding at all).
 
 **Real Play Billing purchase flow, added 2026-08-04:** `ProBillingPlugin.java`
 (a custom Capacitor plugin, `android/app/src/main/java/com/dustindame/draftentry/`)
