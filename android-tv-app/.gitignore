@@ -4,5 +4,6 @@ app/build/
 *.apk
 *.aab
 local.properties
+keystore.properties
 .idea/
 gradle/gradle-daemon-jvm.properties
