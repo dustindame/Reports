@@ -34,6 +34,16 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    // html_handling is set to "none" below (see wrangler.toml) to stop
+    // Cloudflare's default behavior of 307-redirecting every .html URL
+    // to an extensionless path -- but "none" also disables the basic
+    // "/" -> "/index.html" mapping that comes bundled with the smarter
+    // modes, which silently 404'd the homepage (caught 2026-08-07).
+    // Handle that one specific case explicitly instead.
+    if (url.pathname === "/") {
+      return env.ASSETS.fetch(new Request(new URL("/index.html", request.url), request));
+    }
+
     if (url.pathname === "/api/create-checkout-session" && request.method === "POST") {
       return createCheckoutSession(request, env, url);
     }
