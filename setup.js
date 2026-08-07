@@ -504,23 +504,42 @@
   // Web purchase path (Stripe), launched 2026-08-06 -- a fully
   // independent way to buy Pro that doesn't go through Google Play at
   // all, for the browser/PWA experience while the Play Store listing
-  // is stuck behind its mandatory 14-day closed-testing window. Writes
-  // to the exact same `is_pro` column as the native purchase, so a
-  // league bought Pro here shows Pro immediately in the Play app too,
-  // and vice versa, once that path is live. Only offered for an
-  // EXISTING saved league (not while still filling out a brand-new
-  // one) -- the purchase is tied to a real league code server-side.
+  // is stuck behind its mandatory 14-day closed-testing window.
+  //
+  // Matches how the NATIVE purchase already behaves: buying Pro isn't
+  // a one-league-only unlock, it's a persistent "this buyer is Pro"
+  // state (window.NATIVE_PRO_UNLOCKED for the app, surviving reinstall
+  // via restore()) that automatically applies to every league created
+  // afterward, since the save payload already reads
+  // `isPro: ProGate.isPro() || existingLeagueIsPro`. The web purchase
+  // sets the same underlying flag ProGate.isPro() already checks
+  // (`auctionDraft.proUnlocked` in localStorage) on a successful
+  // checkout, so it gets the identical "every future league is Pro"
+  // behavior on this browser/device, not just the one league being
+  // edited at the time of purchase.
+  //
+  // Offered whether creating a brand-new league or editing an
+  // existing one -- if bought while a league already exists, the
+  // Stripe webhook also flips that specific league's is_pro
+  // server-side immediately (so other viewers on other devices see it
+  // right away, not just this browser).
   const buyProWebBtn = document.getElementById("buyProWebBtn");
   const buyProWebStatus = document.getElementById("buyProWebStatus");
   function updateBuyProWebUi() {
     const alreadyPro = ProGate.isPro() || existingLeagueIsPro;
-    buyProWebBtn.hidden = ProGate.hasNativeBilling() || alreadyPro || mode !== "edit";
+    buyProWebBtn.hidden = ProGate.hasNativeBilling() || alreadyPro;
   }
   buyProWebBtn.addEventListener("click", async () => {
     buyProWebBtn.disabled = true;
     buyProWebBtn.textContent = "REDIRECTING...";
     buyProWebStatus.hidden = true;
     try {
+      // leagueCode is sent even in "create" mode (it's already
+      // generated client-side before Save is clicked) so the webhook
+      // can flip that specific league Pro immediately IF it already
+      // exists server-side -- harmless no-op if it doesn't yet, since
+      // the persistent local flag (set below on return) covers that
+      // case regardless.
       const resp = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -558,21 +577,28 @@
     }
     if (purchaseState !== "success") return;
 
+    // Stripe only confirms a completed checkout by redirecting back
+    // here with ?purchase=success -- it wouldn't do that on a
+    // cancelled/failed payment, so this alone is enough to mark this
+    // browser Pro going forward (every league created from here on
+    // includes isPro:true in its save payload automatically).
+    ProGate.markWebPurchase();
+    existingLeagueIsPro = true;
+    applyProGating();
+    updateBuyProWebUi();
+
     const returnedLeague = params.get("league");
-    buyProWebStatus.textContent = "Confirming your purchase...";
+    buyProWebStatus.textContent = "Pro unlocked! Confirming it's saved to your league...";
     buyProWebStatus.hidden = false;
     for (let attempt = 0; attempt < 10; attempt++) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
       const config = await DraftStore.getConfig(returnedLeague || leagueCode);
       if (config && config.is_pro) {
-        existingLeagueIsPro = true;
-        applyProGating();
-        updateBuyProWebUi();
         buyProWebStatus.textContent = "Pro unlocked! 🎉";
         return;
       }
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     }
-    buyProWebStatus.textContent = "Purchase received -- if Pro doesn't show up in a minute, reload this page.";
+    buyProWebStatus.textContent = "Pro is unlocked on this browser -- if this specific league doesn't show Pro within a minute, reload this page.";
   })();
 
   let proUpsellShownAt = 0;

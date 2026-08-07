@@ -70,6 +70,21 @@ const ProGate = {
     return purchased;
   },
 
+  // Called after a real, confirmed web (Stripe) purchase -- persists
+  // Pro on this browser/device going forward, the same way a native
+  // purchase persists via window.NATIVE_PRO_UNLOCKED. Uses the same
+  // underlying localStorage flag setTestUnlock() also writes (there's
+  // only one "is this device Pro" bit to track), but named separately
+  // so a real purchase in the code isn't confused with the dev/test
+  // toggle that also happens to flip the same flag.
+  markWebPurchase() {
+    try {
+      localStorage.setItem("auctionDraft.proUnlocked", "1");
+    } catch (e) {
+      /* ignore */
+    }
+  },
+
   // Dev/test-only toggle -- the real apps never call this themselves;
   // it exists so the paywalled UI can be tried out before Play
   // Billing is wired up. `ProGate.setTestUnlock(true)` from a
