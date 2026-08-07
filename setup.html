@@ -6,7 +6,7 @@
   <title>Draft Setup</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728b" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260805a" />
-  <link rel="stylesheet" href="setup.css?v=20260731d" />
+  <link rel="stylesheet" href="setup.css?v=20260807a" />
 </head>
 <body>
   <div class="phone-frame">
@@ -135,19 +135,31 @@
             <li><b>More saved leagues</b> — beyond 2 saved leagues per device.</li>
           </ul>
           <p class="pro-explainer-intro">Pro leagues stick around for 60 idle days (free leagues: 7–14) — plenty of time to finish a draft, but not kept forever. When that window closes, everything is deleted, including the Recap page and its stats/roast — download it first if you want to keep it.</p>
-          <p class="pro-explainer-intro">One purchase unlocks Pro on this browser (or app) going forward — every league you create afterward there starts as Pro automatically, no need to buy again. Any league you upgrade to Pro shows Pro everywhere it's viewed, on any device or app.</p>
-          <div id="googleSignedOutRow">
-            <button class="league-gate-secondary" id="googleSignInBtn">Sign in with Google</button>
-            <p class="stepper-hint">Sign in to buy Pro or restore a purchase made elsewhere — signing in verifies it's really you, so nobody else can claim your purchase.</p>
+          <p class="pro-explainer-intro">One purchase unlocks Pro on this account going forward — every league you create afterward starts as Pro automatically, no need to buy again. Any league you upgrade to Pro shows Pro everywhere it's viewed, on any device or app.</p>
+
+          <div class="pro-account-box" id="proAccountBox">
+            <div class="pro-account-label">🔑 Pro Account</div>
+
+            <div id="googleSignedOutRow">
+              <p class="pro-account-hint">Sign in with Google to buy Pro or restore a purchase you already made — this is what lets Pro follow you between the website and the app later, and stops anyone else from claiming your purchase.</p>
+              <button class="google-signin-btn" id="googleSignInBtn"><span class="g-icon">🔐</span> Sign in with Google</button>
+            </div>
+            <div id="googleSignedInRow" hidden>
+              <div class="pro-account-signedin">
+                <span>Signed in as <b id="googleSignedInEmail"></b></span>
+                <button class="pro-account-signout" id="googleSignOutBtn">Sign out</button>
+              </div>
+            </div>
+            <div id="googleNativeAppNote" class="pro-account-native-note" hidden>
+              ⚠️ Google Sign-In isn't available inside the app yet — open <b>reports.bidboard.workers.dev/setup.html</b> in your phone's regular browser (not this app) to sign in, buy Pro, or restore a purchase. Coming to the app itself soon.
+            </div>
+
+            <button class="save-btn" id="buyProBtn" hidden>BUY PRO — $3.99</button>
+            <div class="status-msg" id="buyProStatus" hidden></div>
+            <button class="save-btn" id="buyProWebBtn" hidden>BUY PRO — $3.99 (CARD)</button>
+            <div class="status-msg" id="buyProWebStatus" hidden></div>
+            <div class="status-msg" id="restoreProStatus" hidden></div>
           </div>
-          <div id="googleSignedInRow" hidden>
-            <p class="stepper-hint">Signed in as <b id="googleSignedInEmail"></b> — <button class="league-gate-secondary" id="googleSignOutBtn" style="display:inline;width:auto;padding:2px 10px;">Sign out</button></p>
-          </div>
-          <button class="save-btn" id="buyProBtn" hidden>BUY PRO — $3.99</button>
-          <div class="status-msg" id="buyProStatus" hidden></div>
-          <button class="save-btn" id="buyProWebBtn" hidden>BUY PRO — $3.99 (CARD)</button>
-          <div class="status-msg" id="buyProWebStatus" hidden></div>
-          <div class="status-msg" id="restoreProStatus" hidden></div>
         </section>
 
         <!-- TEMPORARY dev/test control -- remove once real Pro billing
@@ -163,9 +175,9 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="shared/supabase-config.js?v=20260728"></script>
-  <script src="shared/pro.js?v=20260807a"></script>
+  <script src="shared/pro.js?v=20260807b"></script>
   <script src="shared/data.js?v=20260801a"></script>
   <script src="shared/icons.js?v=20260801a"></script>
-  <script src="setup.js?v=20260807c"></script>
+  <script src="setup.js?v=20260807d"></script>
 </body>
 </html>

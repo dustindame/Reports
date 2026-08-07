@@ -507,20 +507,37 @@
   // (nothing proved you actually owned the email you typed). Signing
   // in with Google is unforgeable, so it's now the only way to both
   // buy Pro on the web and restore a purchase made elsewhere.
+  //
+  // Google refuses to complete its own sign-in screen inside an
+  // embedded app WebView (a security policy, not a bug) -- confirmed
+  // 2026-08-06 that tapping this from inside the installed native app
+  // goes through the motions but never actually establishes a
+  // session. Rather than show a flow that silently fails, the button
+  // itself is hidden inside the native app and replaced with a plain
+  // explanation pointing at the web version, until proper native
+  // OAuth (external browser tab + deep link back into the app) is
+  // built -- that's real native code, not a web-only fix, and isn't
+  // needed urgently since the Play Store app isn't live yet anyway.
   const googleSignedOutRow = document.getElementById("googleSignedOutRow");
   const googleSignedInRow = document.getElementById("googleSignedInRow");
   const googleSignedInEmail = document.getElementById("googleSignedInEmail");
   const googleSignInBtn = document.getElementById("googleSignInBtn");
   const googleSignOutBtn = document.getElementById("googleSignOutBtn");
+  const googleNativeAppNote = document.getElementById("googleNativeAppNote");
   const restoreProStatus = document.getElementById("restoreProStatus");
   let currentUserEmail = null;
 
-  googleSignInBtn.addEventListener("click", () => {
-    supabaseClient.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.href.split("?")[0] },
+  if (ProGate.isInNativeApp()) {
+    googleSignedOutRow.hidden = true;
+    googleNativeAppNote.hidden = false;
+  } else {
+    googleSignInBtn.addEventListener("click", () => {
+      supabaseClient.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.href.split("?")[0] },
+      });
     });
-  });
+  }
   googleSignOutBtn.addEventListener("click", async () => {
     await supabaseClient.auth.signOut();
     currentUserEmail = null;
@@ -528,7 +545,7 @@
   });
 
   function updateGoogleAuthUi() {
-    googleSignedOutRow.hidden = !!currentUserEmail;
+    if (!ProGate.isInNativeApp()) googleSignedOutRow.hidden = !!currentUserEmail;
     googleSignedInRow.hidden = !currentUserEmail;
     if (currentUserEmail) googleSignedInEmail.textContent = currentUserEmail;
     updateBuyProWebUi();
@@ -536,11 +553,20 @@
 
   // Fires on initial load (if a session already exists) AND right
   // after the redirect back from Google -- one handler covers both.
+  // Also explicitly check getSession() right away rather than relying
+  // solely on the listener firing promptly, so a returning signed-in
+  // visitor sees correct UI immediately, not after a delay.
   supabaseClient.auth.onAuthStateChange(async (event, session) => {
     currentUserEmail = session?.user?.email || null;
     updateGoogleAuthUi();
     if (currentUserEmail && event === "SIGNED_IN") {
       await tryRestorePurchase(currentUserEmail);
+    }
+  });
+  supabaseClient.auth.getSession().then(({ data }) => {
+    if (data?.session?.user?.email) {
+      currentUserEmail = data.session.user.email;
+      updateGoogleAuthUi();
     }
   });
 

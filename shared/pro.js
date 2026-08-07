@@ -38,6 +38,17 @@ const ProGate = {
     return typeof window !== "undefined" && !!window.Capacitor?.isNativePlatform?.() && !!window.Capacitor?.Plugins?.ProBilling;
   },
 
+  // True whenever running inside the native app's embedded WebView at
+  // all, regardless of the billing plugin specifically. Needed because
+  // Google actively refuses to complete its own sign-in flow inside an
+  // embedded WebView (a security policy, not a bug) -- so anything
+  // using Google Sign-In has to detect this and behave differently
+  // here than in a real browser tab, until proper native OAuth
+  // (external browser + deep link) is built.
+  isInNativeApp() {
+    return typeof window !== "undefined" && !!window.Capacitor?.isNativePlatform?.();
+  },
+
   // Fire-and-forget: checks Play's own purchase records (the real
   // source of truth, not anything stored locally) and sets
   // NATIVE_PRO_UNLOCKED once that resolves. Runs once per page load,
