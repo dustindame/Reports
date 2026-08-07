@@ -70,15 +70,19 @@ const ProGate = {
   },
 
   // Launches the real Google Play purchase sheet for the one-time
-  // "pro_upgrade" product. Resolves true on a completed purchase,
-  // throws on cancel/failure -- callers should catch and show the
-  // error message rather than assume success. Only ever call this
-  // after checking hasNativeBilling().
+  // "pro_upgrade" product. Resolves { purchased, purchaseToken } on a
+  // completed purchase, throws on cancel/failure -- callers should
+  // catch and show the error message rather than assume success. Only
+  // ever call this after checking hasNativeBilling(). purchaseToken is
+  // the real Play purchase token -- needed so the backend can verify
+  // this purchase actually happened (via the Play Developer API)
+  // before registering it for cross-platform restore, rather than
+  // just trusting a self-reported "I bought it."
   async purchase() {
     if (!this.hasNativeBilling()) throw new Error("Pro can only be purchased from the Android app.");
-    const { purchased } = await window.Capacitor.Plugins.ProBilling.purchase();
+    const { purchased, purchaseToken } = await window.Capacitor.Plugins.ProBilling.purchase();
     if (purchased) window.NATIVE_PRO_UNLOCKED = true;
-    return purchased;
+    return { purchased, purchaseToken };
   },
 
   // Called after a real, confirmed web (Stripe) purchase -- persists

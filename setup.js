@@ -485,13 +485,13 @@
     buyProBtn.textContent = "PROCESSING...";
     buyProStatus.hidden = true;
     try {
-      await ProGate.purchase();
+      const { purchaseToken } = await ProGate.purchase();
       buyProStatus.textContent = "Purchase successful! Saving...";
       buyProStatus.hidden = false;
       applyProGating();
       saveBtn.click();
       updateBuyProUi();
-      promptToRegisterPurchaseEmail("play");
+      promptToRegisterPurchaseEmail("play", purchaseToken);
     } catch (e) {
       buyProStatus.textContent = e.message || "Purchase didn't go through.";
       buyProStatus.hidden = false;
@@ -689,21 +689,44 @@
     buyProWebStatus.textContent = "Pro is unlocked on this browser -- if this specific league doesn't show Pro within a minute, reload this page.";
   })();
 
-  // After a real native purchase, register it under the signed-in
-  // Google account (if any) so it can be restored on the web later --
-  // silently skipped if not signed in, the purchase already works on
-  // this device regardless.
-  async function promptToRegisterPurchaseEmail(source) {
-    if (!currentUserEmail) return;
-    try {
-      await fetch("/api/register-purchase", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: currentUserEmail, source }),
-      });
-    } catch (e) {
-      /* best-effort -- the purchase itself already succeeded regardless */
-    }
+  // After a real native purchase, optionally register it under an
+  // email so it can be restored on the web later. No sign-in required
+  // (Google Sign-In doesn't work inside the native WebView -- see
+  // isInNativeApp() above) -- instead, this is secured by sending the
+  // real Play purchaseToken along too, which the backend verifies
+  // against Google's own Play Developer API before trusting it. Purely
+  // optional and best-effort: the purchase itself already works on
+  // this device regardless of whether an email is given here.
+  function promptToRegisterPurchaseEmail(source, purchaseToken) {
+    if (!purchaseToken) return;
+    const overlay = document.createElement("div");
+    overlay.className = "league-gate-overlay";
+    overlay.innerHTML = `
+      <div class="league-gate-card">
+        <div class="league-gate-icon">📧</div>
+        <div class="league-gate-title">Sync Pro to the web version?</div>
+        <p class="league-gate-hint">Enter an email to also unlock Pro on the web version later -- sign in with the same email there to restore it. Optional, your purchase already works here either way.</p>
+        <input type="email" class="league-gate-input free-text" id="registerPurchaseEmail" placeholder="you@example.com" autocomplete="email" />
+        <button class="league-gate-continue" id="registerPurchaseSubmit">SAVE EMAIL</button>
+        <button class="league-gate-secondary" id="registerPurchaseSkip">Skip</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector("#registerPurchaseSkip").addEventListener("click", () => overlay.remove());
+    overlay.querySelector("#registerPurchaseSubmit").addEventListener("click", async () => {
+      const email = overlay.querySelector("#registerPurchaseEmail").value.trim();
+      if (!email || !email.includes("@")) return;
+      try {
+        await fetch("/api/register-purchase", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, source, purchaseToken, productId: "pro_upgrade" }),
+        });
+      } catch (e) {
+        /* best-effort -- the purchase itself already succeeded regardless */
+      }
+      overlay.remove();
+    });
   }
 
   let proUpsellShownAt = 0;

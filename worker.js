@@ -24,11 +24,16 @@
 
    Required secrets (set via `wrangler secret put <NAME>`, never
    committed): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
-   SUPABASE_SERVICE_ROLE_KEY.
+   SUPABASE_SERVICE_ROLE_KEY, GOOGLE_SERVICE_ACCOUNT_EMAIL,
+   GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY (the last two are for verifying
+   native purchase tokens against the Play Developer API -- see
+   registerPurchase()).
    =========================================================== */
 
 const SUPABASE_URL = "https://esoywmghcnvtauxzabvx.supabase.co";
 const PRO_PRICE_CENTS = 399; // $3.99, matches the Play Store product
+const ANDROID_PACKAGE_NAME = "com.dustindame.draftentry";
+const ANDROID_PRODUCT_ID = "pro_upgrade";
 
 export default {
   async fetch(request, env) {
@@ -155,23 +160,42 @@ async function markLeaguePro(leagueCode, env) {
 }
 
 // Called by the Android app right after a real, confirmed Play
-// purchase (the user is asked, optionally, for an email to enable
-// cross-platform restore -- purchase itself already succeeded on
-// their device regardless of whether they provide one).
-//
-// DISABLED as of 2026-08-07: as originally written, this endpoint
-// accepted ANY email with zero proof a real purchase happened --
-// anyone who found the URL could grant themselves (or anyone) a
-// permanent free Pro unlock via restore-purchase. Closed off entirely
-// rather than left exploitable, since nothing in the current UI
-// legitimately calls this yet anyway (native Google Sign-In is itself
-// disabled right now -- see shared/pro.js isInNativeApp()). Before
-// re-enabling: verify the purchase server-side against Google's Play
-// Developer API (requires a service account + purchases.products.get
-// call using the actual purchase token from the client, not just a
-// self-reported "trust me, I bought it" email).
+// purchase, with the user's optionally-provided email AND the real
+// Play purchaseToken from that purchase. The email alone proves
+// nothing (re-enabled 2026-08-07 only after adding real verification
+// -- an earlier version of this endpoint trusted a bare email with
+// zero proof, which would have let anyone grant themselves free Pro).
+// This version verifies the token against Google's own Play Developer
+// API before trusting anything the client says.
 async function registerPurchase(request, env) {
-  return jsonResponse({ error: "Not available yet." }, 501);
+  let email, purchaseToken, productId;
+  try {
+    const body = await request.json();
+    email = String(body.email || "").trim().toLowerCase();
+    purchaseToken = String(body.purchaseToken || "");
+    productId = String(body.productId || "");
+  } catch (e) {
+    return jsonResponse({ error: "Invalid request body." }, 400);
+  }
+  if (!email || !email.includes("@")) {
+    return jsonResponse({ error: "Enter a valid email." }, 400);
+  }
+  if (!purchaseToken || productId !== ANDROID_PRODUCT_ID) {
+    return jsonResponse({ error: "Missing or invalid purchase token." }, 400);
+  }
+
+  let verified;
+  try {
+    verified = await verifyPlayPurchase(purchaseToken, env);
+  } catch (e) {
+    return jsonResponse({ error: `Couldn't verify purchase: ${e.message}` }, 502);
+  }
+  if (!verified) {
+    return jsonResponse({ error: "That purchase token isn't valid or isn't purchased." }, 400);
+  }
+
+  await recordPurchase(email, "play", env);
+  return jsonResponse({ ok: true });
 }
 
 // Called from Setup's "Restore Pro by email" flow, on either platform.
@@ -213,6 +237,87 @@ async function recordPurchase(email, source, env) {
     },
     body: JSON.stringify({ email: email.toLowerCase(), source }),
   });
+}
+
+// Verifies a native purchase token against Google's own Play Developer
+// API -- the actual fix for the earlier "trust any email" hole. Google
+// Cloud service account setup required (see PROJECT_STATE.md): the
+// service account needs "Google Play Android Developer API" enabled
+// on its project, and needs to be granted access in Play Console's
+// Setup -> API access, with at least "View financial data" permission
+// on this specific app.
+async function verifyPlayPurchase(purchaseToken, env) {
+  const accessToken = await getGoogleServiceAccountToken(env);
+  const url =
+    `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${ANDROID_PACKAGE_NAME}` +
+    `/purchases/products/${ANDROID_PRODUCT_ID}/tokens/${encodeURIComponent(purchaseToken)}`;
+  const resp = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!resp.ok) return false;
+  const data = await resp.json();
+  // purchaseState: 0 = purchased, 1 = cancelled, 2 = pending.
+  return data.purchaseState === 0;
+}
+
+// Exchanges the service account's credentials for a short-lived OAuth2
+// access token, using the standard JWT-bearer flow -- hand-rolled with
+// Web Crypto since there's no google-auth-library equivalent available
+// in the Workers runtime.
+async function getGoogleServiceAccountToken(env) {
+  const header = { alg: "RS256", typ: "JWT" };
+  const now = Math.floor(Date.now() / 1000);
+  const claimSet = {
+    iss: env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    scope: "https://www.googleapis.com/auth/androidpublisher",
+    aud: "https://oauth2.googleapis.com/token",
+    iat: now,
+    exp: now + 3600,
+  };
+
+  const encode = (obj) => base64UrlEncode(new TextEncoder().encode(JSON.stringify(obj)));
+  const unsigned = `${encode(header)}.${encode(claimSet)}`;
+
+  const key = await crypto.subtle.importKey(
+    "pkcs8",
+    pemToArrayBuffer(env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY),
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const signatureBuffer = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(unsigned));
+  const jwt = `${unsigned}.${base64UrlEncode(new Uint8Array(signatureBuffer))}`;
+
+  const tokenResp = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion: jwt,
+    }).toString(),
+  });
+  if (!tokenResp.ok) {
+    throw new Error(`Google token exchange failed: ${await tokenResp.text()}`);
+  }
+  const tokenData = await tokenResp.json();
+  return tokenData.access_token;
+}
+
+function base64UrlEncode(bytes) {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+// The service account's private key arrives as PEM text (with
+// -----BEGIN/END PRIVATE KEY----- lines) -- strip that and decode the
+// base64 body into the raw DER bytes Web Crypto's importKey expects.
+function pemToArrayBuffer(pem) {
+  const b64 = pem.replace(/-----BEGIN PRIVATE KEY-----/, "").replace(/-----END PRIVATE KEY-----/, "").replace(/\s/g, "");
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
 }
 
 async function verifyStripeSignature(payload, signatureHeader, secret) {
