@@ -12,11 +12,13 @@ All pages share a dark theme, gold accent color, up to 14 team colors, and four 
 
 ## Running it
 
-Static files, no build step. Serve the folder and open `index.html`:
+Static files, no build step, for local development — serve the folder and open `index.html`:
 
 ```
 python3 -m http.server 8000
 ```
+
+**Production** (`reports.bidboard.workers.dev`) is a Cloudflare Worker (`worker.js`) rather than pure static hosting — it adds a few `/api/*` routes for the web Pro purchase flow (Stripe + Google Sign-In via Supabase Auth) and falls through to serving these same static files for everything else. Purely local testing (the command above) won't exercise those API routes; use the `dev` branch's preview deploy (`dev-reports.bidboard.workers.dev`) for that.
 
 ## Leagues: codes for viewing, a PIN for writing
 
