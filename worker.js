@@ -52,15 +52,19 @@ export default {
 };
 
 async function createCheckoutSession(request, env, requestUrl) {
-  let leagueCode;
+  let leagueCode, email;
   try {
     const body = await request.json();
     leagueCode = String(body.leagueCode || "").trim().toUpperCase();
+    email = String(body.email || "").trim().toLowerCase();
   } catch (e) {
     return jsonResponse({ error: "Invalid request body." }, 400);
   }
   if (!leagueCode) {
     return jsonResponse({ error: "Missing league code." }, 400);
+  }
+  if (!email) {
+    return jsonResponse({ error: "Sign in with Google first." }, 400);
   }
 
   const origin = `${requestUrl.protocol}//${requestUrl.host}`;
@@ -71,6 +75,11 @@ async function createCheckoutSession(request, env, requestUrl) {
     "line_items[0][price_data][unit_amount]": String(PRO_PRICE_CENTS),
     "line_items[0][quantity]": "1",
     client_reference_id: leagueCode,
+    // Pre-fills AND locks the checkout email to the verified Google
+    // sign-in identity, rather than letting the buyer type any email
+    // at checkout -- this is what makes the pro_purchases record
+    // trustworthy enough to restore from later.
+    customer_email: email,
     success_url: `${origin}/setup.html?purchase=success&league=${encodeURIComponent(leagueCode)}`,
     cancel_url: `${origin}/setup.html?purchase=cancelled`,
   });

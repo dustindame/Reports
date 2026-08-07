@@ -502,33 +502,94 @@
   window.addEventListener("pro-status-ready", updateBuyProUi);
   updateBuyProUi();
 
+  // Google Sign-In (via Supabase Auth), added 2026-08-06 -- replaces
+  // an earlier "type any email to restore" flow that had a real gap
+  // (nothing proved you actually owned the email you typed). Signing
+  // in with Google is unforgeable, so it's now the only way to both
+  // buy Pro on the web and restore a purchase made elsewhere.
+  const googleSignedOutRow = document.getElementById("googleSignedOutRow");
+  const googleSignedInRow = document.getElementById("googleSignedInRow");
+  const googleSignedInEmail = document.getElementById("googleSignedInEmail");
+  const googleSignInBtn = document.getElementById("googleSignInBtn");
+  const googleSignOutBtn = document.getElementById("googleSignOutBtn");
+  const restoreProStatus = document.getElementById("restoreProStatus");
+  let currentUserEmail = null;
+
+  googleSignInBtn.addEventListener("click", () => {
+    supabaseClient.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.href.split("?")[0] },
+    });
+  });
+  googleSignOutBtn.addEventListener("click", async () => {
+    await supabaseClient.auth.signOut();
+    currentUserEmail = null;
+    updateGoogleAuthUi();
+  });
+
+  function updateGoogleAuthUi() {
+    googleSignedOutRow.hidden = !!currentUserEmail;
+    googleSignedInRow.hidden = !currentUserEmail;
+    if (currentUserEmail) googleSignedInEmail.textContent = currentUserEmail;
+    updateBuyProWebUi();
+  }
+
+  // Fires on initial load (if a session already exists) AND right
+  // after the redirect back from Google -- one handler covers both.
+  supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    currentUserEmail = session?.user?.email || null;
+    updateGoogleAuthUi();
+    if (currentUserEmail && event === "SIGNED_IN") {
+      await tryRestorePurchase(currentUserEmail);
+    }
+  });
+
+  async function tryRestorePurchase(email) {
+    restoreProStatus.textContent = "Checking for an existing purchase...";
+    restoreProStatus.hidden = false;
+    try {
+      const resp = await fetch("/api/restore-purchase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await resp.json();
+      if (resp.ok && data.purchased) {
+        ProGate.markWebPurchase();
+        existingLeagueIsPro = true;
+        applyProGating();
+        updateBuyProUi();
+        updateBuyProWebUi();
+        restoreProStatus.textContent = "Pro restored! 🎉";
+        return;
+      }
+    } catch (e) {
+      /* fall through -- not an error state, just nothing to restore yet */
+    }
+    restoreProStatus.hidden = true;
+  }
+
   // Web purchase path (Stripe), launched 2026-08-06 -- a fully
   // independent way to buy Pro that doesn't go through Google Play at
   // all, for the browser/PWA experience while the Play Store listing
   // is stuck behind its mandatory 14-day closed-testing window.
   //
+  // Requires signing in with Google first -- the purchase is tied to
+  // that verified email (Stripe Checkout is pre-filled and locked to
+  // it), which is also what makes it possible to restore later on
+  // another platform, since a random typed-in email can no longer
+  // claim someone else's purchase.
+  //
   // Matches how the NATIVE purchase already behaves: buying Pro isn't
   // a one-league-only unlock, it's a persistent "this buyer is Pro"
-  // state (window.NATIVE_PRO_UNLOCKED for the app, surviving reinstall
-  // via restore()) that automatically applies to every league created
+  // state that automatically applies to every league created
   // afterward, since the save payload already reads
-  // `isPro: ProGate.isPro() || existingLeagueIsPro`. The web purchase
-  // sets the same underlying flag ProGate.isPro() already checks
-  // (`auctionDraft.proUnlocked` in localStorage) on a successful
-  // checkout, so it gets the identical "every future league is Pro"
-  // behavior on this browser/device, not just the one league being
-  // edited at the time of purchase.
-  //
-  // Offered whether creating a brand-new league or editing an
-  // existing one -- if bought while a league already exists, the
-  // Stripe webhook also flips that specific league's is_pro
-  // server-side immediately (so other viewers on other devices see it
-  // right away, not just this browser).
+  // `isPro: ProGate.isPro() || existingLeagueIsPro`.
   const buyProWebBtn = document.getElementById("buyProWebBtn");
   const buyProWebStatus = document.getElementById("buyProWebStatus");
   function updateBuyProWebUi() {
     const alreadyPro = ProGate.isPro() || existingLeagueIsPro;
-    buyProWebBtn.hidden = ProGate.hasNativeBilling() || alreadyPro;
+    buyProWebBtn.hidden = ProGate.hasNativeBilling() || alreadyPro || !currentUserEmail;
   }
   buyProWebBtn.addEventListener("click", async () => {
     buyProWebBtn.disabled = true;
@@ -544,7 +605,7 @@
       const resp = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ leagueCode }),
+        body: JSON.stringify({ leagueCode, email: currentUserEmail }),
       });
       const data = await resp.json();
       if (!resp.ok || !data.url) throw new Error(data.error || "Couldn't start checkout.");
@@ -602,92 +663,21 @@
     buyProWebStatus.textContent = "Pro is unlocked on this browser -- if this specific league doesn't show Pro within a minute, reload this page.";
   })();
 
-  // "Restore Pro by email" -- the bridge between the two otherwise-
-  // separate purchase systems (web/Stripe vs. native/Play). Shown
-  // whenever this browser/app isn't already Pro, regardless of
-  // platform -- either side might have bought there first.
-  const restoreProRow = document.getElementById("restoreProRow");
-  const restoreProEmail = document.getElementById("restoreProEmail");
-  const restoreProBtn = document.getElementById("restoreProBtn");
-  const restoreProStatus = document.getElementById("restoreProStatus");
-  function updateRestoreProUi() {
-    restoreProRow.hidden = ProGate.isPro() || existingLeagueIsPro;
-  }
-  restoreProBtn.addEventListener("click", async () => {
-    const email = restoreProEmail.value.trim();
-    if (!email || !email.includes("@")) {
-      restoreProStatus.textContent = "Enter the email you used at checkout.";
-      restoreProStatus.hidden = false;
-      return;
-    }
-    restoreProBtn.disabled = true;
-    restoreProBtn.textContent = "CHECKING...";
-    restoreProStatus.hidden = true;
+  // After a real native purchase, register it under the signed-in
+  // Google account (if any) so it can be restored on the web later --
+  // silently skipped if not signed in, the purchase already works on
+  // this device regardless.
+  async function promptToRegisterPurchaseEmail(source) {
+    if (!currentUserEmail) return;
     try {
-      const resp = await fetch("/api/restore-purchase", {
+      await fetch("/api/register-purchase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: currentUserEmail, source }),
       });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || "Couldn't check that right now.");
-      if (data.purchased) {
-        ProGate.markWebPurchase();
-        existingLeagueIsPro = true;
-        applyProGating();
-        updateBuyProUi();
-        updateBuyProWebUi();
-        updateRestoreProUi();
-        restoreProStatus.textContent = "Pro restored! 🎉";
-        restoreProStatus.hidden = false;
-      } else {
-        restoreProStatus.textContent = "No purchase found for that email.";
-        restoreProStatus.hidden = false;
-      }
     } catch (e) {
-      restoreProStatus.textContent = e.message || "Couldn't check that right now.";
-      restoreProStatus.hidden = false;
-    } finally {
-      restoreProBtn.disabled = false;
-      restoreProBtn.textContent = "RESTORE";
+      /* best-effort -- the purchase itself already succeeded regardless */
     }
-  });
-  window.addEventListener("pro-status-ready", updateRestoreProUi);
-  updateRestoreProUi();
-
-  // After a real native purchase, optionally capture an email so the
-  // SAME purchase can be restored on the web (or a future device)
-  // later -- entirely optional, the purchase already succeeded on
-  // this device regardless of whether an email is given.
-  function promptToRegisterPurchaseEmail(source) {
-    const overlay = document.createElement("div");
-    overlay.className = "league-gate-overlay";
-    overlay.innerHTML = `
-      <div class="league-gate-card">
-        <div class="league-gate-icon">📧</div>
-        <div class="league-gate-title">Sync Pro to other devices?</div>
-        <p class="league-gate-hint">Enter an email to also unlock Pro on the web version later. Optional -- your purchase already works here either way.</p>
-        <input type="email" class="league-gate-input free-text" id="registerPurchaseEmail" placeholder="you@example.com" autocomplete="email" />
-        <button class="league-gate-continue" id="registerPurchaseSubmit">SAVE EMAIL</button>
-        <button class="league-gate-secondary" id="registerPurchaseSkip">Skip</button>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-    overlay.querySelector("#registerPurchaseSkip").addEventListener("click", () => overlay.remove());
-    overlay.querySelector("#registerPurchaseSubmit").addEventListener("click", async () => {
-      const email = overlay.querySelector("#registerPurchaseEmail").value.trim();
-      if (!email || !email.includes("@")) return;
-      try {
-        await fetch("/api/register-purchase", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, source }),
-        });
-      } catch (e) {
-        /* best-effort -- the purchase itself already succeeded regardless */
-      }
-      overlay.remove();
-    });
   }
 
   let proUpsellShownAt = 0;
