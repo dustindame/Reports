@@ -501,6 +501,80 @@
   window.addEventListener("pro-status-ready", updateBuyProUi);
   updateBuyProUi();
 
+  // Web purchase path (Stripe), launched 2026-08-06 -- a fully
+  // independent way to buy Pro that doesn't go through Google Play at
+  // all, for the browser/PWA experience while the Play Store listing
+  // is stuck behind its mandatory 14-day closed-testing window. Writes
+  // to the exact same `is_pro` column as the native purchase, so a
+  // league bought Pro here shows Pro immediately in the Play app too,
+  // and vice versa, once that path is live. Only offered for an
+  // EXISTING saved league (not while still filling out a brand-new
+  // one) -- the purchase is tied to a real league code server-side.
+  const buyProWebBtn = document.getElementById("buyProWebBtn");
+  const buyProWebStatus = document.getElementById("buyProWebStatus");
+  function updateBuyProWebUi() {
+    const alreadyPro = ProGate.isPro() || existingLeagueIsPro;
+    buyProWebBtn.hidden = ProGate.hasNativeBilling() || alreadyPro || mode !== "edit";
+  }
+  buyProWebBtn.addEventListener("click", async () => {
+    buyProWebBtn.disabled = true;
+    buyProWebBtn.textContent = "REDIRECTING...";
+    buyProWebStatus.hidden = true;
+    try {
+      const resp = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leagueCode }),
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.url) throw new Error(data.error || "Couldn't start checkout.");
+      window.location.href = data.url;
+    } catch (e) {
+      buyProWebStatus.textContent = e.message || "Couldn't start checkout -- try again.";
+      buyProWebStatus.hidden = false;
+      buyProWebBtn.disabled = false;
+      buyProWebBtn.textContent = "BUY PRO — $3.99 (CARD)";
+    }
+  });
+  window.addEventListener("pro-status-ready", updateBuyProWebUi);
+  updateBuyProWebUi();
+
+  // Coming back from a successful Stripe checkout -- the webhook has
+  // already set is_pro server-side by the time the browser redirects
+  // back here, but there's an unavoidable small race (webhook delivery
+  // isn't guaranteed to beat the redirect), so poll briefly rather
+  // than trusting a single immediate check.
+  (async function checkReturnFromStripe() {
+    const params = new URLSearchParams(window.location.search);
+    const purchaseState = params.get("purchase");
+    if (!purchaseState) return;
+
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState(null, "", cleanUrl);
+
+    if (purchaseState === "cancelled") {
+      showStatus("Checkout cancelled -- no charge was made.", false);
+      return;
+    }
+    if (purchaseState !== "success") return;
+
+    const returnedLeague = params.get("league");
+    buyProWebStatus.textContent = "Confirming your purchase...";
+    buyProWebStatus.hidden = false;
+    for (let attempt = 0; attempt < 10; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const config = await DraftStore.getConfig(returnedLeague || leagueCode);
+      if (config && config.is_pro) {
+        existingLeagueIsPro = true;
+        applyProGating();
+        updateBuyProWebUi();
+        buyProWebStatus.textContent = "Pro unlocked! 🎉";
+        return;
+      }
+    }
+    buyProWebStatus.textContent = "Purchase received -- if Pro doesn't show up in a minute, reload this page.";
+  })();
+
   let proUpsellShownAt = 0;
   document.addEventListener(
     "click",
