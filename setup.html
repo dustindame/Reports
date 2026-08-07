@@ -135,11 +135,16 @@
             <li><b>More saved leagues</b> — beyond 2 saved leagues per device.</li>
           </ul>
           <p class="pro-explainer-intro">Pro leagues stick around for 60 idle days (free leagues: 7–14) — plenty of time to finish a draft, but not kept forever. When that window closes, everything is deleted, including the Recap page and its stats/roast — download it first if you want to keep it.</p>
-          <p class="pro-explainer-intro">One purchase unlocks Pro on this browser going forward — every league you create afterward here starts as Pro automatically, no need to buy again. (Any league you upgrade to Pro shows Pro everywhere it's viewed, on any device or app — but a separate purchase is needed to get this same "every new league is Pro" behavior inside the Bid Board app once it's available, since that's a different purchase system.)</p>
+          <p class="pro-explainer-intro">One purchase unlocks Pro on this browser (or app) going forward — every league you create afterward there starts as Pro automatically, no need to buy again. Any league you upgrade to Pro shows Pro everywhere it's viewed, on any device or app. Bought Pro somewhere else already? Enter the same email you used at checkout below to unlock it here too.</p>
           <button class="save-btn" id="buyProBtn" hidden>BUY PRO — $3.99</button>
           <div class="status-msg" id="buyProStatus" hidden></div>
           <button class="save-btn" id="buyProWebBtn" hidden>BUY PRO — $3.99 (CARD)</button>
           <div class="status-msg" id="buyProWebStatus" hidden></div>
+          <div class="budget-input-wrap" id="restoreProRow" hidden>
+            <input type="email" id="restoreProEmail" class="budget-input" placeholder="Email used at checkout" autocomplete="email" />
+            <button class="stepper-btn" id="restoreProBtn" style="width:auto;padding:0 14px;">RESTORE</button>
+          </div>
+          <div class="status-msg" id="restoreProStatus" hidden></div>
         </section>
 
         <!-- TEMPORARY dev/test control -- remove once real Pro billing
@@ -158,6 +163,6 @@
   <script src="shared/pro.js?v=20260807a"></script>
   <script src="shared/data.js?v=20260801a"></script>
   <script src="shared/icons.js?v=20260801a"></script>
-  <script src="setup.js?v=20260807a"></script>
+  <script src="setup.js?v=20260807b"></script>
 </body>
 </html>

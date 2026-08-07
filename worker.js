@@ -13,6 +13,15 @@
    upgraded here shows Pro immediately on every device/app viewing it
    -- web, phone, TV -- with zero extra plumbing needed on that end.
 
+   Also records each purchase by email in `pro_purchases` (see
+   20260807100000_add_pro_purchases.sql), so someone who bought Pro on
+   one platform can "restore" the same persistent per-device unlock on
+   another via /api/restore-purchase -- e.g. bought on the web tonight,
+   restores it inside the Play Store app once that's live in ~2 weeks.
+   Web and native purchases are otherwise two separate systems (browser
+   localStorage vs. Google's own purchase records) with no automatic
+   link between them; email is the bridge, entered voluntarily.
+
    Required secrets (set via `wrangler secret put <NAME>`, never
    committed): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET,
    SUPABASE_SERVICE_ROLE_KEY.
@@ -30,6 +39,12 @@ export default {
     }
     if (url.pathname === "/api/stripe-webhook" && request.method === "POST") {
       return handleStripeWebhook(request, env);
+    }
+    if (url.pathname === "/api/register-purchase" && request.method === "POST") {
+      return registerPurchase(request, env);
+    }
+    if (url.pathname === "/api/restore-purchase" && request.method === "POST") {
+      return restorePurchase(request, env);
     }
 
     return env.ASSETS.fetch(request);
@@ -95,6 +110,10 @@ async function handleStripeWebhook(request, env) {
     if (leagueCode) {
       await markLeaguePro(leagueCode, env);
     }
+    const email = session.customer_details?.email;
+    if (email) {
+      await recordPurchase(email, "stripe", env);
+    }
   }
 
   return new Response("ok", { status: 200 });
@@ -114,6 +133,66 @@ async function markLeaguePro(leagueCode, env) {
   // No is_pro-downgrade path exists anywhere in this system by design
   // (see 20260731150000_never_downgrade_league_pro.sql) -- a webhook
   // retry or duplicate event safely re-applies the same true value.
+}
+
+// Called by the Android app right after a real, confirmed Play
+// purchase (the user is asked, optionally, for an email to enable
+// cross-platform restore -- purchase itself already succeeded on
+// their device regardless of whether they provide one).
+async function registerPurchase(request, env) {
+  let email;
+  try {
+    const body = await request.json();
+    email = String(body.email || "").trim().toLowerCase();
+  } catch (e) {
+    return jsonResponse({ error: "Invalid request body." }, 400);
+  }
+  if (!email || !email.includes("@")) {
+    return jsonResponse({ error: "Enter a valid email." }, 400);
+  }
+  await recordPurchase(email, "play", env);
+  return jsonResponse({ ok: true });
+}
+
+// Called from Setup's "Restore Pro by email" flow, on either platform.
+// Only ever returns a plain yes/no -- never leaks anything else about
+// the stored row (source, timestamp) to the client.
+async function restorePurchase(request, env) {
+  let email;
+  try {
+    const body = await request.json();
+    email = String(body.email || "").trim().toLowerCase();
+  } catch (e) {
+    return jsonResponse({ error: "Invalid request body." }, 400);
+  }
+  if (!email) {
+    return jsonResponse({ error: "Enter your email." }, 400);
+  }
+
+  const resp = await fetch(`${SUPABASE_URL}/rest/v1/pro_purchases?email=eq.${encodeURIComponent(email)}&select=email`, {
+    headers: {
+      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+    },
+  });
+  if (!resp.ok) {
+    return jsonResponse({ error: "Couldn't check that right now -- try again." }, 502);
+  }
+  const rows = await resp.json();
+  return jsonResponse({ purchased: rows.length > 0 });
+}
+
+async function recordPurchase(email, source, env) {
+  await fetch(`${SUPABASE_URL}/rest/v1/pro_purchases`, {
+    method: "POST",
+    headers: {
+      apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=minimal",
+    },
+    body: JSON.stringify({ email: email.toLowerCase(), source }),
+  });
 }
 
 async function verifyStripeSignature(payload, signatureHeader, secret) {

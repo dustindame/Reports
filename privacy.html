@@ -26,14 +26,15 @@
     <p>This app runs live fantasy football auction drafts. It's built for a private group running its own draft, not a public social platform — this page explains exactly what data exists and where it goes.</p>
 
     <h2>What we collect</h2>
-    <p>There are no user accounts, no sign-up, and no personal information collected beyond what you voluntarily put into a league:</p>
+    <p>There are no user accounts and no sign-up. Almost nothing is collected beyond what you voluntarily put into a league:</p>
     <ul>
       <li><b>A league code</b> — a random 6-character code identifying a draft. Not tied to your identity.</li>
       <li><b>A commissioner PIN</b> — chosen by whoever creates the league. We never store the PIN itself; only a one-way cryptographic hash of it (SHA-256), so even we cannot see or recover your actual PIN.</li>
       <li><b>Team names, player picks, and prices</b> — whatever your league's commissioner and members enter while running the draft.</li>
       <li><b>Optional Fan Messages</b> — free-text messages your league can choose to post to the shared ticker, if that feature is turned on.</li>
+      <li><b>An email address, only if you choose to provide one</b> — when purchasing Pro, or when using the optional "restore my purchase" feature to unlock Pro on a second device/platform. This email is used solely to match a purchase across platforms (e.g. web and the Android app) and is never used for marketing, never sold, and never shared with anyone besides our payment processor (Stripe) and database host (Supabase), both acting purely as infrastructure on our behalf.</li>
     </ul>
-    <p>We do not collect names, emails, phone numbers, precise location, contacts, photos, or any device identifiers beyond a randomly generated on-device ID used only to enforce the free tier's league-count limit (see below).</p>
+    <p>We do not collect names, phone numbers, precise location, contacts, photos, or any device identifiers beyond a randomly generated on-device ID used only to enforce the free tier's league-count limit (see below).</p>
 
     <h2>Where your data is stored</h2>
     <p>League and pick data is stored in a Postgres database hosted by <a href="https://supabase.com" target="_blank" rel="noopener">Supabase</a>, a third-party database provider. We do not sell, share, or use your data for advertising. Supabase acts purely as our database host — see their own privacy policy for how they handle infrastructure-level data.</p>

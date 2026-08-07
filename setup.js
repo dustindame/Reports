@@ -491,6 +491,7 @@
       applyProGating();
       saveBtn.click();
       updateBuyProUi();
+      promptToRegisterPurchaseEmail("play");
     } catch (e) {
       buyProStatus.textContent = e.message || "Purchase didn't go through.";
       buyProStatus.hidden = false;
@@ -600,6 +601,94 @@
     }
     buyProWebStatus.textContent = "Pro is unlocked on this browser -- if this specific league doesn't show Pro within a minute, reload this page.";
   })();
+
+  // "Restore Pro by email" -- the bridge between the two otherwise-
+  // separate purchase systems (web/Stripe vs. native/Play). Shown
+  // whenever this browser/app isn't already Pro, regardless of
+  // platform -- either side might have bought there first.
+  const restoreProRow = document.getElementById("restoreProRow");
+  const restoreProEmail = document.getElementById("restoreProEmail");
+  const restoreProBtn = document.getElementById("restoreProBtn");
+  const restoreProStatus = document.getElementById("restoreProStatus");
+  function updateRestoreProUi() {
+    restoreProRow.hidden = ProGate.isPro() || existingLeagueIsPro;
+  }
+  restoreProBtn.addEventListener("click", async () => {
+    const email = restoreProEmail.value.trim();
+    if (!email || !email.includes("@")) {
+      restoreProStatus.textContent = "Enter the email you used at checkout.";
+      restoreProStatus.hidden = false;
+      return;
+    }
+    restoreProBtn.disabled = true;
+    restoreProBtn.textContent = "CHECKING...";
+    restoreProStatus.hidden = true;
+    try {
+      const resp = await fetch("/api/restore-purchase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "Couldn't check that right now.");
+      if (data.purchased) {
+        ProGate.markWebPurchase();
+        existingLeagueIsPro = true;
+        applyProGating();
+        updateBuyProUi();
+        updateBuyProWebUi();
+        updateRestoreProUi();
+        restoreProStatus.textContent = "Pro restored! 🎉";
+        restoreProStatus.hidden = false;
+      } else {
+        restoreProStatus.textContent = "No purchase found for that email.";
+        restoreProStatus.hidden = false;
+      }
+    } catch (e) {
+      restoreProStatus.textContent = e.message || "Couldn't check that right now.";
+      restoreProStatus.hidden = false;
+    } finally {
+      restoreProBtn.disabled = false;
+      restoreProBtn.textContent = "RESTORE";
+    }
+  });
+  window.addEventListener("pro-status-ready", updateRestoreProUi);
+  updateRestoreProUi();
+
+  // After a real native purchase, optionally capture an email so the
+  // SAME purchase can be restored on the web (or a future device)
+  // later -- entirely optional, the purchase already succeeded on
+  // this device regardless of whether an email is given.
+  function promptToRegisterPurchaseEmail(source) {
+    const overlay = document.createElement("div");
+    overlay.className = "league-gate-overlay";
+    overlay.innerHTML = `
+      <div class="league-gate-card">
+        <div class="league-gate-icon">📧</div>
+        <div class="league-gate-title">Sync Pro to other devices?</div>
+        <p class="league-gate-hint">Enter an email to also unlock Pro on the web version later. Optional -- your purchase already works here either way.</p>
+        <input type="email" class="league-gate-input free-text" id="registerPurchaseEmail" placeholder="you@example.com" autocomplete="email" />
+        <button class="league-gate-continue" id="registerPurchaseSubmit">SAVE EMAIL</button>
+        <button class="league-gate-secondary" id="registerPurchaseSkip">Skip</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    overlay.querySelector("#registerPurchaseSkip").addEventListener("click", () => overlay.remove());
+    overlay.querySelector("#registerPurchaseSubmit").addEventListener("click", async () => {
+      const email = overlay.querySelector("#registerPurchaseEmail").value.trim();
+      if (!email || !email.includes("@")) return;
+      try {
+        await fetch("/api/register-purchase", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, source }),
+        });
+      } catch (e) {
+        /* best-effort -- the purchase itself already succeeded regardless */
+      }
+      overlay.remove();
+    });
+  }
 
   let proUpsellShownAt = 0;
   document.addEventListener(
