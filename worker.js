@@ -148,19 +148,20 @@ async function markLeaguePro(leagueCode, env) {
 // purchase (the user is asked, optionally, for an email to enable
 // cross-platform restore -- purchase itself already succeeded on
 // their device regardless of whether they provide one).
+//
+// DISABLED as of 2026-08-07: as originally written, this endpoint
+// accepted ANY email with zero proof a real purchase happened --
+// anyone who found the URL could grant themselves (or anyone) a
+// permanent free Pro unlock via restore-purchase. Closed off entirely
+// rather than left exploitable, since nothing in the current UI
+// legitimately calls this yet anyway (native Google Sign-In is itself
+// disabled right now -- see shared/pro.js isInNativeApp()). Before
+// re-enabling: verify the purchase server-side against Google's Play
+// Developer API (requires a service account + purchases.products.get
+// call using the actual purchase token from the client, not just a
+// self-reported "trust me, I bought it" email).
 async function registerPurchase(request, env) {
-  let email;
-  try {
-    const body = await request.json();
-    email = String(body.email || "").trim().toLowerCase();
-  } catch (e) {
-    return jsonResponse({ error: "Invalid request body." }, 400);
-  }
-  if (!email || !email.includes("@")) {
-    return jsonResponse({ error: "Enter a valid email." }, 400);
-  }
-  await recordPurchase(email, "play", env);
-  return jsonResponse({ ok: true });
+  return jsonResponse({ error: "Not available yet." }, 501);
 }
 
 // Called from Setup's "Restore Pro by email" flow, on either platform.
