@@ -27,33 +27,53 @@ npx cap sync android
 committed to git — it's derived from `capacitor.config.json` and can
 always be regenerated). `cap sync` copies the config into it.
 
-**Required manual patch after `cap add android`:** this is a live,
-frequently-updated web app, and default WebView caching can keep
-showing a stale version after a real deploy (this has actually
-happened — a CSS change needed a manual Force Stop + Clear Cache to
-show up). Replace the generated
+**Required manual patch after `cap add android`:** replace the generated
 `android/app/src/main/java/com/dustindame/draftentry/MainActivity.java`
-with:
+with the current real version below — this file isn't committed
+(nothing under `android/` is), so it has to be reapplied any time the
+native project is regenerated from scratch. Also register
+`ProBillingPlugin` (see its own section further down) if that's been
+added by the time you're reading this.
 
 ```java
 package com.dustindame.draftentry;
 
 import android.os.Bundle;
+import android.view.View;
 import android.webkit.WebSettings;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(ProBillingPlugin.class);
         super.onCreate(savedInstanceState);
+        // This is a live, frequently-updated web app -- default WebView
+        // HTTP caching can keep showing a stale version after a real
+        // deploy (this has actually happened -- a CSS change needed a
+        // manual Force Stop + Clear Cache to show up). Always hit the
+        // network instead.
         this.bridge.getWebView().getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+
+        // Targeting API 35 (Android 15) makes edge-to-edge display
+        // mandatory -- see the "Status bar inset fix" section below for
+        // the full history of getting this right.
+        View rootContent = findViewById(android.R.id.content);
+        ViewCompat.setOnApplyWindowInsetsListener(rootContent, (view, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+        // See fix attempt #3 below -- without this, the listener above
+        // misses the one automatic insets dispatch that happens on a
+        // fresh launch and never fires again on its own.
+        ViewCompat.requestApplyInsets(rootContent);
     }
 }
 ```
-
-This file isn't committed (nothing under `android/` is), so this patch
-has to be reapplied any time the native project is regenerated from
-scratch.
 
 **A second required patch, same root cause, in `node_modules` this
 time:** the installed AGP version also rejects the *old-style*
@@ -122,28 +142,40 @@ resolve.
 
 **`versionCode` must increase on every upload** -- Play Console rejects
 a re-upload of a version code it's already seen, even for a failed/draft
-release. Currently at `8` (in `android/app/build.gradle`'s
-`defaultConfig`) -- bump it again before the next real upload.
+release. Managed via a single `appVersionCode` variable at the top of
+`android/app/build.gradle` (also drives `versionName`, e.g. `1.0.12`,
+so the installed version is always visible via Android's own
+Settings → Apps → Bid Board → App details screen -- added 2026-08-08
+specifically so "which build is actually on this phone" never has to
+be guessed again). Bump it before every real upload.
 
-**Status bar inset fix attempt #1 didn't actually work, 2026-08-06** --
-the original fix attached the insets listener directly to
-`bridge.getWebView()`. Confirmed on a real device (versionCode 5/6,
-installed via the actual Play Store update, not sideloaded) that the
-header was STILL covered by the status bar -- the listener wasn't
-taking effect. Root cause theory: `BridgeActivity` wraps the WebView
-inside its own internal layout, and Capacitor's own bridge can attach
-its own inset handling to that same view, silently overriding a
-listener set here in `onCreate()`. Fix attempt #2 (current): attach the
-listener to `findViewById(android.R.id.content)` (the Activity's root
-content view) instead, which receives the real window insets first,
-before Capacitor's internal layout exists. **This has NOT yet been
-verified on a real device** -- if the header is still covered after
-installing versionCode 7, this theory was wrong and needs a different
-approach (candidates: check whether Capacitor's own `WebViewListener`
-or a config flag already handles insets and needs disabling instead of
-worked around; or fall back to a JS-side fix reading
-`window.visualViewport`/computed safe-area values instead of relying
-on native padding at all).
+**Status bar inset fix -- three attempts before this actually worked:**
+- **Attempt #1 (2026-08-06)** attached the insets listener directly to
+  `bridge.getWebView()`. Confirmed broken on a real device (versionCode
+  5/6, installed via the actual Play Store update) -- header still
+  covered. Root cause theory: `BridgeActivity` wraps the WebView inside
+  its own internal layout, and Capacitor's own bridge can attach its
+  own inset handling to that same view, silently overriding a listener
+  set here.
+- **Attempt #2 (2026-08-06)** moved the listener to
+  `findViewById(android.R.id.content)` (the Activity's root content
+  view) instead, reasoning it would receive real insets before
+  Capacitor's internal layout exists. Shipped without a real device
+  verification -- confirmed BROKEN on a real fresh install/reinstall
+  2026-08-08 (the listener logic itself was fine, see attempt #3).
+- **Attempt #3 (2026-08-08, current, see the full `MainActivity.java`
+  above)** -- actual root cause: the system dispatches window insets
+  once automatically as soon as the root view attaches, which happens
+  inside `BridgeActivity`'s own `super.onCreate()` -- i.e. BEFORE
+  attempt #2's listener gets attached. The listener was correct but
+  silently missed the only dispatch that would ever fire on a fresh
+  launch, and nothing re-triggers a second one on its own (which is why
+  it could look intermittently "fixed" after something like a
+  rotation, but never on first open). Fix: call
+  `ViewCompat.requestApplyInsets(rootContent)` right after attaching
+  the listener, forcing one explicit re-dispatch. **Not yet re-verified
+  on a real device as of this writing** -- confirm on the next install
+  before trusting this is finally resolved.
 
 **Real Play Billing purchase flow, added 2026-08-04:** `ProBillingPlugin.java`
 (a custom Capacitor plugin, `android/app/src/main/java/com/dustindame/draftentry/`)
