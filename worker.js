@@ -312,8 +312,13 @@ function base64UrlEncode(bytes) {
 // The service account's private key arrives as PEM text (with
 // -----BEGIN/END PRIVATE KEY----- lines) -- strip that and decode the
 // base64 body into the raw DER bytes Web Crypto's importKey expects.
+// Handles the key being pasted either with real line breaks OR with
+// literal `\n` (backslash-n, two characters) -- the latter is exactly
+// how it appears if copied straight out of the downloaded JSON key
+// file, where line breaks are JSON-escaped rather than real newlines.
 function pemToArrayBuffer(pem) {
-  const b64 = pem.replace(/-----BEGIN PRIVATE KEY-----/, "").replace(/-----END PRIVATE KEY-----/, "").replace(/\s/g, "");
+  const normalized = pem.replace(/\\n/g, "\n");
+  const b64 = normalized.replace(/-----BEGIN PRIVATE KEY-----/, "").replace(/-----END PRIVATE KEY-----/, "").replace(/\s/g, "");
   const binary = atob(b64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
