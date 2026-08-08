@@ -1,0 +1,30 @@
+# Cloudflare Workers static assets are served from the whole repo root
+# ([assets] directory = "./" in wrangler.toml), so anything NOT meant to
+# be public needs to be listed here explicitly -- unlike .gitignore,
+# this controls what's actually served to visitors, not just what's
+# tracked in git. A real exposure was found and fixed 2026-08-08: /.git/
+# was publicly fetchable (confirmed via a live curl returning 200),
+# along with Android build artifacts that have no reason being served
+# from the website at all.
+
+.git/
+.wrangler/
+node_modules/
+
+# Android app projects -- native source, build output, keystores. None
+# of this belongs on the public website; the apps load web pages FROM
+# this site, they don't get served BY it.
+android-phone-app/
+android-tv-app/
+
+# Editor/OS noise
+.idea/
+.vscode/
+*.DS_Store
+Thumbs.db
+
+# Local docs/scratch that shouldn't be public even though they're
+# harmless if leaked -- keep the public site to just the actual app.
+PROJECT_STATE.md
+SUPPORT_PLAYBOOK.md
+scratchpad/
