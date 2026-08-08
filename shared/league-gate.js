@@ -44,17 +44,25 @@ function showThemedConfirm({ icon = "⚠️", title, hint, confirmText = "Confir
 
 function promptForLeagueCode() {
   return new Promise((resolve) => {
+    // "Create a New League" only makes sense on Bid Board (the
+    // commissioner's entry app) -- Draft Board and Team Picks are
+    // view-only surfaces (no PIN entry, and on Draft Board specifically
+    // often a TV with no comfortable keyboard for filling out Setup at
+    // all), so offering league creation there is confusing/out of place
+    // rather than helpful. The page itself opts in via
+    // window.LEAGUE_GATE_ALLOW_CREATE, set before this script loads.
+    const allowCreate = window.LEAGUE_GATE_ALLOW_CREATE === true;
     const overlay = document.createElement("div");
     overlay.className = "league-gate-overlay";
     overlay.innerHTML = `
       <div class="league-gate-card">
         <div class="league-gate-icon">🏈</div>
         <h2 class="league-gate-title">Enter League Code</h2>
-        <p class="league-gate-hint">Ask your commissioner for the 6-character code, start a new league, or try the demo.</p>
+        <p class="league-gate-hint">Ask your commissioner for the 6-character code${allowCreate ? ", start a new league, or try the demo." : " or try the demo."}</p>
         <input type="text" class="league-gate-input" id="leagueGateInput" maxlength="6" placeholder="e.g. BLZ4K2" autocapitalize="characters" autocomplete="off" />
         <div class="league-gate-error" id="leagueGateError" hidden></div>
         <button class="league-gate-continue" id="leagueGateContinue">CONTINUE</button>
-        <button class="league-gate-secondary" id="leagueGateCreate">Create a New League</button>
+        ${allowCreate ? '<button class="league-gate-secondary" id="leagueGateCreate">Create a New League</button>' : ""}
         <button class="league-gate-secondary" id="leagueGateDemo">Use Demo Instead</button>
       </div>
     `;
@@ -73,7 +81,7 @@ function promptForLeagueCode() {
     const input = overlay.querySelector("#leagueGateInput");
     const errorEl = overlay.querySelector("#leagueGateError");
     const continueBtn = overlay.querySelector("#leagueGateContinue");
-    const createBtn = overlay.querySelector("#leagueGateCreate");
+    const createBtn = overlay.querySelector("#leagueGateCreate"); // null when allowCreate is false
     const demoBtn = overlay.querySelector("#leagueGateDemo");
 
     input.focus();
@@ -101,9 +109,11 @@ function promptForLeagueCode() {
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") submit();
     });
-    createBtn.addEventListener("click", () => {
-      window.location.href = "setup.html";
-    });
+    if (createBtn) {
+      createBtn.addEventListener("click", () => {
+        window.location.href = "setup.html";
+      });
+    }
     demoBtn.addEventListener("click", () => {
       overlay.remove();
       resolve(null);
