@@ -43,7 +43,7 @@
       const isOut = budget.open === 0 || budget.remaining <= 0;
       return `<div class="team-box${isOut ? " out-of-money" : ""}" data-team-id="${team.id}" style="background:${team.color}">
         <span class="team-box-check" id="check-${team.id}"></span>
-        <div class="team-box-name">${team.name}</div>
+        <div class="team-box-name">${escapeHtml(team.name)}</div>
         <div class="team-box-divider"></div>
         <div class="team-box-stat"><span class="tbs-icon">🔨</span><span class="tbs-val">$${budget.maxBid}</span><span class="tbs-icon">💰</span><span class="tbs-val">$${budget.remaining}</span></div>
         ${isOut ? `<div class="team-box-out-label">${budget.open === 0 ? "ROSTER FULL" : "OUT OF MONEY"}</div>` : ""}
@@ -97,8 +97,8 @@
         return `<div class="recent-pick-row">
           <span class="rp-team-dot" style="background:${team.color}; color:${team.color}"></span>
           <div class="rp-info">
-            <div class="rp-name">${pick.name}<span class="rp-pos">${pick.position}</span></div>
-            <div class="rp-team">${team.name} · $${pick.price}</div>
+            <div class="rp-name">${escapeHtml(pick.name)}<span class="rp-pos">${pick.position}</span></div>
+            <div class="rp-team">${escapeHtml(team.name)} · $${pick.price}</div>
           </div>
           <button class="rp-undo" data-pick-id="${pick.id}" aria-label="Undo this pick">✕</button>
         </div>`;

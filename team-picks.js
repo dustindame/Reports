@@ -89,7 +89,7 @@
   function renderTeamGrid() {
     teamGrid.innerHTML = TEAMS.map(
       (team) => `<div class="team-box" data-team-id="${team.id}" style="background:${team.color}">
-        <div class="team-box-name">${team.name}</div>
+        <div class="team-box-name">${escapeHtml(team.name)}</div>
       </div>`
     ).join("");
 
@@ -125,7 +125,7 @@
         }
         return `<div class="roster-row filled pos-${pick.position}">
           <div class="roster-slot-tag">${slotType}</div>
-          <div class="roster-player"><div class="rp-name">${pick.name}</div><div class="rp-pos">${pick.position}</div></div>
+          <div class="roster-player"><div class="rp-name">${escapeHtml(pick.name)}</div><div class="rp-pos">${pick.position}</div></div>
           <div class="roster-price">$${pick.price}</div>
         </div>`;
       })
