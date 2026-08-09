@@ -177,6 +177,101 @@ be guessed again). Bump it before every real upload.
   on a real device as of this writing** -- confirm on the next install
   before trusting this is finally resolved.
 
+**Deploying with fastlane, set up 2026-08-08:** `android/fastlane/`
+(Appfile + Fastfile, also gitignored along with the rest of `android/`
+-- recreate from scratch below if this folder is ever lost) automates
+the build+upload cycle that used to be manual clicking through Play
+Console. From `android-phone-app/android`:
+
+```
+fastlane deploy
+```
+
+Bumps nothing automatically -- bump `appVersionCode` at the top of
+`app/build.gradle` yourself first (Play rejects any re-upload of a
+versionCode it's already seen) -- then builds a signed release AAB and
+uploads it.
+
+**Recreating `android/fastlane/Appfile` if lost:**
+```ruby
+json_key_file("C:/Projects/keys/play-console-deploy.json")
+package_name("com.dustindame.draftentry")
+```
+The key file itself lives OUTSIDE this repo entirely, at
+`C:\Projects\keys\play-console-deploy.json` -- deliberately never
+committed anywhere. It's a Google Cloud service account with
+"Release apps to testing tracks" + "View app information (read-only)"
+permission granted via Play Console -> Users and permissions (a
+separate service account from the one used for purchase-token
+verification in `worker.js`, which only has financial-data read
+access -- don't confuse the two).
+
+**Recreating `android/fastlane/Fastfile` if lost** -- and the actual
+reason it uploads to BOTH tracks, not just one: a real mixup happened
+2026-08-08 where a device turned out to be enrolled in **Internal
+Testing**, while every upload that night had been going to **Closed
+Testing (alpha)** -- confirmed via the Play Developer API that
+versionCode 12 was genuinely live on alpha, while the device's own
+Settings -> App info screen still showed an old versionCode 4 build,
+because it was never subscribed to alpha at all. Hours of "the fix
+still doesn't work" confusion turned out to be nothing to do with the
+fix -- the build had simply never reached the device. Uploading to
+both tracks by default removes this whole class of mistake going
+forward, at zero real cost:
+
+```ruby
+default_platform(:android)
+
+platform :android do
+  desc "Build a signed release AAB and upload it to BOTH the Internal Testing and Closed Testing (alpha) tracks"
+  lane :deploy do
+    gradle(task: "bundleRelease")
+    aab_path = "app/build/outputs/bundle/release/app-release.aab"
+    upload_to_play_store(
+      track: "internal",
+      aab: aab_path,
+      release_status: "completed",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+    # Promotes the SAME already-uploaded bundle to alpha too, rather
+    # than uploading the binary a second time (which the API rejects as
+    # a duplicate of a versionCode it's already seen).
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "alpha",
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Just build the signed release AAB, no upload"
+  lane :build do
+    gradle(task: "bundleRelease")
+  end
+end
+```
+
+**Before trusting ANY future "it's still broken" report after a
+deploy, verify the real installed version first** -- check Settings ->
+Apps -> Bid Board -> App info on the actual device (NOT the Play
+Store app's own listing page for Bid Board, which can show stale
+cached metadata like an old required-OS version or an old "updated on"
+date that has nothing to do with what's actually installed). The
+version string there is `1.0.<versionCode>` (see below) specifically
+so this check is fast and unambiguous.
+
+**`versionName` deliberately embeds the real versionCode, added
+2026-08-08:** `app/build.gradle` sets `versionName "1.0.${appVersionCode}"`
+(e.g. `1.0.13`) instead of a static `"1.0"` used through versionCode
+10 -- so a glance at the phone's own App Info screen always shows
+exactly what's installed, without needing to cross-reference anything.
+
 **Real Play Billing purchase flow, added 2026-08-04:** `ProBillingPlugin.java`
 (a custom Capacitor plugin, `android/app/src/main/java/com/dustindame/draftentry/`)
 and `shared/pro.js`'s `initNativeBilling()` / `purchase()`. The plugin
