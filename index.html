@@ -39,16 +39,25 @@
     .card h2 { margin: 0 0 6px; font-size: 17px; color: var(--text); }
     .card p { margin: 0; font-size: 13px; color: var(--text-dim); line-height: 1.5; }
     .tag {
-      display: inline-block;
-      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+      font-weight: 700;
       letter-spacing: 1px;
       text-transform: uppercase;
       color: var(--gold-bright);
-      border: 1px solid var(--gold-dim);
+      border: 1.5px solid var(--gold-dim);
       border-radius: 999px;
-      padding: 2px 8px;
+      padding: 3px 10px;
       margin-bottom: 10px;
     }
+    /* Color-coded by which device the screen is meant for, so it's
+       obvious at a glance without reading the card body text -- a
+       recurring point of confusion when sharing links to people who've
+       never seen the app before. */
+    .tag.device-phone { color: #59c2f0; border-color: #59c2f0; }
+    .tag.device-tv { color: #4caf50; border-color: #4caf50; }
     .note {
       margin-top: 30px;
       font-size: 12.5px;
@@ -66,27 +75,27 @@
 
     <div class="cards">
       <a class="card" href="setup.html">
-        <span class="tag">Setup</span>
+        <span class="tag">⚙️ Setup — any device</span>
         <h2>Draft Setup</h2>
         <p>Configure teams, budget, and roster/lineup ahead of time. Generates a shareable league code and commissioner PIN.</p>
       </a>
       <a class="card" href="player-entry.html">
-        <span class="tag">Phone</span>
+        <span class="tag device-phone">📱 Best on Phone</span>
         <h2>Bid Board</h2>
         <p>Search a player, tap the winning team, slide to the bid amount, confirm the pick. Needs the commissioner PIN.</p>
       </a>
       <a class="card" href="draft-board.html">
-        <span class="tag">TV</span>
+        <span class="tag device-tv">📺 Best on TV / Projector</span>
         <h2>Draft Board</h2>
         <p>Every roster, budgets, recent picks, a real scannable QR code, and a live NFL news ticker in one wide scrolling display.</p>
       </a>
       <a class="card" href="team-picks.html">
-        <span class="tag">Phone</span>
+        <span class="tag device-phone">📱 Best on Phone</span>
         <h2>Team Picks</h2>
         <p>The page the Draft Board's QR code links to — pick a team, check their roster from your own phone.</p>
       </a>
       <a class="card" href="watch.html">
-        <span class="tag">Any TV browser</span>
+        <span class="tag device-tv">📺 Best on TV / Projector</span>
         <h2>Watch a Draft</h2>
         <p>No Fire TV or Android TV? Enter a league code and turn any screen with a browser into a Draft Board.</p>
       </a>
