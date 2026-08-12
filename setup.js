@@ -864,7 +864,7 @@
     shotsValue.textContent = shotsCount;
   });
 
-  function showCreatedConfirmation(code, pin) {
+  function showCreatedConfirmation(code, pin, boardName) {
     return new Promise((resolve) => {
       const overlay = document.createElement("div");
       overlay.className = "league-gate-overlay";
@@ -882,6 +882,11 @@
             <span class="created-value">${escapeHtml(pin)}</span>
           </div>
           <button class="league-gate-secondary" id="createdCopyBtn">Copy Code &amp; PIN to Share</button>
+          <div class="created-email-row">
+            <input type="email" class="league-gate-input" id="createdEmailInput" placeholder="Email this to yourself (optional)" autocomplete="email" />
+            <button class="league-gate-secondary" id="createdEmailBtn">Email Me a Backup</button>
+          </div>
+          <div class="created-email-status" id="createdEmailStatus" hidden></div>
           <button class="league-gate-continue" id="createdContinue">CONTINUE TO ENTER PICK</button>
         </div>
       `;
@@ -891,6 +896,35 @@
         const shareText = `Join our draft!\nLeague Code: ${code}\nCommissioner PIN: ${pin}\n(Anyone with both can log picks in Draft Entry.)`;
         const ok = await copyText(shareText);
         copyBtn.textContent = ok ? "Copied!" : "Couldn't copy — write it down instead";
+      });
+      const emailInput = overlay.querySelector("#createdEmailInput");
+      const emailBtn = overlay.querySelector("#createdEmailBtn");
+      const emailStatus = overlay.querySelector("#createdEmailStatus");
+      emailBtn.addEventListener("click", async () => {
+        const email = emailInput.value.trim();
+        if (!email || !email.includes("@")) {
+          emailStatus.textContent = "Enter a valid email first.";
+          emailStatus.hidden = false;
+          return;
+        }
+        emailBtn.disabled = true;
+        emailBtn.textContent = "SENDING...";
+        try {
+          const resp = await fetch("/api/send-league-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, leagueCode: code, pin, boardName }),
+          });
+          const data = await resp.json();
+          if (!resp.ok) throw new Error(data.error || "Couldn't send that.");
+          emailStatus.textContent = "Sent! Check your inbox.";
+          emailBtn.textContent = "SENT ✓";
+        } catch (e) {
+          emailStatus.textContent = `Couldn't send: ${e.message}`;
+          emailBtn.disabled = false;
+          emailBtn.textContent = "Email Me a Backup";
+        }
+        emailStatus.hidden = false;
       });
       overlay.querySelector("#createdContinue").addEventListener("click", () => {
         overlay.remove();
@@ -989,7 +1023,7 @@
     LeagueSession.rememberLeague(leagueCode, boardName);
 
     if (mode === "create") {
-      await showCreatedConfirmation(leagueCode, plainPin);
+      await showCreatedConfirmation(leagueCode, plainPin, boardName);
     }
     window.location.href = "player-entry.html";
   });

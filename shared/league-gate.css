@@ -128,3 +128,7 @@
 }
 .created-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-faint); }
 .created-value { font-size: 18px; font-weight: 800; color: var(--gold-bright); letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+
+.created-email-row { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 10px; }
+.created-email-row .league-gate-input { margin: 0; }
+.created-email-status { font-size: 12px; color: var(--text-dim); margin-bottom: 10px; text-align: left; }

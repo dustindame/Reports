@@ -27,7 +27,9 @@
    SUPABASE_SERVICE_ROLE_KEY, GOOGLE_SERVICE_ACCOUNT_EMAIL,
    GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY (the last two are for verifying
    native purchase tokens against the Play Developer API -- see
-   registerPurchase()).
+   registerPurchase()), GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET,
+   GMAIL_REFRESH_TOKEN (for the optional "email me a backup" league-
+   creation email -- see sendLeagueEmail()).
    =========================================================== */
 
 const SUPABASE_URL = "https://esoywmghcnvtauxzabvx.supabase.co";
@@ -60,6 +62,9 @@ export default {
     }
     if (url.pathname === "/api/restore-purchase" && request.method === "POST") {
       return restorePurchase(request, env);
+    }
+    if (url.pathname === "/api/send-league-email" && request.method === "POST") {
+      return sendLeagueEmail(request, env);
     }
 
     return env.ASSETS.fetch(request);
@@ -361,6 +366,105 @@ function timingSafeEqual(a, b) {
     result |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
   return result === 0;
+}
+
+// Sends a one-time "here's your backup" email right after league creation
+// (league code + PIN + board name) -- entirely optional, opt-in, fire-once.
+// This is NOT a "forgot my PIN" recovery flow (the PIN itself is a
+// one-way hash server-side and genuinely can't be recovered) -- it's just
+// a copy sent while we know it's really the commissioner, since they're
+// the one actively creating the league at that exact moment. Requires
+// GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN (see
+// getGmailAccessToken) -- sends as bid.board.support@gmail.com via the
+// Gmail API, not a dedicated transactional email service, since that
+// would have needed a custom domain this project doesn't have yet.
+const SUPPORT_EMAIL_FROM = "bid.board.support@gmail.com";
+
+async function sendLeagueEmail(request, env) {
+  let email, leagueCode, pin, boardName;
+  try {
+    const body = await request.json();
+    email = String(body.email || "").trim();
+    leagueCode = String(body.leagueCode || "").trim().toUpperCase();
+    pin = String(body.pin || "").trim();
+    boardName = String(body.boardName || "Your League").trim();
+  } catch (e) {
+    return jsonResponse({ error: "Invalid request body." }, 400);
+  }
+  if (!email || !email.includes("@")) {
+    return jsonResponse({ error: "Enter a valid email." }, 400);
+  }
+  if (!leagueCode || !pin) {
+    return jsonResponse({ error: "Missing league code or PIN." }, 400);
+  }
+
+  const subject = `Your Bid Board league: ${boardName}`;
+  const textBody =
+    `Here's a backup copy of your league details -- keep this somewhere safe.\n\n` +
+    `Board: ${boardName}\n` +
+    `League Code: ${leagueCode}\n` +
+    `Commissioner PIN: ${pin}\n\n` +
+    `Share the League Code with anyone who wants to view or follow the draft. ` +
+    `Only share the PIN with whoever's actually logging picks -- it's needed to write anything.\n\n` +
+    `The PIN can't be recovered if lost (it's stored as a one-way hash, not plain text, even on our end) -- ` +
+    `keep this email as your record.\n\n` +
+    `-- Bid Board (reports.bidboard.workers.dev)`;
+
+  try {
+    const accessToken = await getGmailAccessToken(env);
+    await sendGmailMessage(accessToken, email, subject, textBody);
+  } catch (e) {
+    return jsonResponse({ error: `Couldn't send email: ${e.message}` }, 502);
+  }
+
+  return jsonResponse({ ok: true });
+}
+
+// Standard OAuth2 refresh-token exchange -- simpler than the JWT-bearer
+// service-account flow used for Play Developer API verification, since
+// this is a personal Gmail account (not a service account), authorized
+// once via a real sign-in + consent (see the setup docs), with the
+// resulting long-lived refresh token stored as a Cloudflare secret.
+async function getGmailAccessToken(env) {
+  const tokenResp = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: env.GMAIL_REFRESH_TOKEN,
+      client_id: env.GMAIL_CLIENT_ID,
+      client_secret: env.GMAIL_CLIENT_SECRET,
+    }).toString(),
+  });
+  if (!tokenResp.ok) {
+    throw new Error(`Gmail token refresh failed: ${await tokenResp.text()}`);
+  }
+  const tokenData = await tokenResp.json();
+  return tokenData.access_token;
+}
+
+// Gmail's API wants a full RFC 2822 message, base64url-encoded as a
+// whole -- not a simple {to, subject, body} JSON shape.
+async function sendGmailMessage(accessToken, toEmail, subject, textBody) {
+  const rawMessage =
+    `From: Bid Board <${SUPPORT_EMAIL_FROM}>\r\n` +
+    `To: ${toEmail}\r\n` +
+    `Subject: ${subject}\r\n` +
+    `Content-Type: text/plain; charset="UTF-8"\r\n` +
+    `MIME-Version: 1.0\r\n\r\n` +
+    textBody;
+
+  const resp = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ raw: base64UrlEncode(new TextEncoder().encode(rawMessage)) }),
+  });
+  if (!resp.ok) {
+    throw new Error(await resp.text());
+  }
 }
 
 function jsonResponse(data, status = 200) {
