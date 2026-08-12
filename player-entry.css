@@ -86,6 +86,8 @@ button.setup-link { cursor: pointer; font: inherit; padding: 0; }
   gap: 10px;
 }
 
+.entry-title-block { display: flex; flex-direction: column; gap: 1px; }
+
 /* Same treatment as the Draft Board title: plain white text with a
    hard (0-blur) blue outline, no glow/drop-shadow. */
 .entry-title {
@@ -103,6 +105,16 @@ button.setup-link { cursor: pointer; font: inherit; padding: 0; }
     1px -1px 0 #2f6fed,
     -1px 1px 0 #2f6fed,
     1px 1px 0 #2f6fed;
+}
+
+/* "BID BOARD" alone doesn't tell a first-time user what this screen
+   actually does -- this makes the actual function (logging picks)
+   visible at a glance, not just the brand name. */
+.entry-subtitle {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #59c2f0;
 }
 
 /* ---------------- Main ---------------- */
