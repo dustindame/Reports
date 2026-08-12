@@ -10,11 +10,16 @@
    `initNativeBilling()` below fires an async restore() check on load
    and sets the flag once it resolves, dispatching a `pro-status-ready`
    event so anything that already rendered gating UI can re-check it.
-   There is no native shell on the plain website/TV app, so those fall
-   back to a localStorage flag -- flippable from the browser console
-   (`ProGate.setTestUnlock(true)`) for testing the paywalled UI without
-   a real purchase. Keep this test path until real purchases have been
-   verified working end-to-end on a device.
+   There is no native shell on the plain website/TV app, so those rely
+   on a localStorage flag instead, set by `markWebPurchase()` after a
+   real, verified Stripe purchase. The dev-only bypass that used to
+   flip this flag for free (a Setup button, plus a `?pro=1` URL param)
+   was removed 2026-08-12 once both the native Play purchase and the
+   web Stripe purchase were confirmed working end-to-end -- keeping a
+   free-Pro bypass live past that point was a real, exploitable path to
+   permanently unlocking any league for free (the save flow writes
+   `is_pro` to the database using this same flag), not just a harmless
+   dev convenience.
    =========================================================== */
 
 const ProGate = {
@@ -87,27 +92,10 @@ const ProGate = {
 
   // Called after a real, confirmed web (Stripe) purchase -- persists
   // Pro on this browser/device going forward, the same way a native
-  // purchase persists via window.NATIVE_PRO_UNLOCKED. Uses the same
-  // underlying localStorage flag setTestUnlock() also writes (there's
-  // only one "is this device Pro" bit to track), but named separately
-  // so a real purchase in the code isn't confused with the dev/test
-  // toggle that also happens to flip the same flag.
+  // purchase persists via window.NATIVE_PRO_UNLOCKED.
   markWebPurchase() {
     try {
       localStorage.setItem("auctionDraft.proUnlocked", "1");
-    } catch (e) {
-      /* ignore */
-    }
-  },
-
-  // Dev/test-only toggle -- the real apps never call this themselves;
-  // it exists so the paywalled UI can be tried out before Play
-  // Billing is wired up. `ProGate.setTestUnlock(true)` from a
-  // console, then reload.
-  setTestUnlock(on) {
-    try {
-      if (on) localStorage.setItem("auctionDraft.proUnlocked", "1");
-      else localStorage.removeItem("auctionDraft.proUnlocked");
     } catch (e) {
       /* ignore */
     }
@@ -136,23 +124,5 @@ const ProGate = {
     }
   },
 };
-
-// Mobile browsers have no console to run ProGate.setTestUnlock(true) from
-// -- a ?pro=1 / ?pro=0 URL param does the same thing with just a link/typed
-// URL. Strips the param from the address bar afterward via replaceState so
-// it doesn't linger in a bookmarked or shared URL.
-(function applyProUrlParam() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    if (!params.has("pro")) return;
-    ProGate.setTestUnlock(params.get("pro") === "1");
-    params.delete("pro");
-    const rest = params.toString();
-    const cleanUrl = window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash;
-    window.history.replaceState(null, "", cleanUrl);
-  } catch (e) {
-    /* ignore */
-  }
-})();
 
 ProGate.initNativeBilling();

@@ -569,22 +569,3 @@ body {
 }
 .pro-feature-list li b { color: var(--text); }
 
-/* TEMPORARY dev/test control (see setup.html) -- deliberately styled
-   like a debug affordance (dashed border, monospace, orange) rather
-   than matching the real UI, so it reads as "not a real feature" and
-   is easy to spot for removal later. */
-.dev-pro-section { border: 1px dashed #e8720c; background: rgba(232, 114, 12, 0.06); }
-.dev-pro-toggle {
-  width: 100%;
-  padding: 12px;
-  border: 1px dashed #e8720c;
-  border-radius: var(--radius-md);
-  background: rgba(232, 114, 12, 0.12);
-  color: #e8720c;
-  font-family: monospace;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.dev-pro-toggle:hover { background: rgba(232, 114, 12, 0.2); }
-.dev-pro-toggle.active { color: #4caf50; border-color: #4caf50; background: rgba(76, 175, 80, 0.12); }

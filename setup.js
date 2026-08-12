@@ -450,23 +450,6 @@
     });
   }
 
-  // TEMPORARY dev/test control (see setup.html) -- lets Pro be flipped
-  // on/off from a button instead of the console/URL-param tricks, for
-  // easy testing on any device including a phone. Remove this whole
-  // block (and the matching HTML/CSS) once real Pro billing ships or
-  // it's no longer needed for testing.
-  const devProToggle = document.getElementById("devProToggle");
-  function updateDevProToggleUi() {
-    const isPro = ProGate.isPro();
-    devProToggle.textContent = isPro ? "TEST: Pro is ON — Tap to Turn Off" : "TEST: Pro is OFF — Tap to Turn On";
-    devProToggle.classList.toggle("active", isPro);
-  }
-  devProToggle.addEventListener("click", () => {
-    ProGate.setTestUnlock(!ProGate.isPro());
-    window.location.reload();
-  });
-  updateDevProToggleUi();
-
   // Real Pro purchase -- only ever shown inside the Android phone app
   // (Play Billing doesn't exist anywhere else), and only when this
   // league/device isn't already Pro. Persists the purchase to this
