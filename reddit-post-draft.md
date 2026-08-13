@@ -4,7 +4,7 @@ Updated 2026-08-12 — full rewrite covering the live web version, current Andro
 
 ---
 
-**[Web + Android Beta] Bid Board — Live Fantasy Football Auction Draft Tracker**
+**[Web + Fire TV + Android Beta] Bid Board — Live Fantasy Football Auction Draft Tracker**
 
 **Try it now, no install:** https://reports.bidboard.workers.dev
 
@@ -25,7 +25,28 @@ Three screens, all synced live:
 4. Open **Bid Board** on the phone doing entry, **Draft Board** on the TV/laptop, **Team Picks** on everyone else's phones. Enter the league code (and PIN, for Bid Board) when asked.
 5. Draft.
 
-No installs required for any of this — it's all just a website. There's also a real Android app in closed testing on Google Play right now (link below if you want to try it and help it graduate out of that phase) — same experience, wrapped as an installable app.
+No installs required for any of this — it's all just a website. There's also a real Android app in closed testing on Google Play right now (link below if you want to try it and help it graduate out of that phase), and a Fire TV app for the big-screen display — mix and match whichever pieces work for your setup (see below).
+
+### Ways to actually use this
+
+Every screen talks to the same league code, so you can mix web and app however fits your setup:
+
+- **All web, no installs** — open Bid Board and Draft Board in browser tabs (phone + laptop/TV). Fastest way to just try it tonight.
+- **Web entry + Fire TV display** — log picks from Bid Board in a phone browser, show Draft Board on an actual Fire TV via the app. No install needed on the phone side at all.
+- **Both apps** — Bid Board installed on the phone, Draft Board installed on Fire TV, once you're using them regularly.
+
+Nothing about the league or picks cares which combination you use — it's all the same live data either way.
+
+### Getting Draft Board onto a TV that doesn't have the app
+
+If you don't have (or don't want) the Fire TV app yet, Android TV / Fire TV doesn't ship with a normal web browser by default, so "just open the website" isn't one-click there like it is on a phone or laptop. A few real options:
+
+- **Cast a browser tab** from your phone or laptop to the TV (Chromecast, or a Fire TV's own screen-mirroring) — open Draft Board in Chrome, cast the tab.
+- **HDMI from a laptop** — plug in directly, open the site in any browser, done.
+- **A smart TV with its own built-in browser** (some Samsung/LG TVs have one) — just open it there directly.
+- **Sideload a browser app onto Fire TV** — Amazon Appstore has a few (Silk Browser, etc.) that install directly on Fire TV like any other app, letting you open the site without the dedicated Draft Board app at all.
+
+Once you have the actual Fire TV app installed, none of this is needed — it's a one-time league-code entry and it just works.
 
 ### Nuances worth knowing before you draft with it
 
@@ -46,10 +67,10 @@ Pro is purely **fun extras on top**: a post-draft Recap page (spend charts, stat
 ### What's coming
 
 - **The Android app is in closed testing on Google Play** — needs a batch of real testers to run for 14 days before it can go fully public. If you install it and just open it once, that genuinely helps (link below).
-- **A Fire TV / Android TV app (Draft Board) is submitted to the Amazon Appstore**, pending review — turns any Fire TV into the big-screen display with zero setup beyond entering a league code.
-- Once both clear their respective review processes, this becomes a normal install from either store — until then, the web version is the fastest way to actually use it today.
+- The web version and the Fire TV app both work today regardless of that timeline.
 
 **Android beta opt-in:** [your opt-in link here]
+**Fire TV app:** [Amazon Appstore link here]
 **Web version (works right now):** https://reports.bidboard.workers.dev
 
 ---
