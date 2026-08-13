@@ -19,6 +19,42 @@
     }
     h1 { font-size: 30px; margin-bottom: 6px; }
     p.lede { color: var(--text-dim); margin-top: 0; line-height: 1.5; }
+
+    .quickstart {
+      margin-top: 26px;
+      background: var(--panel);
+      border: 1px solid var(--gold-dim);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-panel);
+    }
+    .quickstart-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold-bright);
+      margin-bottom: 12px;
+    }
+    .quickstart-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .quickstart-list li { display: flex; align-items: flex-start; gap: 12px; }
+    .qs-num {
+      flex: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--gold-dim);
+      color: var(--gold-bright);
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+    .qs-text { font-size: 13.5px; color: var(--text-dim); line-height: 1.5; }
+    .qs-text b { color: var(--text); }
+
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -72,6 +108,16 @@
   <div class="landing">
     <h1>Fantasy Auction <span class="gold-text">Draft</span></h1>
     <p class="lede">A multi-screen system for running a live fantasy football auction draft: configure your league ahead of time, log picks from a phone, and follow along on a TV-facing board — with real-time sync across devices.</p>
+
+    <div class="quickstart">
+      <div class="quickstart-title">Quick Start — do these in order</div>
+      <ol class="quickstart-list">
+        <li><span class="qs-num">1</span><span class="qs-text"><b>Draft Setup</b> — do this first, before draft night. Configure teams, budget, roster, and get your league code + commissioner PIN.</span></li>
+        <li><span class="qs-num">2</span><span class="qs-text"><b>Bid Board</b> — open on the phone that'll be logging picks. Needs the league code and PIN.</span></li>
+        <li><span class="qs-num">3</span><span class="qs-text"><b>Draft Board</b> — open on the TV/laptop everyone's watching. Just needs the league code (no PIN).</span></li>
+        <li><span class="qs-num">4</span><span class="qs-text"><b>Team Picks</b> — optional, for anyone else who wants to check a roster from their own phone (scan the QR code on Draft Board, or open it directly with the league code).</span></li>
+      </ol>
+    </div>
 
     <div class="cards">
       <a class="card" href="setup.html">
