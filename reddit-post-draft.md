@@ -66,8 +66,8 @@ Pro is purely **fun extras on top**: a post-draft Recap page (spend charts, stat
 
 ### What's coming
 
-- **The Android app is in closed testing on Google Play** — needs a batch of real testers to run for 14 days before it can go fully public. If you install it and just open it once, that genuinely helps (link below).
-- The web version and the Fire TV app both work today regardless of that timeline.
+- **Both Android apps — Bid Board (phone) and Draft Board (Android TV, via Google Play) — are on track to release in about a week.** The web version and the Fire TV app both work today regardless of that timeline, so there's no need to wait to actually start using this.
+- If you want to help the Android phone app get there faster, it's in closed testing right now — installing it and opening it once genuinely helps (link below).
 
 **Android beta opt-in:** [your opt-in link here]
 **Fire TV app:** [Amazon Appstore link here]
