@@ -523,8 +523,14 @@
   }
   googleSignOutBtn.addEventListener("click", async () => {
     await supabaseClient.auth.signOut();
-    currentUserEmail = null;
-    updateGoogleAuthUi();
+    // A full reload, not just clearing local state + re-rendering --
+    // supabase-js keeps some internal OAuth-flow state (notably the PKCE
+    // code verifier) that a soft, same-page sign-out doesn't fully reset.
+    // Without this, a second sign-in attempt in the same page session can
+    // silently fail (confirmed real-world 2026-08-15: worked once, signed
+    // out, sign-in then did nothing until the browser was fully closed
+    // and reopened -- a reload accomplishes the same clean reset).
+    window.location.reload();
   });
 
   function updateGoogleAuthUi() {
