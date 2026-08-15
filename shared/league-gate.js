@@ -58,7 +58,11 @@ function promptForLeagueCode() {
       <div class="league-gate-card">
         <div class="league-gate-icon">🏈</div>
         <h2 class="league-gate-title">Enter League Code</h2>
-        <p class="league-gate-hint">Ask your commissioner for the 6-character code${allowCreate ? ", start a new league, or try the demo." : " or try the demo."}</p>
+        <p class="league-gate-hint">${
+          allowCreate
+            ? "Ask your commissioner for the 6-character code, start a new league, or try the demo."
+            : "Ask your commissioner for the 6-character code, or try the demo. A league can't be created from this screen — set one up first at reports.bidboard.workers.dev/setup.html on a phone or computer, then come back here with the code."
+        }</p>
         <input type="text" class="league-gate-input" id="leagueGateInput" maxlength="6" placeholder="e.g. BLZ4K2" autocapitalize="characters" autocomplete="off" />
         <div class="league-gate-error" id="leagueGateError" hidden></div>
         <button class="league-gate-continue" id="leagueGateContinue">CONTINUE</button>
