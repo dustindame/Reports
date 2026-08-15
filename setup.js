@@ -517,7 +517,19 @@
     googleSignInBtn.addEventListener("click", () => {
       supabaseClient.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: window.location.href.split("?")[0] },
+        // Must strip BOTH the query string AND the hash fragment -- the
+        // fragment is where Supabase itself puts the access/refresh
+        // tokens after a successful sign-in, and if a stale one is still
+        // sitting in the address bar from an earlier session on this
+        // same page load, using window.location.href here bakes it into
+        // the redirect target. The next sign-in then appends a SECOND
+        // token fragment on top of the stale one, producing one giant
+        // malformed fragment the client can't parse -- a real bug
+        // confirmed 2026-08-15 (sign in -> sign out -> sign in again
+        // silently failed until the browser was fully closed, which
+        // was really just the only thing that reliably cleared the
+        // stale fragment).
+        options: { redirectTo: window.location.origin + window.location.pathname },
       });
     });
   }
@@ -550,6 +562,13 @@
     updateGoogleAuthUi();
     if (currentUserEmail && event === "SIGNED_IN") {
       await tryRestorePurchase(currentUserEmail);
+      // Belt-and-suspenders on top of the redirectTo fix above: strip any
+      // leftover #access_token=... fragment from the address bar the
+      // moment a session is confirmed, so it can never get picked up and
+      // baked into a LATER sign-in attempt on this same page/tab.
+      if (window.location.hash) {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
     }
   });
   supabaseClient.auth.getSession().then(({ data }) => {
