@@ -417,7 +417,7 @@ body { overflow: hidden; height: 100vh; }
   justify-content: center;
   background: var(--panel);
 }
-.budget-cell .bc-value { font-size: 12px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.budget-cell .bc-value { font-size: 24px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .budget-cell.max-bid .bc-value { color: #59c2f0; }
 .budget-cell.remaining .bc-value { color: var(--text); }
 .budget-cell.remaining.tight .bc-value { color: var(--qb-glow); }
@@ -440,7 +440,7 @@ body { overflow: hidden; height: 100vh; }
 .slot-cell.empty { border-style: dashed; }
 .slot-cell .slot-player-first,
 .slot-cell .slot-player-last {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
   line-height: 1.15;
