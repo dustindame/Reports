@@ -4,7 +4,7 @@
      and applies a single zoom factor so the whole board -- header, grid,
      ticker -- always fits with zero scrolling, in either direction. */
   --team-col: 230px;
-  --budget-col: 115px;
+  --budget-col: 93px;
   --slot-col: 110px;
 }
 
@@ -408,7 +408,7 @@ body { overflow: hidden; height: 100vh; }
 .team-name-text { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
 
 .budget-cell {
-  padding: 10px 12px;
+  padding: 10px 5px;
   border-bottom: 1px solid var(--border-soft);
   border-left: 1px solid var(--border-soft);
   display: flex;
