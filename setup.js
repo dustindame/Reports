@@ -803,7 +803,7 @@
     renderTeamNames();
   });
   const BUDGET_STEP = 5;
-  const BUDGET_MAX = 10000;
+  const BUDGET_MAX = 1000;
   budgetInput.addEventListener("input", () => {
     if (draftStarted) { budgetInput.value = budget; return; }
     const digitsOnly = budgetInput.value.replace(/[^0-9]/g, "");

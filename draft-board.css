@@ -4,7 +4,7 @@
      and applies a single zoom factor so the whole board -- header, grid,
      ticker -- always fits with zero scrolling, in either direction. */
   --team-col: 230px;
-  --budget-col: 140px;
+  --budget-col: 100px;
   --slot-col: 110px;
 }
 
@@ -417,7 +417,7 @@ body { overflow: hidden; height: 100vh; }
   justify-content: center;
   background: var(--panel);
 }
-.budget-cell .bc-value { font-size: 26px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.budget-cell .bc-value { font-size: 26px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .budget-cell.max-bid .bc-value { color: #59c2f0; }
 .budget-cell.remaining .bc-value { color: var(--text); }
 .budget-cell.remaining.tight .bc-value { color: var(--qb-glow); }
