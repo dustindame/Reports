@@ -3,7 +3,7 @@
      measures the board's natural width/height against the actual screen
      and applies a single zoom factor so the whole board -- header, grid,
      ticker -- always fits with zero scrolling, in either direction. */
-  --team-col: 230px;
+  --team-col: 178px;
   --budget-col: 93px;
   --slot-col: 110px;
 }
@@ -397,14 +397,29 @@ body { overflow: hidden; height: 100vh; }
 .grid-header-cell.pos-K { color: var(--k-glow); }
 
 .team-cell {
-  padding: 10px 14px;
+  position: relative;
+  padding: 8px 5px 8px 10px;
   border-bottom: 1px solid var(--border-soft);
   display: flex;
   align-items: center;
   background: var(--panel);
   min-width: 0;
 }
-.team-name-row { display: flex; align-items: center; gap: 10px; font-size: 23px; font-weight: 800; color: var(--text); line-height: 1.2; min-width: 0; width: 100%; }
+/* Replaces the old inline color dot -- a short accent bar instead of a
+   full-height border, so it doesn't visually dominate the cell the way
+   a top-to-bottom border does. 70% height, centered vertically. */
+.team-cell::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 70%;
+  border-radius: 2px;
+  background: var(--team-color, var(--border-soft));
+}
+.team-name-row { display: flex; align-items: center; font-size: 23px; font-weight: 800; color: var(--text); line-height: 1.2; min-width: 0; width: 100%; }
 .team-name-text { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
 
 .budget-cell {

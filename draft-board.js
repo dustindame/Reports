@@ -440,9 +440,8 @@
       const budget = computeTeamBudget(team.id);
       const roster = getTeamRoster(team.id);
       const tightClass = budget.open > 0 && budget.maxBid <= 1 ? " tight" : "";
-      cells.push(`<div class="team-cell">
+      cells.push(`<div class="team-cell" style="--team-color:${team.color}">
         <div class="team-name-row">
-          <span class="dot" style="background:${team.color}; color:${team.color}"></span>
           <span class="team-name-text">${escapeHtml(team.name)}</span>
         </div>
       </div>`);
