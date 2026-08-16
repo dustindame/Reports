@@ -1,10 +1,10 @@
 # Reddit Post Draft — r/AlphaAndBetaUsers (and similar)
 
-Updated 2026-08-12 — full rewrite covering the live web version, current Android beta status, Pro clarification, and what's coming next.
+Updated 2026-08-16 — Fire TV confirmed live (downloaded and tested), live Stripe purchases confirmed working, Amazon/Android links removed since Amazon just needs an app-name search and Android isn't in production yet.
 
 ---
 
-**[Web + Fire TV + Android Beta] Bid Board — Live Fantasy Football Auction Draft Tracker**
+**[Web + Fire TV] Bid Board — Live Fantasy Football Auction Draft Tracker**
 
 **Try it now, no install:** https://reports.bidboard.workers.dev
 
@@ -25,7 +25,7 @@ Three screens, all synced live:
 4. Open **Bid Board** on the phone doing entry, **Draft Board** on the TV/laptop, **Team Picks** on everyone else's phones. Enter the league code (and PIN, for Bid Board) when asked.
 5. Draft.
 
-No installs required for any of this — it's all just a website. There's also a real Android app in closed testing on Google Play right now (link below if you want to try it and help it graduate out of that phase), and a Fire TV app for the big-screen display — mix and match whichever pieces work for your setup (see below).
+No installs required for any of this — it's all just a website. There's also a real, live Fire TV app for the big-screen display — search **"Draft Board"** on the Amazon Appstore. Mix and match whichever pieces work for your setup (see below).
 
 ### Ways to actually use this
 
@@ -66,11 +66,9 @@ Pro is purely **fun extras on top**: a post-draft Recap page (spend charts, stat
 
 ### What's coming
 
-- **Both Android apps — Bid Board (phone) and Draft Board (Android TV, via Google Play) — are on track to release in about a week.** The web version and the Fire TV app both work today regardless of that timeline, so there's no need to wait to actually start using this.
-- If you want to help the Android phone app get there faster, it's in closed testing right now — installing it and opening it once genuinely helps (link below).
+- **Android apps for both phone and TV are on track to release in about a week**, via Google Play. The web version and the Fire TV app both work today regardless of that timeline, so there's no need to wait to actually start using this.
 
-**Android beta opt-in:** [your opt-in link here]
-**Fire TV app:** [Amazon Appstore link here]
+**Fire TV app:** search "Draft Board" on the Amazon Appstore
 **Web version (works right now):** https://reports.bidboard.workers.dev
 
 ---
@@ -87,5 +85,6 @@ Pro is purely **fun extras on top**: a post-draft Recap page (spend charts, stat
 - Facebook fantasy football groups — often more casual about this than Reddit.
 
 ## Reminder for whoever posts this
-- Swap in the real opt-in link before posting (Play Console → Testing → Closed testing → your track → Testers tab → "How testers join").
-- The web link needs zero swapping — it's already live.
+- Fire TV app is confirmed live (downloaded and tested directly) — search "Draft Board" on the Amazon Appstore.
+- Web link needs zero swapping — it's already live, and the live Stripe purchase path has been tested and confirmed working.
+- No Android link needed yet — not in production, not mentioned as something to test right now.
