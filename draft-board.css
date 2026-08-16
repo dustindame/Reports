@@ -440,7 +440,7 @@ body { overflow: hidden; height: 100vh; }
 .slot-cell.empty { border-style: dashed; }
 .slot-cell .slot-player-first,
 .slot-cell .slot-player-last {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text);
   line-height: 1.15;
