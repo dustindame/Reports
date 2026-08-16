@@ -141,8 +141,9 @@ const LeagueSession = {
 
   // Recently-used league codes, most-recent first -- lets a
   // commissioner switch back to a prior league without retyping the
-  // code. Free tier is capped to ProGate.FREE_MAX_SAVED_LEAGUES;
-  // Pro keeps unlimited history.
+  // code. Same flat cap for everyone now (matches the real
+  // server-side creation cap in create_league) -- Pro no longer gets
+  // a different number here.
   SAVED_KEY: "auctionDraft.savedLeagues",
   getSavedLeagues() {
     try {
@@ -152,15 +153,15 @@ const LeagueSession = {
       return [];
     }
   },
-  // Joining a new league beyond the free cap silently bumps the
-  // oldest saved one out of the switcher list (rather than blocking
-  // the join) -- the league itself still works fully either way, the
+  // Joining a new league beyond the cap silently bumps the oldest
+  // saved one out of the switcher list (rather than blocking the
+  // join) -- the league itself still works fully either way, the
   // cap only limits how many stay in quick-switch history.
   rememberLeague(code, label) {
     const list = this.getSavedLeagues().filter((l) => l.code !== code);
     list.unshift({ code, label: label || code, savedAt: Date.now() });
     const hasProGate = typeof ProGate !== "undefined";
-    const cap = hasProGate && ProGate.isPro() ? 50 : hasProGate ? ProGate.FREE_MAX_SAVED_LEAGUES : 2;
+    const cap = hasProGate ? ProGate.FREE_MAX_SAVED_LEAGUES : 15;
     localStorage.setItem(this.SAVED_KEY, JSON.stringify(list.slice(0, cap)));
   },
   forgetLeague(code) {
@@ -525,7 +526,7 @@ const DraftStore = {
     });
     if (error) {
       if (error.message && error.message.includes("FREE_LEAGUE_LIMIT_REACHED")) {
-        return { error: "Free accounts are limited to 2 leagues on this device — upgrade to Pro for unlimited leagues." };
+        return { error: "This device already has 15 leagues saved — an old one will need to expire before you can create another." };
       }
       return { error: error.message };
     }

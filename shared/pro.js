@@ -24,7 +24,7 @@
 
 const ProGate = {
   FREE_MAX_TEAMS: 14, // matches MAX_TEAMS (shared/data.js) -- no team-count cap on free anymore
-  FREE_MAX_SAVED_LEAGUES: 2,
+  FREE_MAX_SAVED_LEAGUES: 15, // same for everyone now -- no Pro-specific cap
 
   isPro() {
     if (typeof window !== "undefined" && window.NATIVE_PRO_UNLOCKED === true) return true;
