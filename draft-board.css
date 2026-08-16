@@ -5,7 +5,7 @@
      ticker -- always fits with zero scrolling, in either direction. */
   --team-col: 178px;
   --budget-col: 93px;
-  --slot-col: 110px;
+  --slot-col: 124px;
 }
 
 body { overflow: hidden; height: 100vh; }
