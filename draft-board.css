@@ -449,7 +449,7 @@ body { overflow: hidden; height: 100vh; }
   justify-content: center;
   text-align: center;
   padding: 6px 4px;
-  min-height: 58px;
+  min-height: 72px;
 }
 
 .slot-cell.filled { background: var(--panel); }
