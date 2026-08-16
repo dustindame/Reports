@@ -1,6 +1,6 @@
 # Reddit Post Draft — r/AlphaAndBetaUsers (and similar)
 
-Updated 2026-08-16 — Fire TV confirmed live (downloaded and tested), live Stripe purchases confirmed working, Amazon/Android links removed since Amazon just needs an app-name search and Android isn't in production yet.
+Updated 2026-08-16 — Fire TV confirmed live (downloaded and tested), live Stripe purchases confirmed working, Amazon/Android links removed since Amazon just needs an app-name search and Android isn't in production yet, plus added explicit limitations (5-league free cap, retention timing, "this is new" honesty section).
 
 ---
 
@@ -54,9 +54,16 @@ Once you have the actual Fire TV app installed, none of this is needed — it's 
 - **Once the first pick is logged, team count/budget/roster positions lock** — this protects against someone fat-fingering a setting mid-draft and scrambling everything already drafted. Everything cosmetic (board name, display toggles, fun extras) stays editable anytime.
 - **Free-text player entries need consistent spelling.** If a player isn't in the built-in list, you can add them manually — but "AJ Smith" and "A.J. Smith" count as two different players to the duplicate-pick check. Stick to one spelling.
 - **No server-side budget enforcement.** It won't stop you from technically overbidding — this is a trust-based tool for actual live drafts, not a locked-down system fighting you.
-- **Leagues aren't kept forever.** Free leagues clear out after 7 idle days (14 if the draft's marked complete). There's a one-tap "Download Recap" image if you want a permanent copy before that happens.
+- **Up to 5 leagues per device on the free tier.** Tracked per browser/app, not per person — creating a 6th just quietly drops the oldest one from your saved list rather than blocking you.
+- **Leagues aren't kept forever.** Free leagues clear out after **7 idle days** (14 if the draft's marked complete). Pro leagues last **60 idle days**. There's a one-tap "Download Recap" image if you want a permanent copy before that happens — this applies to everyone, Pro or not.
 - **No account needed to use any of this.** Optional Google Sign-In exists only for the Pro purchase (so it can follow you across devices/browsers) — everything else works with just the league code.
 - **Try before you commit** — there's a demo mode with fake data if you just want to poke around the UI first.
+
+### This is genuinely new — a couple of honest caveats
+
+- This app is very early. It's been tested carefully, but it hasn't been through a real season with a large number of live drafters yet — treat it as a solid, functional tool, not a battle-hardened one.
+- **There is currently no way to recover a lost league code or PIN yourself** — if you lose both, that league is genuinely gone (the PIN is a one-way hash, not stored anywhere reversible, by design). Keep them written down somewhere until this improves.
+- Data is backed up automatically, but only **weekly**, not continuously — this is a small solo project, not an enterprise product with real-time redundancy. Don't treat it as a permanent historical record; download your Recap if you want to keep it.
 
 ### About the $3.99 Pro upgrade — read this part
 
