@@ -10,6 +10,31 @@ Where things live, if you need to go look yourself:
 
 ---
 
+## 0. Restoring from backup (real data loss, not a display bug)
+
+**Use this only after confirming via Section 1 that data is genuinely gone from the database** — not just a display/sync issue. If you're not sure, check Section 1 first; don't restore over good data.
+
+**What to tell a Claude Code session** (works even in a brand-new session with no memory of this conversation, since everything it needs is below and in `PROJECT_STATE.md`):
+
+> "The Supabase database has real data loss — I need you to restore from the most recent backup in the `draft-board-backups` repo. Read `SUPPORT_PLAYBOOK.md` Section 0 for the exact steps."
+
+**The actual steps** (what a session should do):
+
+1. **Confirm what's actually wrong first** — check the live tables directly (`draft_config`, `picks`) via the Supabase REST API with the anon key, the same way Section 1 describes. Don't restore blind.
+2. **Find the most recent backup**: the `draft-board-backups` repo (private, `dustindame/draft-board-backups`) auto-commits a new snapshot to its `backups/` folder every 2 hours (schedule bumped from weekly 2026-08-16, after a real incident made the old weekly gap unacceptable). List the folder, sorted by filename (they're timestamp-named) — the last one is the most recent.
+3. **Run the restore**:
+   ```
+   cd <path to a clone of draft-board-backups>
+   SUPABASE_URL=https://esoywmghcnvtauxzabvx.supabase.co SUPABASE_SERVICE_ROLE_KEY=<the real key> node restore.js backups/<most-recent-file>.json
+   ```
+   The `service_role` key is a real secret — get it fresh from Supabase Dashboard → Project Settings → API Keys, never from chat history. It's an UPSERT, safe to re-run, safe to run against a project that already has some data (matches by primary key, overwrites what matches, leaves anything else alone).
+4. **Verify it worked** — query `draft_config`/`picks` directly afterward and confirm real rows are back, the same way you confirmed the problem in step 1.
+5. **Tell the user plainly what the restore covers and what it doesn't** — it brings data back to whatever the backup captured, NOT to the literal moment before the incident. Anything created/changed between that backup and the incident is still gone. With the current 2-hour schedule, worst case is about a 2-hour gap, not the up-to-a-week gap from before 2026-08-16.
+
+**Precondition this assumes**: the database *schema* (tables/columns/functions) is intact and current — `restore.js` only restores data, not structure. If the schema itself is also broken (columns missing, functions out of date), that needs fixing first by applying `Reports/supabase/migrations/` in order — see `PROJECT_STATE.md`'s Section 7 work log entry from 2026-08-16 for exactly how that was diagnosed and fixed once already, including the specific gotchas hit (a `supabase db push` on a never-before-linked project replays destructive early migrations instead of recognizing what's already live — check `supabase migration list` before ever running `db push` against a project for the first time).
+
+---
+
 ## 1. "My picks disappeared" / "A pick is wrong or missing"
 
 **First, don't panic — picks live in the database (Supabase), not on any one device.** Nothing is lost just because a phone/TV screen looks wrong; that's almost always a display/sync issue, not a data-loss issue.
