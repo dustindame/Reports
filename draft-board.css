@@ -423,7 +423,7 @@ body { overflow: hidden; height: 100vh; }
 .budget-cell.remaining.tight .bc-value { color: var(--qb-glow); }
 
 .slot-cell {
-  margin: 5px;
+  margin: 2px;
   border-radius: var(--radius-md);
   border: 2px solid var(--border-soft);
   background: var(--panel-alt);
