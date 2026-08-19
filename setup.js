@@ -495,12 +495,14 @@
   // embedded app WebView (a security policy, not a bug) -- confirmed
   // 2026-08-06 that tapping this from inside the installed native app
   // goes through the motions but never actually establishes a
-  // session. Rather than show a flow that silently fails, the button
-  // itself is hidden inside the native app and replaced with a plain
-  // explanation pointing at the web version, until proper native
-  // OAuth (external browser tab + deep link back into the app) is
-  // built -- that's real native code, not a web-only fix, and isn't
-  // needed urgently since the Play Store app isn't live yet anyway.
+  // session. Native OAuth built 2026-08-19: open the OAuth URL in a
+  // real external Chrome Custom Tab (via the Capacitor Browser plugin,
+  // which Google's WebView-detection doesn't flag), then catch the
+  // redirect back into the app via a custom URL scheme deep link
+  // (`com.dustindame.draftentry://auth-callback`, registered in
+  // AndroidManifest.xml -- see android-phone-app/README.md). Requires
+  // that exact URL to be added to Supabase's Auth -> URL Configuration
+  // -> Redirect URLs allow-list, or the redirect is silently rejected.
   const googleSignedOutRow = document.getElementById("googleSignedOutRow");
   const googleSignedInRow = document.getElementById("googleSignedInRow");
   const googleSignedInEmail = document.getElementById("googleSignedInEmail");
@@ -510,9 +512,44 @@
   const restoreProStatus = document.getElementById("restoreProStatus");
   let currentUserEmail = null;
 
-  if (ProGate.isInNativeApp()) {
-    googleSignedOutRow.hidden = true;
+  const NATIVE_AUTH_REDIRECT = "com.dustindame.draftentry://auth-callback";
+  // Old installed APK, built before the Browser plugin was added -- this
+  // live web app has already moved past what that build supports. Kept
+  // as a standing flag (not just an inline branch) since updateGoogleAuthUi
+  // below also needs to respect it on every re-render, not just at setup.
+  const nativeSignInUnsupported = ProGate.isInNativeApp() && !window.Capacitor.Plugins.Browser;
+
+  if (nativeSignInUnsupported) {
     googleNativeAppNote.hidden = false;
+  } else if (ProGate.isInNativeApp()) {
+    googleSignInBtn.addEventListener("click", async () => {
+      const { Browser } = window.Capacitor.Plugins;
+      const { data, error } = await supabaseClient.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: NATIVE_AUTH_REDIRECT, skipBrowserRedirect: true },
+      });
+      if (error || !data?.url) {
+        restoreProStatus.textContent = "Sign-in failed to start — try again.";
+        restoreProStatus.hidden = false;
+        return;
+      }
+      await Browser.open({ url: data.url });
+    });
+
+    // Fires when the OS hands the app a URL matching the intent-filter
+    // in AndroidManifest.xml -- Supabase puts the session tokens in the
+    // fragment, exactly like the web redirect flow above.
+    window.Capacitor.Plugins.App.addListener("appUrlOpen", async ({ url }) => {
+      if (!url || !url.startsWith(NATIVE_AUTH_REDIRECT)) return;
+      const fragment = url.split("#")[1] || "";
+      const params = new URLSearchParams(fragment);
+      const access_token = params.get("access_token");
+      const refresh_token = params.get("refresh_token");
+      if (access_token && refresh_token) {
+        await supabaseClient.auth.setSession({ access_token, refresh_token });
+      }
+      window.Capacitor.Plugins.Browser.close().catch(() => {});
+    });
   } else {
     googleSignInBtn.addEventListener("click", () => {
       supabaseClient.auth.signInWithOAuth({
@@ -546,7 +583,7 @@
   });
 
   function updateGoogleAuthUi() {
-    if (!ProGate.isInNativeApp()) googleSignedOutRow.hidden = !!currentUserEmail;
+    googleSignedOutRow.hidden = nativeSignInUnsupported || !!currentUserEmail;
     googleSignedInRow.hidden = !currentUserEmail;
     if (currentUserEmail) googleSignedInEmail.textContent = currentUserEmail;
     updateBuyProWebUi();

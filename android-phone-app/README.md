@@ -82,6 +82,7 @@ Capacitor plugin modules themselves (confirmed via a real `assembleDebug`
 run — this fails the build otherwise, it's not optional). In both:
 - `node_modules/@capacitor/android/capacitor/build.gradle`
 - `node_modules/@capacitor/app/android/build.gradle`
+- `node_modules/@capacitor/browser/android/build.gradle` (added 2026-08-19 — hit this exact same build failure the first time Android Studio evaluated the newly-installed Browser plugin)
 
 change:
 ```
@@ -91,6 +92,11 @@ to:
 ```
 proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 ```
+
+**Every Capacitor plugin package added in the future needs this same
+check** — search `node_modules` for `getDefaultProguardFile('proguard-android.txt')`
+again if a fresh `npm install` ever brings in a new one and the build
+fails with this same error.
 
 Since these live in `node_modules` (also not committed, and wiped by
 `npm install`), re-check for and reapply this any time dependencies
@@ -293,6 +299,60 @@ and `queryProductDetailsAsync`'s callback returns a
 `.getProductDetailsList()` on it. If bumping this library again in the
 future, expect the API to have moved again; check the actual compiler
 errors rather than assuming v7-era code still applies.
+
+## Native Google Sign-In (started 2026-08-19)
+
+The web version's Google Sign-In (`setup.js`) doesn't work inside the
+native app's WebView -- Google actively refuses to complete its own
+sign-in screen inside an embedded WebView (a security policy, not a
+bug). The fix: run the OAuth flow in a real external Chrome Custom Tab
+via the Capacitor **Browser** plugin, then catch the redirect back into
+the app through a custom URL scheme deep link.
+
+**Package added:** `@capacitor/browser` (in `package.json` already --
+if `cap sync android` doesn't pick it up, re-run `npm install` first).
+
+**Required manual patch after `cap add android`** (same reason as the
+other patches above -- `android/` isn't committed): add this
+intent-filter to the `.MainActivity` `<activity>` block in
+`android/app/src/main/AndroidManifest.xml`, alongside the existing
+LAUNCHER one:
+```xml
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="com.dustindame.draftentry" android:host="auth-callback" />
+</intent-filter>
+```
+No `MainActivity.java` changes needed -- `@capacitor/app`'s `App` plugin
+(already installed) picks up the redirect automatically via
+`BridgeActivity`'s intent handling and fires a JS `appUrlOpen` event.
+
+**One required external step, not doable from code:** the redirect
+URL `com.dustindame.draftentry://auth-callback` must be added to
+**Supabase Dashboard -> Authentication -> URL Configuration -> Redirect
+URLs**. Without this, Supabase silently rejects the redirect after a
+successful Google sign-in and the app never gets a session back. (The
+project's `supabase/config.toml` is a local-dev file pointed at
+`127.0.0.1` -- do NOT `supabase config push` it, that would overwrite
+the production site's real auth URL config. This has to be added by
+hand in the dashboard.)
+
+The JS side lives in `setup.js`'s Google Sign-In section: inside the
+native app it calls `signInWithOAuth` with `skipBrowserRedirect: true`
+to get the URL without navigating, opens it via `Browser.open()`, then
+an `appUrlOpen` listener parses the `access_token`/`refresh_token` out
+of the returned deep link's fragment and calls
+`supabaseClient.auth.setSession()`. There's a fallback for an old
+installed APK built before this existed (missing
+`Capacitor.Plugins.Browser`) that falls back to the old
+"open the web version instead" note rather than throwing.
+
+**Not yet done:** real on-device verification of the full round trip
+(tap sign-in -> Custom Tab opens -> pick Google account -> lands back
+in-app signed in). Needs an actual build + the Supabase redirect URL
+added first.
 
 ## Open and run
 
