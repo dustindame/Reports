@@ -6,7 +6,7 @@
   <title>Auction Draft Board</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728f" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260812a" />
-  <link rel="stylesheet" href="draft-board.css?v=20260821a" />
+  <link rel="stylesheet" href="draft-board.css?v=20260821b" />
 </head>
 <body class="turf-bg">
   <div class="board-loading-screen turf-bg" id="boardLoadingScreen">
@@ -69,12 +69,6 @@
         </div>
       </header>
 
-      <div class="nomination-banner" id="nominationBanner" hidden>
-        <span class="nomination-label">NOW NOMINATING</span>
-        <span class="nomination-player" id="nominationPlayerText"></span>
-        <span class="nomination-position" id="nominationPositionText"></span>
-      </div>
-
       <main class="board-grid" id="boardGrid"></main>
 
       <main class="break-screen" id="breakScreen" hidden>
@@ -113,14 +107,19 @@
     </div>
   </div>
 
-  <!-- Deliberately OUTSIDE #boardContent: that element gets a CSS
-       `transform: scale(...)` from fitBoardToScreen() to fit the board
-       to the screen, and a transform on an ancestor also scales any
-       position:fixed descendant (creates a new containing block for
-       it) -- this overlay was shrinking along with the board's zoom
-       level, which is why it looked tiny on a big TV regardless of its
-       own CSS size. Living outside boardContent, it now sizes purely
-       off the real viewport. -->
+  <!-- Deliberately OUTSIDE #boardContent, same reasoning as the help
+       overlay right below: that element gets a CSS `transform: scale(...)`
+       from fitBoardToScreen(), and a transform on an ancestor also scales
+       any position:fixed descendant (creates a new containing block for
+       it) -- this centered overlay would shrink/move along with the
+       board's zoom level if it lived inside boardContent instead. Living
+       out here, it sizes and centers purely off the real viewport. -->
+  <div class="nomination-overlay" id="nominationBanner" hidden>
+    <span class="nomination-label">NOW NOMINATING</span>
+    <span class="nomination-player" id="nominationPlayerText"></span>
+    <span class="nomination-position" id="nominationPositionText"></span>
+  </div>
+
   <div class="league-gate-overlay" id="helpOverlay" hidden>
     <div class="league-gate-card faq-card tv-faq-card">
       <div class="league-gate-title">Help &amp; FAQ</div>
@@ -166,6 +165,6 @@
   <script src="shared/data.js?v=20260821a"></script>
   <script src="shared/league-gate.js?v=20260815a"></script>
   <script src="shared/icons.js?v=20260801a"></script>
-  <script src="draft-board.js?v=20260821a"></script>
+  <script src="draft-board.js?v=20260821b"></script>
 </body>
 </html>

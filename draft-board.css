@@ -367,43 +367,61 @@ body { overflow: hidden; height: 100vh; }
 .qr-code svg { display: block; width: 68px; height: 68px; }
 .qr-caption { margin-top: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: #59c2f0; }
 
-/* ---------------- Nomination banner ----------------
-   Shown between the header and the grid while a player is nominated but
-   not yet assigned a team/price -- opt-in (show_nomination), cleared
-   automatically the instant the real pick is submitted. Deliberately a
-   full-width strip, not a header-block -- this needs to be the most
-   noticeable thing on screen while live bidding is happening, not
-   competing for space with the QR code and clock. */
-.nomination-banner[hidden] { display: none; }
-.nomination-banner {
+/* ---------------- Nomination overlay ----------------
+   A centered floating card over the middle of the board while a player
+   is nominated but not yet assigned a team/price -- opt-in
+   (show_nomination), cleared automatically the instant the real pick is
+   submitted. Lives OUTSIDE #boardContent (see the HTML comment) so it
+   centers on the real viewport regardless of the board's zoom/scale, and
+   uses position:fixed so it floats over the grid instead of pushing it
+   down like the old inline-strip version did. pointer-events: none since
+   this is a pure display banner on a view-only screen -- it should never
+   be able to block a tap/click on anything underneath it. */
+.nomination-overlay[hidden] { display: none; }
+.nomination-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1500;
+  pointer-events: none;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 14px;
-  padding: 10px 20px;
+  gap: 8px;
+  padding: 22px 46px;
+  border-radius: var(--radius-lg);
   background: var(--panel-alt);
-  border-top: 2px solid var(--border-soft);
-  border-bottom: 2px solid var(--gold-dim);
+  border: 3px solid var(--gold-dim);
+  box-shadow: 0 0 0 8px rgba(8, 8, 11, 0.55), 0 20px 60px -10px rgba(0, 0, 0, 0.6), 0 0 40px -8px rgba(212, 175, 55, 0.35);
+  animation: nomination-pop-in 0.28s cubic-bezier(0.2, 0.8, 0.3, 1.3);
+}
+@keyframes nomination-pop-in {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nomination-overlay { animation: none; }
 }
 .nomination-label {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 800;
-  letter-spacing: 1.5px;
+  letter-spacing: 2.5px;
   color: var(--gold);
   white-space: nowrap;
 }
 .nomination-player {
-  font-size: 26px;
+  font-size: 44px;
   font-weight: 800;
   color: var(--text);
   line-height: 1;
   white-space: nowrap;
 }
 .nomination-position {
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: 0.5px;
-  padding: 3px 10px;
+  padding: 4px 14px;
   border-radius: var(--radius-md);
   border: 2px solid var(--border-soft);
   white-space: nowrap;

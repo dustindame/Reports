@@ -245,11 +245,11 @@
       .join("");
   }
 
-  // Shows/hides and fills the "NOW NOMINATING" banner. Called at init and
+  // Shows/hides and fills the "NOW NOMINATING" overlay. Called at init and
   // again from onConfigChange whenever nominated_player/nominated_position
-  // change -- never triggers layoutGrid/fitBoardToScreen itself, since the
-  // caller (which knows whether it's transitioning show<->hide, changing
-  // the board's natural height) is responsible for that.
+  // change. Purely a fixed-position overlay outside #boardContent, so
+  // unlike most other header/board content, showing or hiding it never
+  // needs a fitBoardToScreen() re-layout.
   function renderNomination() {
     const active = SHOW_NOMINATION && !!NOMINATED_PLAYER;
     nominationBanner.hidden = !active;
@@ -867,8 +867,10 @@
     if (newNominatedPlayer !== NOMINATED_PLAYER || newNominatedPosition !== NOMINATED_POSITION) {
       NOMINATED_PLAYER = newNominatedPlayer;
       NOMINATED_POSITION = newNominatedPosition;
+      // No fitBoardToScreen() needed -- the overlay is position:fixed,
+      // outside #boardContent, so it never affects the board's own
+      // natural size the way the old inline-strip banner did.
       renderNomination();
-      if (!ON_BREAK) fitBoardToScreen(); // banner appearing/disappearing changes board height
     }
 
     const nowOnBreak = Boolean(newConfig.on_break);
