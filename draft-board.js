@@ -34,6 +34,7 @@
   const snapshotBtn = document.getElementById("snapshotBtn");
   const recapLink = document.getElementById("recapLink");
   const completeBadge = document.getElementById("completeBadge");
+  const emptyBoardHint = document.getElementById("emptyBoardHint");
   const nominationBanner = document.getElementById("nominationBanner");
   const nominationPlayerText = document.getElementById("nominationPlayerText");
   const nominationPositionText = document.getElementById("nominationPositionText");
@@ -188,6 +189,7 @@
     draftedValue.textContent = `${drafted} / ${TOTAL_SLOTS}`;
     remainingValue.textContent = TOTAL_SLOTS - drafted;
     progressFill.style.width = `${(drafted / TOTAL_SLOTS) * 100}%`;
+    emptyBoardHint.hidden = drafted > 0;
   }
 
   function renderPositionTotals() {

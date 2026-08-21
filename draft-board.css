@@ -439,6 +439,24 @@ body { overflow: hidden; height: 100vh; }
 .nomination-position.pos-DEF { color: var(--def-glow); border-color: var(--def); }
 .nomination-position.pos-K { color: var(--k-glow); border-color: var(--k); }
 
+/* ---------------- Empty-board hint ----------------
+   Shown only while draftedCount() is 0 -- the whole point of this screen
+   is display-only, and a first-time viewer staring at an untouched board
+   (every slot "Open", every team at full budget) has no other signal that
+   picks come from a separate app on someone else's phone. Disappears for
+   good the instant the first real pick lands; not tied to show_nomination
+   or any other toggle -- always on until there's a reason to turn it off. */
+.empty-board-hint[hidden] { display: none; }
+.empty-board-hint {
+  padding: 8px 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-dim);
+  background: var(--panel);
+  border-bottom: 1px solid var(--border-soft);
+}
+.empty-board-hint strong { color: var(--gold); }
+
 /* ---------------- Grid ---------------- */
 
 .board-grid[hidden] { display: none; }

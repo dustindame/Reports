@@ -6,7 +6,7 @@
   <title>Auction Draft Board</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728f" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260812a" />
-  <link rel="stylesheet" href="draft-board.css?v=20260821c" />
+  <link rel="stylesheet" href="draft-board.css?v=20260821d" />
 </head>
 <body class="turf-bg">
   <div class="board-loading-screen turf-bg" id="boardLoadingScreen">
@@ -68,6 +68,10 @@
           <div class="qr-caption">Scan to Join</div>
         </div>
       </header>
+
+      <div class="empty-board-hint" id="emptyBoardHint" hidden>
+        Waiting for the first pick — picks are entered live from the free <strong>Bid Board</strong> app on the commissioner's phone. This screen only displays them.
+      </div>
 
       <main class="board-grid" id="boardGrid"></main>
 
@@ -163,8 +167,8 @@
   <script src="shared/supabase-config.js?v=20260728e"></script>
   <script src="shared/pro.js?v=20260816a"></script>
   <script src="shared/data.js?v=20260821a"></script>
-  <script src="shared/league-gate.js?v=20260815a"></script>
+  <script src="shared/league-gate.js?v=20260821a"></script>
   <script src="shared/icons.js?v=20260801a"></script>
-  <script src="draft-board.js?v=20260821b"></script>
+  <script src="draft-board.js?v=20260821c"></script>
 </body>
 </html>
