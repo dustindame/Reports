@@ -6,7 +6,7 @@
   <title>Auction Draft Board</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728f" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260812a" />
-  <link rel="stylesheet" href="draft-board.css?v=20260816d" />
+  <link rel="stylesheet" href="draft-board.css?v=20260821a" />
 </head>
 <body class="turf-bg">
   <div class="board-loading-screen turf-bg" id="boardLoadingScreen">
@@ -68,6 +68,12 @@
           <div class="qr-caption">Scan to Join</div>
         </div>
       </header>
+
+      <div class="nomination-banner" id="nominationBanner" hidden>
+        <span class="nomination-label">NOW NOMINATING</span>
+        <span class="nomination-player" id="nominationPlayerText"></span>
+        <span class="nomination-position" id="nominationPositionText"></span>
+      </div>
 
       <main class="board-grid" id="boardGrid"></main>
 
@@ -157,9 +163,9 @@
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="shared/supabase-config.js?v=20260728e"></script>
   <script src="shared/pro.js?v=20260816a"></script>
-  <script src="shared/data.js?v=20260816b"></script>
+  <script src="shared/data.js?v=20260821a"></script>
   <script src="shared/league-gate.js?v=20260815a"></script>
   <script src="shared/icons.js?v=20260801a"></script>
-  <script src="draft-board.js?v=20260816a"></script>
+  <script src="draft-board.js?v=20260821a"></script>
 </body>
 </html>

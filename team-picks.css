@@ -199,6 +199,42 @@ body {
 .recap-banner-icon { display: flex; line-height: 0; flex: none; }
 .recap-banner-text { font-size: 13px; font-weight: 700; }
 
+.nomination-banner-mobile {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border-radius: var(--radius-md);
+  background: var(--panel-alt-grad);
+  border: 1px solid var(--gold-dim);
+  box-shadow: var(--panel-sheen);
+}
+.nomination-banner-mobile[hidden] { display: none; }
+.nomination-label-mobile {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--gold);
+  white-space: nowrap;
+}
+.nomination-player-mobile { font-size: 16px; font-weight: 800; color: var(--text); }
+.nomination-position-mobile {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-soft);
+}
+.nomination-position-mobile.pos-QB { color: var(--qb-glow); border-color: var(--qb); }
+.nomination-position-mobile.pos-RB { color: var(--rb-glow); border-color: var(--rb); }
+.nomination-position-mobile.pos-WR { color: var(--wr-glow); border-color: var(--wr); }
+.nomination-position-mobile.pos-TE { color: var(--te-glow); border-color: var(--te); }
+.nomination-position-mobile.pos-DEF { color: var(--def-glow); border-color: var(--def); }
+.nomination-position-mobile.pos-K { color: var(--k-glow); border-color: var(--k); }
+
 .team-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

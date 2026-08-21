@@ -23,6 +23,7 @@
   const toggleDraftedTotal = document.getElementById("toggleDraftedTotal");
   const togglePositionTotals = document.getElementById("togglePositionTotals");
   const toggleElapsedTime = document.getElementById("toggleElapsedTime");
+  const toggleNomination = document.getElementById("toggleNomination");
   const toggleShowRecap = document.getElementById("toggleShowRecap");
   const toggleBreakEnabled = document.getElementById("toggleBreakEnabled");
   const toggleNice = document.getElementById("toggleNice");
@@ -71,6 +72,7 @@
   let showDraftedTotal = true;
   let showPositionTotals = false;
   let showElapsedTime = false;
+  let showNomination = false;
   let niceEnabled = false;
   let shotsCount = 0;
   // Tracks the shot_pick_numbers/shots_count as loaded, so saving
@@ -244,6 +246,7 @@
     showDraftedTotal = config.show_drafted_total !== false;
     showPositionTotals = Boolean(config.show_position_totals);
     showElapsedTime = Boolean(config.show_elapsed_time);
+    showNomination = Boolean(config.show_nomination);
     niceEnabled = Boolean(config.nice_enabled);
     shotsCount = Number(config.shots_count) || 0;
     loadedShotsCount = shotsCount;
@@ -271,6 +274,7 @@
     showDraftedTotal = true;
     showPositionTotals = false;
     showElapsedTime = false;
+    showNomination = false;
     niceEnabled = false;
     shotsCount = 0;
     loadedShotsCount = 0;
@@ -410,6 +414,7 @@
     toggleDraftedTotal.checked = showDraftedTotal;
     togglePositionTotals.checked = showPositionTotals;
     toggleElapsedTime.checked = showElapsedTime;
+    toggleNomination.checked = showNomination;
     toggleShowRecap.checked = showRecap;
     toggleBreakEnabled.checked = breakEnabled;
     toggleNice.checked = niceEnabled;
@@ -911,6 +916,7 @@
   toggleDraftedTotal.addEventListener("change", () => { showDraftedTotal = toggleDraftedTotal.checked; });
   togglePositionTotals.addEventListener("change", () => { showPositionTotals = togglePositionTotals.checked; });
   toggleElapsedTime.addEventListener("change", () => { showElapsedTime = toggleElapsedTime.checked; });
+  toggleNomination.addEventListener("change", () => { showNomination = toggleNomination.checked; });
   toggleShowRecap.addEventListener("change", () => { showRecap = toggleShowRecap.checked; });
   toggleBreakEnabled.addEventListener("change", () => { breakEnabled = toggleBreakEnabled.checked; });
   toggleNice.addEventListener("change", () => { niceEnabled = toggleNice.checked; });
@@ -1053,6 +1059,7 @@
       showDraftedTotal,
       showPositionTotals,
       showElapsedTime,
+      showNomination,
       niceEnabled,
       shotsCount,
       // Only re-roll which picks are "shot" picks when shotsCount

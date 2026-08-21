@@ -8,6 +8,9 @@
   const backBtn = document.getElementById("backBtn");
   const messageFab = document.getElementById("messageFab");
   const recapBanner = document.getElementById("recapBanner");
+  const nominationBannerMobile = document.getElementById("nominationBannerMobile");
+  const nominationPlayerTextMobile = document.getElementById("nominationPlayerTextMobile");
+  const nominationPositionTextMobile = document.getElementById("nominationPositionTextMobile");
   const exportDraftBtn = document.getElementById("exportDraftBtn");
   const viewBoardBtn = document.getElementById("viewBoardBtn");
 
@@ -19,6 +22,15 @@
 
   function updateRecapBanner() {
     recapBanner.hidden = !SHOW_RECAP || (!DRAFT_COMPLETED && draftedCount() < TOTAL_SLOTS);
+  }
+
+  function updateNominationBanner() {
+    const active = SHOW_NOMINATION && !!NOMINATED_PLAYER;
+    nominationBannerMobile.hidden = !active;
+    if (!active) return;
+    nominationPlayerTextMobile.textContent = NOMINATED_PLAYER;
+    nominationPositionTextMobile.textContent = NOMINATED_POSITION || "";
+    nominationPositionTextMobile.className = `nomination-position-mobile pos-${NOMINATED_POSITION || ""}`;
   }
 
   /* ---------------- Draft-wide stats (shown on the team-picker screen) ----------------
@@ -273,6 +285,7 @@
   viewBoardBtn.href = `draft-board.html${CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : ""}`;
   await applyLivePicks();
   updateRecapBanner();
+  updateNominationBanner();
   renderDraftStats();
   DraftStore.onChange(async () => {
     await applyLivePicks();
@@ -287,6 +300,13 @@
     }
     DRAFT_COMPLETED = Boolean(config.draft_completed);
     updateRecapBanner();
+    const newNominatedPlayer = config.nominated_player || null;
+    const newNominatedPosition = config.nominated_position || null;
+    if (newNominatedPlayer !== NOMINATED_PLAYER || newNominatedPosition !== NOMINATED_POSITION) {
+      NOMINATED_PLAYER = newNominatedPlayer;
+      NOMINATED_POSITION = newNominatedPosition;
+      updateNominationBanner();
+    }
   });
 
   renderTeamGrid();

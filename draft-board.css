@@ -367,6 +367,57 @@ body { overflow: hidden; height: 100vh; }
 .qr-code svg { display: block; width: 68px; height: 68px; }
 .qr-caption { margin-top: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: #59c2f0; }
 
+/* ---------------- Nomination banner ----------------
+   Shown between the header and the grid while a player is nominated but
+   not yet assigned a team/price -- opt-in (show_nomination), cleared
+   automatically the instant the real pick is submitted. Deliberately a
+   full-width strip, not a header-block -- this needs to be the most
+   noticeable thing on screen while live bidding is happening, not
+   competing for space with the QR code and clock. */
+.nomination-banner[hidden] { display: none; }
+.nomination-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 10px 20px;
+  background: var(--panel-alt);
+  border-top: 2px solid var(--border-soft);
+  border-bottom: 2px solid var(--gold-dim);
+}
+.nomination-label {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: var(--gold);
+  white-space: nowrap;
+}
+.nomination-player {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+  white-space: nowrap;
+}
+.nomination-position {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-soft);
+  white-space: nowrap;
+}
+/* Reuses the exact same position accent colors as the grid header/slot
+   cells (pos-QB/pos-RB/etc.) so a nominated QB reads the same red as
+   the QB column, etc. -- one color system across the whole board. */
+.nomination-position.pos-QB { color: var(--qb-glow); border-color: var(--qb); }
+.nomination-position.pos-RB { color: var(--rb-glow); border-color: var(--rb); }
+.nomination-position.pos-WR { color: var(--wr-glow); border-color: var(--wr); }
+.nomination-position.pos-TE { color: var(--te-glow); border-color: var(--te); }
+.nomination-position.pos-DEF { color: var(--def-glow); border-color: var(--def); }
+.nomination-position.pos-K { color: var(--k-glow); border-color: var(--k); }
+
 /* ---------------- Grid ---------------- */
 
 .board-grid[hidden] { display: none; }

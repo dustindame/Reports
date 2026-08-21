@@ -304,6 +304,20 @@ button.setup-link { cursor: pointer; font: inherit; padding: 0; }
   cursor: pointer;
 }
 .clear-btn:hover { border-color: var(--gold); color: var(--gold); }
+.nominate-btn {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold-bright);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.nominate-btn[hidden] { display: none; }
+.nominate-btn:hover { background: var(--gold-dim); color: var(--bg); }
+.nominate-btn:disabled { opacity: 0.5; cursor: default; }
 
 /* ---------------- Team grid ---------------- */
 

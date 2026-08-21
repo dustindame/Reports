@@ -5,6 +5,7 @@
   const previewName = document.getElementById("previewName");
   const previewPosition = document.getElementById("previewPosition");
   const clearBtn = document.getElementById("clearBtn");
+  const nominateBtn = document.getElementById("nominateBtn");
   const teamGrid = document.getElementById("teamGrid");
   const bidSlider = document.getElementById("bidSlider");
   const bidMinus = document.getElementById("bidMinus");
@@ -229,6 +230,10 @@
     previewName.textContent = player.name;
     previewPosition.textContent = player.position;
     previewSection.hidden = false;
+    // Demo mode has no real league to nominate against; the toggle is
+    // also off by default, matching every other opt-in Draft Board
+    // display feature (break, recap, etc.).
+    nominateBtn.hidden = !CURRENT_LEAGUE_CODE || !SHOW_NOMINATION;
     searchInput.value = player.name;
     searchResults.innerHTML = "";
     updateConfirmState();
@@ -242,6 +247,7 @@
   function clearPlayer(shouldFocus = true) {
     selectedPlayer = null;
     previewSection.hidden = true;
+    nominateBtn.hidden = true;
     searchInput.value = "";
     searchResults.innerHTML = "";
     updateConfirmState();
@@ -670,6 +676,18 @@
 
   searchInput.addEventListener("input", (e) => renderResults(e.target.value));
   clearBtn.addEventListener("click", clearPlayer);
+  nominateBtn.addEventListener("click", async () => {
+    if (!selectedPlayer || !CURRENT_LEAGUE_CODE) return;
+    nominateBtn.disabled = true;
+    const pinHash = LeagueSession.getPinHash(CURRENT_LEAGUE_CODE);
+    const { error } = await DraftStore.setNomination(selectedPlayer.name, selectedPlayer.position, pinHash);
+    nominateBtn.disabled = false;
+    if (error) {
+      showToast(`Couldn't nominate: ${error}`);
+      return;
+    }
+    showToast(`${selectedPlayer.name} is up on the board`);
+  });
   pickSearchInput.addEventListener("input", (e) => {
     pickSearchQuery = e.target.value;
     renderRecentPicks();

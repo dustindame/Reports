@@ -34,6 +34,9 @@
   const snapshotBtn = document.getElementById("snapshotBtn");
   const recapLink = document.getElementById("recapLink");
   const completeBadge = document.getElementById("completeBadge");
+  const nominationBanner = document.getElementById("nominationBanner");
+  const nominationPlayerText = document.getElementById("nominationPlayerText");
+  const nominationPositionText = document.getElementById("nominationPositionText");
   const switchLeagueBtn = document.getElementById("switchLeagueBtn");
   const helpBtn = document.getElementById("helpBtn");
   const refreshBtn = document.getElementById("refreshBtn");
@@ -240,6 +243,20 @@
         </div>`
       )
       .join("");
+  }
+
+  // Shows/hides and fills the "NOW NOMINATING" banner. Called at init and
+  // again from onConfigChange whenever nominated_player/nominated_position
+  // change -- never triggers layoutGrid/fitBoardToScreen itself, since the
+  // caller (which knows whether it's transitioning show<->hide, changing
+  // the board's natural height) is responsible for that.
+  function renderNomination() {
+    const active = SHOW_NOMINATION && !!NOMINATED_PLAYER;
+    nominationBanner.hidden = !active;
+    if (!active) return;
+    nominationPlayerText.textContent = NOMINATED_PLAYER;
+    nominationPositionText.textContent = NOMINATED_POSITION || "";
+    nominationPositionText.className = `nomination-position pos-${NOMINATED_POSITION || ""}`;
   }
 
   /* ---------------- Ticker (news) + separate message row ----------------
@@ -747,6 +764,7 @@
 
   renderQr();
   completeBadge.hidden = !DRAFT_COMPLETED;
+  renderNomination();
   recapLink.hidden = !SHOW_RECAP;
   recapLink.href = `recap.html${CURRENT_LEAGUE_CODE ? `?league=${encodeURIComponent(CURRENT_LEAGUE_CODE)}` : ""}`;
   await applyLivePicks();
@@ -842,6 +860,15 @@
       DRAFT_COMPLETED = nowCompleted;
       completeBadge.hidden = !DRAFT_COMPLETED;
       if (!ON_BREAK) fitBoardToScreen(); // badge changes header width slightly
+    }
+
+    const newNominatedPlayer = newConfig.nominated_player || null;
+    const newNominatedPosition = newConfig.nominated_position || null;
+    if (newNominatedPlayer !== NOMINATED_PLAYER || newNominatedPosition !== NOMINATED_POSITION) {
+      NOMINATED_PLAYER = newNominatedPlayer;
+      NOMINATED_POSITION = newNominatedPosition;
+      renderNomination();
+      if (!ON_BREAK) fitBoardToScreen(); // banner appearing/disappearing changes board height
     }
 
     const nowOnBreak = Boolean(newConfig.on_break);

@@ -6,7 +6,7 @@
   <title>Team Picks</title>
   <link rel="stylesheet" href="shared/theme.css?v=20260728b" />
   <link rel="stylesheet" href="shared/league-gate.css?v=20260812a" />
-  <link rel="stylesheet" href="team-picks.css?v=20260802a" />
+  <link rel="stylesheet" href="team-picks.css?v=20260821a" />
 </head>
 <body>
   <div class="phone-frame">
@@ -36,6 +36,12 @@
       </div>
 
       <main class="picks-main">
+
+        <div class="nomination-banner-mobile" id="nominationBannerMobile" hidden>
+          <span class="nomination-label-mobile">NOW NOMINATING</span>
+          <span class="nomination-player-mobile" id="nominationPlayerTextMobile"></span>
+          <span class="nomination-position-mobile" id="nominationPositionTextMobile"></span>
+        </div>
 
         <a class="recap-banner" id="recapBanner" href="recap.html" hidden>
           <span class="recap-banner-icon" id="recapBannerIcon"></span>
@@ -84,9 +90,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="shared/supabase-config.js?v=20260728"></script>
   <script src="shared/pro.js?v=20260816a"></script>
-  <script src="shared/data.js?v=20260816b"></script>
+  <script src="shared/data.js?v=20260821a"></script>
   <script src="shared/league-gate.js?v=20260815a"></script>
   <script src="shared/icons.js?v=20260801a"></script>
-  <script src="team-picks.js?v=20260808a"></script>
+  <script src="team-picks.js?v=20260821a"></script>
 </body>
 </html>

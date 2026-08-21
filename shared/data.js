@@ -55,6 +55,11 @@ let DRAFT_COMPLETED = false;
 // flips true. Approximate because any other config write would also
 // bump updated_at, but nothing else writes to draft_config mid-break.
 let BREAK_STARTED_AT = null;
+let SHOW_NOMINATION = false;
+// Currently-nominated player, before it's assigned a team/price -- cleared
+// automatically the moment the real pick is submitted (see submit_pick).
+let NOMINATED_PLAYER = null;
+let NOMINATED_POSITION = null;
 
 const FLEX_ELIGIBLE = ["RB", "WR", "TE"];
 // Superflex opens the flex spot to QBs too (kickers still aren't
@@ -370,7 +375,11 @@ const CONFIG_FIELDS_TO_WATCH = [
   "board_name", "show_news", "show_messages", "show_recent", "show_drafted_total",
   "show_position_totals", "show_elapsed_time", "nice_enabled", "shots_count",
   "roast_enabled", "show_recap", "break_enabled", "is_pro", "num_teams", "budget",
-  "roster_slots", "team_names",
+  "roster_slots", "team_names", "show_nomination",
+  // nominated_player/nominated_position are deliberately NOT watched here --
+  // same reasoning as on_break: they change once per nomination, not just
+  // on a Setup save, and are handled with a smooth in-place update instead
+  // of a full reload (see draft-board.js's onConfigChange).
 ];
 function configHasOtherChanges(newConfig) {
   if (!LAST_CONFIG_SNAPSHOT) return false;
@@ -403,6 +412,9 @@ function applyRealConfig(config, leagueCode) {
   BREAK_STARTED_AT = ON_BREAK && config.updated_at ? new Date(config.updated_at).getTime() : null;
   IS_PRO_LEAGUE = Boolean(config.is_pro);
   DRAFT_COMPLETED = Boolean(config.draft_completed);
+  SHOW_NOMINATION = Boolean(config.show_nomination);
+  NOMINATED_PLAYER = config.nominated_player || null;
+  NOMINATED_POSITION = config.nominated_position || null;
 }
 
 function applyDemoConfig() {
@@ -436,6 +448,9 @@ function applyDemoConfig() {
   BREAK_STARTED_AT = null;
   IS_PRO_LEAGUE = isPro;
   DRAFT_COMPLETED = false; // demo mode always shows an in-progress draft
+  SHOW_NOMINATION = false; // demo mode has no commissioner to nominate anything
+  NOMINATED_PLAYER = null;
+  NOMINATED_POSITION = null;
 }
 
 function getTeamRoster(teamId) {
@@ -489,7 +504,7 @@ const DraftStore = {
     const { data, error } = await supabaseClient
       .from("draft_config")
       .select(
-        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time, nice_enabled, shots_count, shot_pick_numbers, roast_enabled, show_recap, break_enabled, on_break, is_pro, draft_completed"
+        "id, league_code, num_teams, budget, team_names, roster_slots, updated_at, board_name, show_news, show_messages, show_recent, show_drafted_total, show_position_totals, show_elapsed_time, nice_enabled, shots_count, shot_pick_numbers, roast_enabled, show_recap, break_enabled, on_break, is_pro, draft_completed, show_nomination, nominated_player, nominated_position"
       )
       .eq("league_code", leagueCode)
       .maybeSingle();
@@ -524,6 +539,7 @@ const DraftStore = {
       p_break_enabled: boardOptions.breakEnabled !== false,
       p_device_id: typeof ProGate !== "undefined" ? ProGate.getDeviceId() : null,
       p_is_pro: boardOptions.isPro !== undefined ? Boolean(boardOptions.isPro) : typeof ProGate !== "undefined" && ProGate.isPro(),
+      p_show_nomination: Boolean(boardOptions.showNomination),
     });
     if (error) {
       if (error.message && error.message.includes("FREE_LEAGUE_LIMIT_REACHED")) {
@@ -558,6 +574,7 @@ const DraftStore = {
       p_show_recap: boardOptions.showRecap !== false,
       p_break_enabled: boardOptions.breakEnabled !== false,
       p_is_pro: boardOptions.isPro !== undefined ? Boolean(boardOptions.isPro) : typeof ProGate !== "undefined" && ProGate.isPro(),
+      p_show_nomination: Boolean(boardOptions.showNomination),
     });
     if (error) return { error: error.message };
     if (data === false) return { error: "Incorrect commissioner PIN." };
@@ -728,6 +745,35 @@ const DraftStore = {
       p_league_code: CURRENT_LEAGUE_CODE,
       p_pin_hash: pinHash,
       p_on_break: onBreak,
+    });
+    if (error) return { error: error.message };
+    if (data === false) return { error: "Incorrect commissioner PIN." };
+    return { error: null };
+  },
+
+  /* ---------------- Nomination ----------------
+     "Now Nominating" -- a player named before they're actually assigned a
+     team/price, visible on Draft Board/Team Picks while bidding happens
+     live. Cleared automatically by submit_pick the moment the real pick
+     goes in, but can also be cleared manually (e.g. a mis-nomination). */
+  async setNomination(playerName, position, pinHash) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
+    const { data, error } = await supabaseClient.rpc("set_nomination", {
+      p_league_code: CURRENT_LEAGUE_CODE,
+      p_pin_hash: pinHash,
+      p_player_name: playerName,
+      p_position: position,
+    });
+    if (error) return { error: error.message };
+    if (data === false) return { error: "Incorrect commissioner PIN." };
+    return { error: null };
+  },
+
+  async clearNomination(pinHash) {
+    if (!supabaseClient || !CURRENT_LEAGUE_CODE) return { error: "No active league." };
+    const { data, error } = await supabaseClient.rpc("clear_nomination", {
+      p_league_code: CURRENT_LEAGUE_CODE,
+      p_pin_hash: pinHash,
     });
     if (error) return { error: error.message };
     if (data === false) return { error: "Incorrect commissioner PIN." };
