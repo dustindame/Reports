@@ -32,6 +32,11 @@
 
   let selectedPlayer = null;
   let selectedTeamId = null;
+  // Tracks whether THIS entry session actually broadcast a nomination (as
+  // opposed to just having SHOW_NOMINATION on) -- clearPlayer() uses this
+  // to know whether it needs to also clear the live banner, not just the
+  // local search UI.
+  let nominationActive = false;
 
   async function renderTeamGrid() {
     await applyLivePicks();
@@ -245,6 +250,17 @@
   // popped the on-screen keyboard back up for no reason right after
   // sliding to confirm.
   function clearPlayer(shouldFocus = true) {
+    // If this session nominated the player now being cleared (mis-tap,
+    // rejected as already-drafted, no open slot, or a real "CLEAR" tap),
+    // the live banner has to go too -- leaving it up would show a
+    // nomination nobody's actually bidding on anymore. A real pick being
+    // submitted already clears this server-side (see submit_pick), so
+    // this is a harmless no-op in that case, not a duplicate action.
+    if (nominationActive && CURRENT_LEAGUE_CODE) {
+      const pinHash = LeagueSession.getPinHash(CURRENT_LEAGUE_CODE);
+      DraftStore.clearNomination(pinHash);
+    }
+    nominationActive = false;
     selectedPlayer = null;
     previewSection.hidden = true;
     nominateBtn.hidden = true;
@@ -686,6 +702,7 @@
       showToast(`Couldn't nominate: ${error}`);
       return;
     }
+    nominationActive = true;
     showToast(`${selectedPlayer.name} is up on the board`);
   });
   pickSearchInput.addEventListener("input", (e) => {
